@@ -93,28 +93,35 @@ class DividerWithText(Container):
             )
         )
 
+def navigate_to_login(e):
+    e.page.go("/app/login")
+
+
 # Główny kontener zawierający wszystkie elementy interfejsu
 body = Container(
     content=Column([
-        Text("Hello!", size=32, color="white", weight="bold"),
-        Text("Please login to get full access from us", size=16, color="white", weight="normal"),
-        Container(height=20),
-        Input(icons.PERSON, hint_text="Username"),
+        Text("Welcome!", size=32, color="white", weight="bold"),
+        Text("Please sign up to create an account", size=16, color="white", weight="normal"),
+        Input(icons.PERSON, hint_text="Full Name"),
+        Input(icons.EMAIL, hint_text="Email"),
+        Input(icons.PHONE, hint_text="Phone"),
         Input(icons.LOCK, hint_text="Password", password=True),
-        Row([
-            Text("Forgot Password?", color="#F1C40F", weight='w400'),
-        ], alignment='end', width=250),
-        Button("Login", width=300, bgcolor="#27AE60", hover_bgcolor="#1e8449"),
+        Input(icons.LOCK, hint_text="Confirm Password", password=True),
+        Container(height=2),
+        Button("Sign Up", width=300, bgcolor="#27AE60", hover_bgcolor="#1e8449"),
         DividerWithText("or"),
-        Button("Facebook", width=250, bgcolor="#3498DB", hover_bgcolor="#217dbb", icon=icons.FACEBOOK),
-        Button("Gmail", width=250, bgcolor="#E67E22", hover_bgcolor="#d35400", icon=icons.MAIL),
+        Button("Sign Up with Facebook", width=250, bgcolor="#3498DB", hover_bgcolor="#217dbb", icon=icons.FACEBOOK),
+        Button("Sign Up with Google", width=250, bgcolor="#E67E22", hover_bgcolor="#d35400", icon=icons.MAIL),
         Row([
-            Text("Don't have an account? ", color="#FFFFFF", weight='w400'),
-            Text("Sign UP", color="#F1C40F", weight='w400'),
+            Text("Already have an account? ", color="#FFFFFF", weight='w400'),
+            Container(
+                content=Text("Log In", color="#F1C40F", weight='w400'),
+                on_click=navigate_to_login
+            )
         ], alignment='center')
     ], spacing=15, alignment='center', horizontal_alignment='center'),
     width=360,
-    height=550,
+    height=650,
     alignment=alignment.center,
     padding=padding.all(20),
     bgcolor='#1B1B1B',
@@ -130,6 +137,5 @@ def manage(page: flet.Page):
         alignment=alignment.center,
         expand=True
     ))
-
 
 flet.app(target=manage)
