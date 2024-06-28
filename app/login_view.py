@@ -1,5 +1,4 @@
 from flet import *
-import flet
 
 # Definicja klasy która tworzy pola tekstowe
 class Input(Container):
@@ -92,6 +91,8 @@ class DividerWithText(Container):
                 spacing=10,
             )
         )
+def navigate_to_registration(e):
+    e.page.go("/registration")
 
 # Główny kontener zawierający wszystkie elementy interfejsu
 body = Container(
@@ -110,7 +111,10 @@ body = Container(
         Button("Google", width=250, bgcolor="#E67E22", hover_bgcolor="#d35400", icon=icons.MAIL),
         Row([
             Text("Don't have an account? ", color="#FFFFFF", weight='w400'),
-            Text("Sign UP", color="#F1C40F", weight='w400'),
+            Container(
+                content=Text("Sign UP", color="#F1C40F", weight='w400'),
+                on_click=navigate_to_registration
+            )
         ], alignment='center')
     ], spacing=15, alignment='center', horizontal_alignment='center'),
     width=360,
@@ -121,15 +125,6 @@ body = Container(
     border_radius=border_radius.all(30),
 )
 
-# Funkcja zarządzająca stroną
-def manage(page: flet.Page):
-    page.bgcolor = '#232323'
-    page.padding = 0
-    page.add(Container(
-        content=body,
-        alignment=alignment.center,
-        expand=True
-    ))
-
-
-flet.app(target=manage)
+# Funkcja tworząca widok logowania
+def login_view():
+    return body

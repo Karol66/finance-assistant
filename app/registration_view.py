@@ -94,7 +94,7 @@ class DividerWithText(Container):
         )
 
 def navigate_to_login(e):
-    e.page.go("/app/login")
+    e.page.go("/login")
 
 
 # Główny kontener zawierający wszystkie elementy interfejsu
@@ -128,14 +128,6 @@ body = Container(
     border_radius=border_radius.all(30),
 )
 
-# Funkcja zarządzająca stroną
-def manage(page: flet.Page):
-    page.bgcolor = '#232323'
-    page.padding = 0
-    page.add(Container(
-        content=body,
-        alignment=alignment.center,
-        expand=True
-    ))
-
-flet.app(target=manage)
+# Funkcja tworząca widok rejestracji
+def registration_view(page):
+    return body
