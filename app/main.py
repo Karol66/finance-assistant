@@ -1,47 +1,46 @@
-import flet as ft
+import flet
+from flet import *
 
-def main(page: ft.Page):
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
+def main(page: Page):
+    page.horizontal_alignment = CrossAxisAlignment.CENTER
 
     def handle_dismissal(e):
-        page.add(ft.Text("Drawer dismissed"))
+        page.add(Text("Drawer dismissed"))
 
-    def handle_change(e):
-        page.add(ft.Text(f"Selected Index changed: {e.selected_index}"))
-
-    drawer = ft.NavigationDrawer(
+    drawer = NavigationDrawer(
         on_dismiss=handle_dismissal,
         bgcolor="black",
         controls=[
-            ft.Container(
+            Container(
                 height=80,
-                padding=ft.padding.all(10),
-                content=ft.Row(
+                padding=padding.all(10),
+                content=Row(
                     controls=[
-                        ft.Container(
+                        Container(
                             width=52,
                             height=52,
                             bgcolor="bluegrey900",
-                            alignment=ft.alignment.center,
+                            alignment=alignment.center,
                             border_radius=8,
-                            content=ft.Text(
+                            content=Text(
                                 value="JK",
                                 size=24,
                                 weight="bold",
                                 color="white"
                             ),
                         ),
-                        ft.Column(
+                        Column(
                             spacing=2,
-                            alignment=ft.MainAxisAlignment.CENTER,
+                            alignment=MainAxisAlignment.CENTER,
                             controls=[
-                                ft.Text(
+                                Text(
                                     value="Jan Kowalski",
                                     size=14,
                                     weight="bold",
                                     color="white"
                                 ),
-                                ft.Text(
+                                Text(
                                     value="Software Engineer",
                                     size=12,
                                     weight="w400",
@@ -52,58 +51,68 @@ def main(page: ft.Page):
                     ]
                 )
             ),
-            ft.Divider(height=5, color="white24"),
-            ft.NavigationDrawerDestination(
+            Divider(height=5, color="white24"),
+            NavigationDrawerDestination(
                 label="Search",
-                icon=ft.icons.SEARCH,
-                selected_icon_content=ft.Icon(ft.icons.SEARCH, color="white"),
+                icon=icons.SEARCH,
+                selected_icon_content=Icon(icons.SEARCH, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Dashboard",
-                icon=ft.icons.DASHBOARD_OUTLINED,
-                selected_icon_content=ft.Icon(ft.icons.DASHBOARD, color="white"),
+                icon=icons.DASHBOARD_OUTLINED,
+                selected_icon_content=Icon(icons.DASHBOARD, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Revenue",
-                icon=ft.icons.BAR_CHART,
-                selected_icon_content=ft.Icon(ft.icons.BAR_CHART, color="white"),
+                icon=icons.BAR_CHART,
+                selected_icon_content=Icon(icons.BAR_CHART, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Notifications",
-                icon=ft.icons.NOTIFICATIONS,
-                selected_icon_content=ft.Icon(ft.icons.NOTIFICATIONS, color="white"),
+                icon=icons.NOTIFICATIONS,
+                selected_icon_content=Icon(icons.NOTIFICATIONS, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Analytics",
-                icon=ft.icons.PIE_CHART_ROUNDED,
-                selected_icon_content=ft.Icon(ft.icons.PIE_CHART_ROUNDED, color="white"),
+                icon=icons.PIE_CHART_ROUNDED,
+                selected_icon_content=Icon(icons.PIE_CHART_ROUNDED, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Likes",
-                icon=ft.icons.FAVORITE_ROUNDED,
-                selected_icon_content=ft.Icon(ft.icons.FAVORITE_ROUNDED, color="white"),
+                icon=icons.FAVORITE_ROUNDED,
+                selected_icon_content=Icon(icons.FAVORITE_ROUNDED, color="black"),
             ),
-            ft.NavigationDrawerDestination(
+            NavigationDrawerDestination(
                 label="Wallet",
-                icon=ft.icons.WALLET_ROUNDED,
-                selected_icon_content=ft.Icon(ft.icons.WALLET_ROUNDED, color="white"),
+                icon=icons.WALLET_ROUNDED,
+                selected_icon_content=Icon(icons.WALLET_ROUNDED, color="black"),
             ),
-            ft.Divider(height=5, color="white24"),
-            ft.NavigationDrawerDestination(
+            Divider(height=5, color="white24"),
+            NavigationDrawerDestination(
                 label="Logout",
-                icon=ft.icons.LOGOUT_ROUNDED,
-                selected_icon_content=ft.Icon(ft.icons.LOGOUT_ROUNDED, color="white"),
+                icon=icons.LOGOUT_ROUNDED,
+                selected_icon_content=Icon(icons.LOGOUT_ROUNDED, color="black"),
             ),
         ],
     )
 
     page.add(
-        ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                ft.ElevatedButton("Show drawer", on_click=lambda e: page.open(drawer))
-            ],
+        AppBar(
+            Row(
+                controls=[
+                    IconButton(
+                        icon=icons.MENU_ROUNDED,
+                        icon_size=25,
+                        icon_color="white",
+                        on_click=lambda e: page.open(drawer),
+                    ),
+                ],
+            ),
+            title=Text('Home',
+                       color="white"),
+            bgcolor="black",
         )
     )
 
-ft.app(main)
+
+app(main)
