@@ -53,19 +53,29 @@ def main(page: Page):
             ),
             Divider(height=5, color="white24"),
             NavigationDrawerDestination(
-                label="Search",
-                icon=icons.SEARCH,
-                selected_icon_content=Icon(icons.SEARCH, color="black"),
-            ),
-            NavigationDrawerDestination(
                 label="Dashboard",
                 icon=icons.DASHBOARD_OUTLINED,
                 selected_icon_content=Icon(icons.DASHBOARD, color="black"),
             ),
             NavigationDrawerDestination(
-                label="Revenue",
+                label="Wallet",
+                icon=icons.WALLET_ROUNDED,
+                selected_icon_content=Icon(icons.WALLET_ROUNDED, color="black"),
+            ),
+            NavigationDrawerDestination(
+                label="Analytics",
                 icon=icons.BAR_CHART,
                 selected_icon_content=Icon(icons.BAR_CHART, color="black"),
+            ),
+            NavigationDrawerDestination(
+                label="Categories",
+                icon=icons.GRID_VIEW_ROUNDED,
+                selected_icon_content=Icon(icons.GRID_VIEW_ROUNDED, color="black"),
+            ),
+            NavigationDrawerDestination(
+                label="Regular payments",
+                icon=icons.ATTACH_MONEY,
+                selected_icon_content=Icon(icons.ATTACH_MONEY, color="black"),
             ),
             NavigationDrawerDestination(
                 label="Notifications",
@@ -73,19 +83,9 @@ def main(page: Page):
                 selected_icon_content=Icon(icons.NOTIFICATIONS, color="black"),
             ),
             NavigationDrawerDestination(
-                label="Analytics",
-                icon=icons.PIE_CHART_ROUNDED,
-                selected_icon_content=Icon(icons.PIE_CHART_ROUNDED, color="black"),
-            ),
-            NavigationDrawerDestination(
-                label="Likes",
-                icon=icons.FAVORITE_ROUNDED,
-                selected_icon_content=Icon(icons.FAVORITE_ROUNDED, color="black"),
-            ),
-            NavigationDrawerDestination(
-                label="Wallet",
-                icon=icons.WALLET_ROUNDED,
-                selected_icon_content=Icon(icons.WALLET_ROUNDED, color="black"),
+                label="Settings",
+                icon=icons.SETTINGS,
+                selected_icon_content=Icon(icons.SETTINGS, color="black"),
             ),
             Divider(height=5, color="white24"),
             NavigationDrawerDestination(

@@ -1,7 +1,7 @@
 import flet
 from flet import *
-from login_view import login_view
-from registration_view import registration_view
+from app.old.login_view import login_view
+from app.old.registration_view import registration_view
 
 def main(page: Page) -> None:
     page.title = 'My application'
