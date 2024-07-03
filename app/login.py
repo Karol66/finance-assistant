@@ -2,13 +2,14 @@ import flet
 from flet import *
 
 class UserWidget(UserControl):
-    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str):
+    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str, navigate_to_registration):
+        super().__init__()
         self.title = title
         self.sub_title = sub_title
         self.btn_name = btn_name
         self.link = link
         self.forgot_password = forgot_password
-        super().__init__()
+        self.navigate_to_registration = navigate_to_registration
 
     def InputTextField(self, text: str, hide: bool):
         return Container(
@@ -90,11 +91,14 @@ class UserWidget(UserControl):
                 alignment="center",
                 controls=[
                     Text("Don't have an account?", size=12, color="black"),
-                    Text(
-                        self.link,
-                        size=12,
-                        color="green",
-                        weight="bold",
+                    Container(
+                        content=Text(
+                            self.link,
+                            size=12,
+                            color="green",
+                            weight="bold",
+                        ),
+                        on_click=self.navigate_to_registration,
                     )
                 ]
             )
@@ -174,12 +178,8 @@ class UserWidget(UserControl):
             ],
         )
 
-def main(page: Page):
-    page.title = "Login"
-    page.bgcolor = "#f0f3f6"
-    page.horizontal_alignment = "center"
-    page.vertical_alignment = "center"
 
+def login_view(navigate_to_registration):
     def _main_column():
         return Container(
             width=320,
@@ -198,25 +198,19 @@ def main(page: Page):
         "Enter your account details below",
         "Sign In",
         "Sign Up",
-        "Forgot Password?"
+        "Forgot Password?",
+        navigate_to_registration
     )
 
     _sign_in_main = _main_column()
     _sign_in_main.content.controls.append(Container(padding=15))
     _sign_in_main.content.controls.append(_sign_in_)
 
-    page.add(
-        Column(
-            alignment=alignment.center,
-            horizontal_alignment="center",
-            spacing=25,
-            controls=[
-                _sign_in_main,
-            ]
-        )
+    return Column(
+        alignment=alignment.center,
+        horizontal_alignment="center",
+        spacing=25,
+        controls=[
+            _sign_in_main,
+        ]
     )
-
-if __name__ == "__main__":
-    flet.app(target=main, assets_dir="assets")
-
-app(main)

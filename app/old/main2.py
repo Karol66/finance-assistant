@@ -1,7 +1,7 @@
 import flet
 from flet import *
-from app.old.login_view import login_view
-from app.old.registration_view import registration_view
+from app.login import login_view
+from app.registration import registration_view
 
 def main(page: Page) -> None:
     page.title = 'My application'
@@ -53,7 +53,7 @@ def main(page: Page) -> None:
                     controls=[
                         AppBar(title=Text('Sign Up'), bgcolor='blue'),
                         Container(
-                            content=registration_view(page),
+                            content=registration_view(),
                             alignment=alignment.center,
                             expand=True
                         ),

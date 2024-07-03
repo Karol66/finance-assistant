@@ -2,11 +2,12 @@ import flet
 from flet import *
 
 class UserWidget(UserControl):
-    def __init__(self, title: str, sub_title: str, btn_name: str, link: str):
+    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, navigate_to_login):
         self.title = title
         self.sub_title = sub_title
         self.btn_name = btn_name
         self.link = link
+        self.navigate_to_login = navigate_to_login
         super().__init__()
 
     def InputTextField(self, text: str, hide: bool):
@@ -89,11 +90,14 @@ class UserWidget(UserControl):
                 alignment="center",
                 controls=[
                     Text("Already have an account?", size=12, color="black"),
-                    Text(
-                        self.link,
-                        size=12,
-                        color="green",
-                        weight="bold",
+                    Container(
+                        content=Text(
+                            self.link,
+                            size=12,
+                            color="green",
+                            weight="bold",
+                        ),
+                        on_click=self.navigate_to_login,
                     )
                 ]
             )
@@ -163,12 +167,7 @@ class UserWidget(UserControl):
             ],
         )
 
-def main(page: Page):
-    page.title = "Register"
-    page.bgcolor = "#f0f3f6"
-    page.horizontal_alignment = "center"
-    page.vertical_alignment = "center"
-
+def registration_view(navigate_to_login):
     def _main_column():
         return Container(
             width=320,
@@ -186,25 +185,19 @@ def main(page: Page):
         "Registration",
         "Register your data below",
         "Register",
-        "Log In"
+        "Log In",
+        navigate_to_login
     )
 
     _reg_main = _main_column()
     _reg_main.content.controls.append(Container(padding=15))
     _reg_main.content.controls.append(_register_)
 
-    page.add(
-        Column(
-            alignment=alignment.center,
-            horizontal_alignment="center",
-            spacing=25,
-            controls=[
-                _reg_main,
-            ]
-        )
+    return Column(
+        alignment=alignment.center,
+        horizontal_alignment="center",
+        spacing=25,
+        controls=[
+            _reg_main,
+        ]
     )
-
-if __name__ == "__main__":
-    flet.app(target=main, assets_dir="assets")
-
-app(main)
