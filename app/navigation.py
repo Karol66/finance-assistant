@@ -140,5 +140,3 @@ def create_navigation_drawer(page):
 
     drawer.on_change = on_drawer_change
     return drawer
-
-

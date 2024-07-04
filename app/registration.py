@@ -2,6 +2,7 @@ import flet
 from flet import *
 from navigation import navigate_to, create_navigation_drawer
 
+
 class UserWidget(UserControl):
     def __init__(self, title: str, sub_title: str, btn_name: str, link: str, navigate_to_login):
         self.title = title
@@ -168,6 +169,7 @@ class UserWidget(UserControl):
             ],
         )
 
+
 def registration_page(page: Page):
     def _main_column():
         return Container(
@@ -210,13 +212,16 @@ def registration_page(page: Page):
             title=Text('Registration', color="white"),
             bgcolor="black",
         ),
-        Column(
+        Container(
             alignment=alignment.center,
-            horizontal_alignment="center",
-            spacing=25,
-            controls=[
-                _reg_main,
-            ]
+            expand=True,
+            content=Column(
+                alignment=alignment.center,
+                horizontal_alignment="center",
+                controls=[
+                    _reg_main,
+                ]
+            )
         )
     )
     page.update()

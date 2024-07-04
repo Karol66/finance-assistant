@@ -36,6 +36,7 @@ class UserWidget(UserControl):
 
     def SignInOption(self, path: str, name: str):
         return Container(
+            alignment=alignment.center,
             content=ElevatedButton(
                 content=Row(
                     alignment="center",
@@ -117,6 +118,7 @@ class UserWidget(UserControl):
         )
 
         self._sign_in = Container(
+            alignment=alignment.center,
             content=ElevatedButton(
                 on_click=None,
                 content=Text(
@@ -139,25 +141,28 @@ class UserWidget(UserControl):
         class DividerWithText(Container):
             def __init__(self, text):
                 super().__init__(
+                    alignment=alignment.center,
                     content=Row(
+                        alignment='center',
                         controls=[
                             Container(width=120, height=1, bgcolor="black"),
                             Text(text, color="black", weight='w400'),
                             Container(width=120, height=1, bgcolor="black"),
                         ],
-                        alignment='center',
                         spacing=10,
                     )
                 )
 
         return Column(
             horizontal_alignment="center",
+            alignment="center",
             controls=[
                 self._title,
                 self._sub_title,
                 Container(padding=5),
                 Column(
                     spacing=15,
+                    horizontal_alignment="center",
                     controls=[
                         self.InputTextField("Email", False),
                         self.InputTextField("Password", True),
@@ -183,6 +188,7 @@ class UserWidget(UserControl):
 def login_page(page: Page):
     def _main_column():
         return Container(
+            alignment=alignment.center,
             width=320,
             height=650,
             bgcolor="#ffffff",
@@ -191,6 +197,7 @@ def login_page(page: Page):
             content=Column(
                 spacing=25,
                 horizontal_alignment="center",
+                alignment="center",
             )
         )
 
@@ -223,16 +230,16 @@ def login_page(page: Page):
             title=Text('Login', color="white"),
             bgcolor="black",
         ),
-        Column(
+        Container(
             alignment=alignment.center,
-            horizontal_alignment="center",
-            spacing=25,
-            controls=[
-                _sign_in_main,
-            ]
+            expand=True,
+            content=Column(
+                alignment=alignment.center,
+                horizontal_alignment="center",
+                controls=[
+                    _sign_in_main,
+                ]
+            )
         )
     )
     page.update()
-
-
-
