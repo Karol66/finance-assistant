@@ -1,5 +1,6 @@
 import flet
 from flet import *
+from navigation import navigate_to, create_navigation_drawer
 
 class UserWidget(UserControl):
     def __init__(self, title: str, sub_title: str, btn_name: str, link: str, navigate_to_login):
@@ -167,7 +168,7 @@ class UserWidget(UserControl):
             ],
         )
 
-def registration_view(navigate_to_login):
+def registration_page(page: Page):
     def _main_column():
         return Container(
             width=320,
@@ -186,18 +187,36 @@ def registration_view(navigate_to_login):
         "Register your data below",
         "Register",
         "Log In",
-        navigate_to_login
+        lambda e: navigate_to(page, "Login")
     )
 
     _reg_main = _main_column()
     _reg_main.content.controls.append(Container(padding=15))
     _reg_main.content.controls.append(_register_)
 
-    return Column(
-        alignment=alignment.center,
-        horizontal_alignment="center",
-        spacing=25,
-        controls=[
-            _reg_main,
-        ]
+    drawer = create_navigation_drawer(page)
+    page.add(
+        AppBar(
+            Row(
+                controls=[
+                    IconButton(
+                        icon=icons.MENU_ROUNDED,
+                        icon_size=25,
+                        icon_color="white",
+                        on_click=lambda e: page.open(drawer),
+                    ),
+                ],
+            ),
+            title=Text('Registration', color="white"),
+            bgcolor="black",
+        ),
+        Column(
+            alignment=alignment.center,
+            horizontal_alignment="center",
+            spacing=25,
+            controls=[
+                _reg_main,
+            ]
+        )
     )
+    page.update()

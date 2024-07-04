@@ -2,7 +2,7 @@ import flet
 from flet import *
 from navigation import create_navigation_drawer
 
-def main(page: Page):
+def wallet_page(page: Page):
     drawer = create_navigation_drawer(page)
     page.add(
         AppBar(
@@ -16,12 +16,10 @@ def main(page: Page):
                     ),
                 ],
             ),
-            title=Text('Dashboard', color="white"),
+            title=Text('Wallet', color="white"),
             bgcolor="black",
         ),
-        Text("This is the Dashboard Page")
+        Text("This is the Wallet Page")
     )
     page.update()
 
-if __name__ == '__main__':
-    flet.app(target=main)
