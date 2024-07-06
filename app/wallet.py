@@ -23,3 +23,6 @@ def wallet_page(page: Page):
     )
     page.update()
 
+if __name__ == '__main__':
+    flet.app(target=wallet_page)
+
