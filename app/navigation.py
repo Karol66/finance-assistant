@@ -16,8 +16,8 @@ def navigate_to(page, destination):
     elif destination == "Wallet":
         from wallet import wallet_page
         wallet_page(page)
-    elif destination == "Analytics":
-        page.add(Text("Analytics Page"))
+    elif destination == "Statistic":
+        page.add(Text("Statistic Page"))
     elif destination == "Categories":
         page.add(Text("Categories Page"))
     elif destination == "Regular payments":
@@ -98,7 +98,7 @@ def create_navigation_drawer(page):
                 selected_icon_content=Icon(icons.WALLET_ROUNDED, color="black"),
             ),
             NavigationDrawerDestination(
-                label="Analytics",
+                label="Statistic",
                 icon=icons.BAR_CHART,
                 selected_icon_content=Icon(icons.BAR_CHART, color="black"),
             ),
