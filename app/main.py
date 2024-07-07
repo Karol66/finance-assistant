@@ -75,6 +75,20 @@ class Expanse(UserControl):
             expand=True,
         )
 
+        self.total_balance_label = Text(
+            "Total Balance:",
+            size=18,
+            weight="bold",
+            color="white"
+        )
+
+        self.total_balance_amount = Text(
+            "$400.00",
+            size=24,
+            weight="bold",
+            color="white"
+        )
+
         self.green_container = Container(
             width=350,
             height=700 * 0.45,
@@ -86,7 +100,23 @@ class Expanse(UserControl):
             ),
             content=Column(
                 expand=True,
-                controls=[chart],
+                alignment=alignment.center,
+                horizontal_alignment="center",
+                controls=[
+                    chart,
+                    Container(
+                        alignment=alignment.center,
+                        content=Column(
+                            alignment="center",
+                            horizontal_alignment="center",
+                            controls=[
+                                self.total_balance_label,
+                                self.total_balance_amount,
+                            ],
+                        ),
+                        margin=margin.only(top=-320)
+                    ),
+                ],
             )
         )
 
