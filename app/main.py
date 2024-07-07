@@ -14,6 +14,8 @@ class Expanse(UserControl):
     def build(self):
         self.main_col = Column(
             expand=True,
+            alignment="center",
+            horizontal_alignment="center",
         )
 
         normal_radius = 50
@@ -214,6 +216,38 @@ class Expanse(UserControl):
                 ],
             )
             self.grid_payments.controls.append(__)
+
+        self.main_col.controls.append(
+            Row(
+                controls=[
+                    Container(
+                        content=Text(
+                            "Income",
+                            size=18,
+                            color=ft.colors.WHITE,
+                            weight="bold",
+                        ),
+                        on_click=lambda e: print("Income clicked"),
+                        padding=padding.symmetric(horizontal=10, vertical=5),
+                        border_radius=5,
+                    ),
+                    Container(width=20),
+                    Container(
+                        content=Text(
+                            "Revenue",
+                            size=18,
+                            color=ft.colors.WHITE,
+                            weight="bold",
+                        ),
+                        on_click=lambda e: print("Revenue clicked"),
+                        padding=padding.symmetric(horizontal=10, vertical=5),
+                        border_radius=5,
+                    ),
+                ],
+                alignment="center",
+                vertical_alignment="center"
+            )
+        )
 
         self.main_col.controls.append(self.green_container)
         self.main_col.controls.append(self.main_content_area)
