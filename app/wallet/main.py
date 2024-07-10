@@ -1,8 +1,12 @@
 import flet
 from flet import *
-from navigation import create_navigation_drawer
+from app.navigation import create_navigation_drawer
+
 
 def wallet_page(page: Page):
+    page.horizontal_alignment = "center"
+    page.vertical_alignment = "center"
+
     drawer = create_navigation_drawer(page)
     page.add(
         AppBar(
@@ -19,10 +23,8 @@ def wallet_page(page: Page):
             title=Text('Wallet', color="white"),
             bgcolor="black",
         ),
-        Text("This is the Wallet Page")
     )
     page.update()
 
 if __name__ == '__main__':
     flet.app(target=wallet_page)
-
