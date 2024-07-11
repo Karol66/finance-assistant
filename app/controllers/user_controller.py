@@ -15,3 +15,9 @@ class UserController:
 
         self.user_model.add_user(email, password)
         return {"status": "success", "message": "User registered successfully"}
+
+    def login_user(self, email, password):
+        if self.user_model.validate_user(email, password):
+            return {"status": "success", "message": "Login successful"}
+        else:
+            return {"status": "error", "message": "Invalid email or password"}

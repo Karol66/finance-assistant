@@ -1,10 +1,11 @@
-import flet
 from flet import *
+from app.controllers.user_controller import UserController
 from navigation_view import navigate_to, create_navigation_drawer
 
 
 class UserWidget(UserControl):
-    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str, navigate_to_registration):
+    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str,
+                 navigate_to_registration):
         super().__init__()
         self.title = title
         self.sub_title = sub_title
@@ -12,8 +13,10 @@ class UserWidget(UserControl):
         self.link = link
         self.forgot_password = forgot_password
         self.navigate_to_registration = navigate_to_registration
+        self.user_controller = UserController()
+        super().__init__()
 
-    def InputTextField(self, text: str, hide: bool):
+    def InputTextField(self, text: str, hide: bool, ref):
         return Container(
             alignment=alignment.center,
             content=TextField(
@@ -30,7 +33,8 @@ class UserWidget(UserControl):
                     size=13,
                     color="black",
                 ),
-                password=hide
+                password=hide,
+                ref=ref,
             ),
         )
 
@@ -66,7 +70,35 @@ class UserWidget(UserControl):
             ),
         )
 
+    def show_dialog(self, page, title, content, color, on_close):
+        dlg_modal = AlertDialog(
+            modal=True,
+            title=Text(title, color=color),
+            content=Text(content),
+            actions=[
+                TextButton("OK", on_click=lambda e: [page.close(dlg_modal), on_close(e)])
+            ],
+            actions_alignment=MainAxisAlignment.END
+        )
+        page.open(dlg_modal)
+
+    def login(self, e):
+        email = self.email_input.current.value
+        password = self.password_input.current.value
+
+        result = self.user_controller.login_user(email, password)
+
+        if result["status"] == "error":
+            self.show_dialog(e.page, "Error", result["message"], colors.RED, lambda _: None)
+        else:
+            self.email_input.current.value = ""
+            self.password_input.current.value = ""
+            self.show_dialog(e.page, "Success", result["message"], colors.GREEN, lambda e: navigate_to(e.page, "Register"))
+
     def build(self):
+        self.email_input = Ref[TextField]()
+        self.password_input = Ref[TextField]()
+
         self._title = Container(
             alignment=alignment.center,
             content=Text(
@@ -120,7 +152,7 @@ class UserWidget(UserControl):
         self._sign_in = Container(
             alignment=alignment.center,
             content=ElevatedButton(
-                on_click=None,
+                on_click=self.login,
                 content=Text(
                     self.btn_name,
                     size=14,
@@ -164,8 +196,8 @@ class UserWidget(UserControl):
                     spacing=15,
                     horizontal_alignment="center",
                     controls=[
-                        self.InputTextField("Email", False),
-                        self.InputTextField("Password", True),
+                        self.InputTextField("Email", False, self.email_input),
+                        self.InputTextField("Password", True, self.password_input),
                         self._forgot_password,
                     ],
                 ),
@@ -184,6 +216,7 @@ class UserWidget(UserControl):
                 self._link,
             ],
         )
+
 
 def login_page(page: Page):
     def _main_column():

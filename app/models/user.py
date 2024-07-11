@@ -32,17 +32,25 @@ class UserModel:
         ''', (email,))
         return cursor.fetchone()
 
-    def update_user_password(self, email, new_password):
-        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
-        cursor = self.connection.cursor()
-        cursor.execute('''
-            UPDATE users SET password = %s WHERE email = %s
-        ''', (hashed_password, email))
-        self.connection.commit()
+    def validate_user(self, email, password):
+        user = self.get_user_by_email(email)
+        if user:
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            if user['password'] == hashed_password:
+                return True
+        return False
 
-    def delete_user(self, email):
-        cursor = self.conn.cursor()
-        cursor.execute('''
-            DELETE FROM users WHERE email = %s
-        ''', (email,))
-        self.connection.commit()
+    # def update_user_password(self, email, new_password):
+    #     hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+    #     cursor = self.connection.cursor()
+    #     cursor.execute('''
+    #         UPDATE users SET password = %s WHERE email = %s
+    #     ''', (hashed_password, email))
+    #     self.connection.commit()
+    #
+    # def delete_user(self, email):
+    #     cursor = self.conn.cursor()
+    #     cursor.execute('''
+    #         DELETE FROM users WHERE email = %s
+    #     ''', (email,))
+    #     self.connection.commit()
