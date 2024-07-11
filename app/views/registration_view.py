@@ -1,21 +1,22 @@
-import flet
-from flet import *
+import flet as ft
+from app.controllers.user_controller import UserController
 from navigation_view import navigate_to, create_navigation_drawer
 
 
-class UserWidget(UserControl):
+class UserWidget(ft.UserControl):
     def __init__(self, title: str, sub_title: str, btn_name: str, link: str, navigate_to_login):
         self.title = title
         self.sub_title = sub_title
         self.btn_name = btn_name
         self.link = link
         self.navigate_to_login = navigate_to_login
+        self.user_controller = UserController()  # Inicjalizacja kontrolera użytkownika
         super().__init__()
 
-    def InputTextField(self, text: str, hide: bool):
-        return Container(
-            alignment=alignment.center,
-            content=TextField(
+    def InputTextField(self, text: str, hide: bool, ref):
+        return ft.Container(
+            alignment=ft.alignment.center,
+            content=ft.TextField(
                 height=58,
                 width=300,
                 bgcolor="#f0f3f6",
@@ -25,27 +26,28 @@ class UserWidget(UserControl):
                 hint_text=text,
                 filled=True,
                 cursor_color="black",
-                hint_style=TextStyle(
+                hint_style=ft.TextStyle(
                     size=13,
                     color="black",
                 ),
-                password=hide
+                password=hide,
+                ref=ref  # Dodanie referencji do pola tekstowego
             ),
         )
 
     def SignInOption(self, path: str, name: str):
-        return Container(
-            content=ElevatedButton(
-                content=Row(
+        return ft.Container(
+            content=ft.ElevatedButton(
+                content=ft.Row(
                     alignment="center",
                     spacing=4,
                     controls=[
-                        Image(
+                        ft.Image(
                             src=path,
                             width=35,
                             height=35,
                         ),
-                        Text(
+                        ft.Text(
                             name,
                             color="black",
                             size=12,
@@ -53,9 +55,9 @@ class UserWidget(UserControl):
                         )
                     ],
                 ),
-                style=ButtonStyle(
+                style=ft.ButtonStyle(
                     shape={
-                        "": RoundedRectangleBorder(radius=8),
+                        "": ft.RoundedRectangleBorder(radius=8),
                     },
                     bgcolor={
                         "": "#f0f3f6",
@@ -64,10 +66,47 @@ class UserWidget(UserControl):
             ),
         )
 
+    def show_dialog(self, page, title, content, title_color, on_close):
+        dlg_modal = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title, color=title_color),
+            content=ft.Text(content),
+            actions=[
+                ft.TextButton("OK", on_click=lambda e: [page.close(dlg_modal), on_close(e)]),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.open(dlg_modal)
+
+    def register(self, e):
+        email = self.email_input.current.value
+        password = self.password_input.current.value
+        confirm_password = self.confirm_password_input.current.value
+
+        # Wywołanie metody rejestracji w kontrolerze
+        result = self.user_controller.register_user(email, password, confirm_password)
+
+        # Obsługa wyniku rejestracji
+        if result["status"] == "error":
+            self.show_dialog(e.page, "Error", result["message"], ft.colors.RED, lambda _: None)
+        else:
+            self.email_input.current.value = ""
+            self.password_input.current.value = ""
+            self.confirm_password_input.current.value = ""
+            self.show_dialog(e.page, "Success", result["message"], ft.colors.GREEN,
+                             lambda e: navigate_to(e.page, "Login"))
+
+        e.page.update()
+
     def build(self):
-        self._title = Container(
-            alignment=alignment.center,
-            content=Text(
+        # Definiowanie referencji do pól tekstowych
+        self.email_input = ft.Ref[ft.TextField]()
+        self.password_input = ft.Ref[ft.TextField]()
+        self.confirm_password_input = ft.Ref[ft.TextField]()
+
+        self._title = ft.Container(
+            alignment=ft.alignment.center,
+            content=ft.Text(
                 self.title,
                 size=24,
                 text_align="center",
@@ -76,9 +115,9 @@ class UserWidget(UserControl):
             )
         )
 
-        self._sub_title = Container(
-            alignment=alignment.center,
-            content=Text(
+        self._sub_title = ft.Container(
+            alignment=ft.alignment.center,
+            content=ft.Text(
                 self.sub_title,
                 size=18,
                 text_align="center",
@@ -86,14 +125,14 @@ class UserWidget(UserControl):
             )
         )
 
-        self._link = Container(
-            alignment=alignment.center,
-            content=Row(
+        self._link = ft.Container(
+            alignment=ft.alignment.center,
+            content=ft.Row(
                 alignment="center",
                 controls=[
-                    Text("Already have an account?", size=12, color="black"),
-                    Container(
-                        content=Text(
+                    ft.Text("Already have an account?", size=12, color="black"),
+                    ft.Container(
+                        content=ft.Text(
                             self.link,
                             size=12,
                             color="green",
@@ -105,19 +144,19 @@ class UserWidget(UserControl):
             )
         )
 
-        self._sign_up = Container(
-            content=ElevatedButton(
-                on_click=None,
-                content=Text(
+        self._sign_up = ft.Container(
+            content=ft.ElevatedButton(
+                on_click=self.register,  # Wywołanie funkcji rejestracji
+                content=ft.Text(
                     self.btn_name,
                     size=14,
                     weight="bold",
                 ),
                 bgcolor="black",
                 color="white",
-                style=ButtonStyle(
+                style=ft.ButtonStyle(
                     shape={
-                        "": RoundedRectangleBorder(radius=8)
+                        "": ft.RoundedRectangleBorder(radius=8)
                     },
                 ),
                 height=58,
@@ -125,38 +164,39 @@ class UserWidget(UserControl):
             )
         )
 
-        class DividerWithText(Container):
+        class DividerWithText(ft.Container):
             def __init__(self, text):
                 super().__init__(
-                    content=Row(
+                    content=ft.Row(
                         controls=[
-                            Container(width=120, height=1, bgcolor="black"),
-                            Text(text, color="black", weight='w400'),
-                            Container(width=120, height=1, bgcolor="black"),
+                            ft.Container(width=120, height=1, bgcolor="black"),
+                            ft.Text(text, color="black", weight='w400'),
+                            ft.Container(width=120, height=1, bgcolor="black"),
                         ],
                         alignment='center',
                         spacing=10,
                     )
                 )
 
-        return Column(
+        return ft.Column(
             horizontal_alignment="center",
             controls=[
                 self._title,
                 self._sub_title,
-                Container(padding=5),
-                Column(
+                ft.Container(padding=5),
+                ft.Column(
                     spacing=15,
                     controls=[
-                        self.InputTextField("Email", False),
-                        self.InputTextField("Password", True),
-                        self.InputTextField("Confirm Password", True),
+                        self.InputTextField("Email", False, self.email_input),  # Pole tekstowe email z referencją
+                        self.InputTextField("Password", True, self.password_input),  # Pole tekstowe hasło z referencją
+                        self.InputTextField("Confirm Password", True, self.confirm_password_input),
+                        # Pole tekstowe potwierdzenia hasła z referencją
                     ],
                 ),
-                Container(padding=3),
+                ft.Container(padding=3),
                 self._sign_up,
-                Container(padding=3),
-                Column(
+                ft.Container(padding=3),
+                ft.Column(
                     horizontal_alignment="center",
                     controls=[
                         DividerWithText("or"),
@@ -164,27 +204,27 @@ class UserWidget(UserControl):
                         self.SignInOption("../assets/icon.png", "Google"),
                     ],
                 ),
-                Container(padding=5),
+                ft.Container(padding=5),
                 self._link,
             ],
         )
 
 
-def registration_page(page: Page):
+def registration_page(page: ft.Page):
     def _main_column():
-        return Container(
+        return ft.Container(
             width=320,
             height=700,
             bgcolor="#ffffff",
             padding=16,
             border_radius=35,
-            content=Column(
+            content=ft.Column(
                 spacing=25,
                 horizontal_alignment="center",
             )
         )
 
-    _register_ = UserWidget(
+    user_widget = UserWidget(
         "Registration",
         "Register your data below",
         "Register",
@@ -192,34 +232,34 @@ def registration_page(page: Page):
         lambda e: navigate_to(page, "Login")
     )
 
-    _reg_main = _main_column()
-    _reg_main.content.controls.append(Container(padding=15))
-    _reg_main.content.controls.append(_register_)
+    reg_main = _main_column()
+    reg_main.content.controls.append(ft.Container(padding=15))
+    reg_main.content.controls.append(user_widget)
 
     drawer = create_navigation_drawer(page)
     page.add(
-        AppBar(
-            Row(
+        ft.AppBar(
+            ft.Row(
                 controls=[
-                    IconButton(
-                        icon=icons.MENU_ROUNDED,
+                    ft.IconButton(
+                        icon=ft.icons.MENU_ROUNDED,
                         icon_size=25,
                         icon_color="white",
                         on_click=lambda e: page.open(drawer),
                     ),
                 ],
             ),
-            title=Text('Registration', color="white"),
+            title=ft.Text('Registration', color="white"),
             bgcolor="black",
         ),
-        Container(
-            alignment=alignment.center,
+        ft.Container(
+            alignment=ft.alignment.center,
             expand=True,
-            content=Column(
-                alignment=alignment.center,
+            content=ft.Column(
+                alignment=ft.alignment.center,
                 horizontal_alignment="center",
                 controls=[
-                    _reg_main,
+                    reg_main,
                 ]
             )
         )
