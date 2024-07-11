@@ -1,6 +1,6 @@
 import flet
 from flet import *
-from navigation import create_navigation_drawer
+from app.views.navigation_view import create_navigation_drawer
 
 class Expanse(UserControl):
     def build(self):

@@ -1,7 +1,7 @@
 import time
 import flet
 from flet import *
-from navigation import create_navigation_drawer
+from app.views.navigation_view import create_navigation_drawer
 import locale
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')

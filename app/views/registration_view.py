@@ -1,17 +1,16 @@
 import flet
 from flet import *
-from navigation import navigate_to, create_navigation_drawer
+from navigation_view import navigate_to, create_navigation_drawer
 
 
 class UserWidget(UserControl):
-    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str, navigate_to_registration):
-        super().__init__()
+    def __init__(self, title: str, sub_title: str, btn_name: str, link: str, navigate_to_login):
         self.title = title
         self.sub_title = sub_title
         self.btn_name = btn_name
         self.link = link
-        self.forgot_password = forgot_password
-        self.navigate_to_registration = navigate_to_registration
+        self.navigate_to_login = navigate_to_login
+        super().__init__()
 
     def InputTextField(self, text: str, hide: bool):
         return Container(
@@ -36,7 +35,6 @@ class UserWidget(UserControl):
 
     def SignInOption(self, path: str, name: str):
         return Container(
-            alignment=alignment.center,
             content=ElevatedButton(
                 content=Row(
                     alignment="center",
@@ -93,7 +91,7 @@ class UserWidget(UserControl):
             content=Row(
                 alignment="center",
                 controls=[
-                    Text("Don't have an account?", size=12, color="black"),
+                    Text("Already have an account?", size=12, color="black"),
                     Container(
                         content=Text(
                             self.link,
@@ -101,24 +99,13 @@ class UserWidget(UserControl):
                             color="green",
                             weight="bold",
                         ),
-                        on_click=self.navigate_to_registration,
+                        on_click=self.navigate_to_login,
                     )
                 ]
             )
         )
 
-        self._forgot_password = Container(
-            alignment=alignment.center_right,
-            content=Text(
-                self.forgot_password,
-                size=12,
-                color="green",
-                weight="bold",
-            )
-        )
-
-        self._sign_in = Container(
-            alignment=alignment.center,
+        self._sign_up = Container(
             content=ElevatedButton(
                 on_click=None,
                 content=Text(
@@ -141,43 +128,40 @@ class UserWidget(UserControl):
         class DividerWithText(Container):
             def __init__(self, text):
                 super().__init__(
-                    alignment=alignment.center,
                     content=Row(
-                        alignment='center',
                         controls=[
                             Container(width=120, height=1, bgcolor="black"),
                             Text(text, color="black", weight='w400'),
                             Container(width=120, height=1, bgcolor="black"),
                         ],
+                        alignment='center',
                         spacing=10,
                     )
                 )
 
         return Column(
             horizontal_alignment="center",
-            alignment="center",
             controls=[
                 self._title,
                 self._sub_title,
                 Container(padding=5),
                 Column(
                     spacing=15,
-                    horizontal_alignment="center",
                     controls=[
                         self.InputTextField("Email", False),
                         self.InputTextField("Password", True),
-                        self._forgot_password,
+                        self.InputTextField("Confirm Password", True),
                     ],
                 ),
                 Container(padding=3),
-                self._sign_in,
+                self._sign_up,
                 Container(padding=3),
                 Column(
                     horizontal_alignment="center",
                     controls=[
                         DividerWithText("or"),
-                        self.SignInOption("./assets/icon.png", "Facebook"),
-                        self.SignInOption("./assets/icon.png", "Google"),
+                        self.SignInOption("../assets/icon.png", "Facebook"),
+                        self.SignInOption("../assets/icon.png", "Google"),
                     ],
                 ),
                 Container(padding=5),
@@ -185,34 +169,32 @@ class UserWidget(UserControl):
             ],
         )
 
-def login_page(page: Page):
+
+def registration_page(page: Page):
     def _main_column():
         return Container(
-            alignment=alignment.center,
             width=320,
-            height=650,
+            height=700,
             bgcolor="#ffffff",
             padding=16,
             border_radius=35,
             content=Column(
                 spacing=25,
                 horizontal_alignment="center",
-                alignment="center",
             )
         )
 
-    _sign_in_ = UserWidget(
-        "Welcome Back!",
-        "Enter your account details below",
-        "Sign In",
-        "Sign Up",
-        "Forgot Password?",
-        lambda e: navigate_to(page, "Register")
+    _register_ = UserWidget(
+        "Registration",
+        "Register your data below",
+        "Register",
+        "Log In",
+        lambda e: navigate_to(page, "Login")
     )
 
-    _sign_in_main = _main_column()
-    _sign_in_main.content.controls.append(Container(padding=15))
-    _sign_in_main.content.controls.append(_sign_in_)
+    _reg_main = _main_column()
+    _reg_main.content.controls.append(Container(padding=15))
+    _reg_main.content.controls.append(_register_)
 
     drawer = create_navigation_drawer(page)
     page.add(
@@ -227,7 +209,7 @@ def login_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Login', color="white"),
+            title=Text('Registration', color="white"),
             bgcolor="black",
         ),
         Container(
@@ -237,7 +219,7 @@ def login_page(page: Page):
                 alignment=alignment.center,
                 horizontal_alignment="center",
                 controls=[
-                    _sign_in_main,
+                    _reg_main,
                 ]
             )
         )
