@@ -5,14 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="beea26d1-6b17-4825-b523-72723ae33e60" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/63107a3a-6466-42d2-8d40-82764a50b8e3.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/63107a3a-6466-42d2-8d40-82764a50b8e3.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/login_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/login_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/dashboard.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/navigation_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/navigation_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/registration_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/registration_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/views/categories.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/categories.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/views/dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/dashboard.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +92,7 @@
       <recent name="C:\Users\Acer\Desktop\finance-assistant\app\old" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.main (1)">
     <configuration name="dashboard (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="finance-assistant" />
       <option name="ENV_FILES" value="" />
@@ -144,7 +139,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="login_view" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="main (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="finance-assistant" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -153,12 +148,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/views" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\Acer\Desktop\finance-assistant\app\views\login_view.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -236,36 +231,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="registration_view" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="finance-assistant" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/views" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\Acer\Desktop\finance-assistant\app\views\registration_view.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main (1)" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.dashboard (1)" />
         <item itemvalue="Python.dashboard" />
         <item itemvalue="Python.main (2)" />
-        <item itemvalue="Python.login_view" />
       </list>
     </recent_temporary>
   </component>
@@ -316,7 +288,8 @@
       <workItem from="1720775791260" duration="754000" />
       <workItem from="1720777357923" duration="107000" />
       <workItem from="1720777474419" duration="1069000" />
-      <workItem from="1720778565973" duration="379000" />
+      <workItem from="1720778565973" duration="3303000" />
+      <workItem from="1720799469919" duration="3347000" />
     </task>
     <servers />
   </component>
@@ -325,11 +298,11 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/finance_assistant$signup__1_.coverage" NAME="signup (1) Coverage Results" MODIFIED="1719574607218" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
-    <SUITE FILE_PATH="coverage/finance_assistant$registration.coverage" NAME="registration Coverage Results" MODIFIED="1720024770940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$main__2_.coverage" NAME="main (2) Coverage Results" MODIFIED="1720721118744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
+    <SUITE FILE_PATH="coverage/finance_assistant$registration.coverage" NAME="registration Coverage Results" MODIFIED="1720024770940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$theme.coverage" NAME="theme Coverage Results" MODIFIED="1720075823973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/AppData/Local/Programs/Python/Python311/Lib/site-packages/flet_core" />
     <SUITE FILE_PATH="coverage/finance_assistant$app.coverage" NAME="app Coverage Results" MODIFIED="1720641749835" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
-    <SUITE FILE_PATH="coverage/finance_assistant$main__1_.coverage" NAME="main (1) Coverage Results" MODIFIED="1720777687453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
+    <SUITE FILE_PATH="coverage/finance_assistant$main__1_.coverage" NAME="main (1) Coverage Results" MODIFIED="1720802826100" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance_assistant$menu.coverage" NAME="menu Coverage Results" MODIFIED="1719862954002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$statistic.coverage" NAME="statistic Coverage Results" MODIFIED="1720545925451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$dashboard2.coverage" NAME="dashboard2 Coverage Results" MODIFIED="1720444408252" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />

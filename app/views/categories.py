@@ -2,7 +2,24 @@ import flet
 from flet import *
 from app.views.navigation_view import create_navigation_drawer
 
+
 class Expanse(UserControl):
+
+    def __init__(self):
+        super().__init__()
+        self.selected_link = None
+
+    def on_link_click(self, e, link_name):
+        self.selected_link = link_name
+        self.update_links()
+
+    def update_links(self):
+        for link in self.links:
+            link.border = border.only(bottom=border.BorderSide(2, "transparent"))
+            if link.data == self.selected_link:
+                link.border = border.only(bottom=border.BorderSide(2, "white"))
+            link.update()
+
     def build(self):
         self.main_col = Column(
             expand=True,
@@ -88,41 +105,50 @@ class Expanse(UserControl):
         )
         self.grid_transfers.controls.append(add_button)
 
+        self.links = [
+            Container(
+                width=175,
+                content=Text(
+                    "Revenue",
+                    size=18,
+                    color=colors.WHITE,
+                    weight="bold",
+                ),
+                on_click=lambda e: self.on_link_click(e, "Revenue"),
+                padding=padding.symmetric(horizontal=10, vertical=5),
+                data="Revenue",
+                border=border.only(bottom=border.BorderSide(2, "transparent")),
+                alignment=alignment.center,
+            ),
+            Container(
+                width=175,
+                content=Text(
+                    "Income",
+                    size=18,
+                    color=colors.WHITE,
+                    weight="bold",
+                ),
+                on_click=lambda e: self.on_link_click(e, "Income"),
+                padding=padding.symmetric(horizontal=10, vertical=5),
+                data="Income",
+                border=border.only(bottom=border.BorderSide(2, "transparent")),
+                alignment=alignment.center,
+            ),
+        ]
+
         self.main_col.controls.append(
             Row(
-                controls=[
-                    Container(
-                        content=Text(
-                            "Revenue",
-                            size=18,
-                            color=flet.colors.WHITE,
-                            weight="bold",
-                        ),
-                        on_click=lambda e: print("Revenue clicked"),
-                        padding=padding.symmetric(horizontal=10, vertical=5),
-                        border_radius=5,
-                    ),
-                    Container(width=20),
-                    Container(
-                        content=Text(
-                            "Income",
-                            size=18,
-                            color=flet.colors.WHITE,
-                            weight="bold",
-                        ),
-                        on_click=lambda e: print("Income clicked"),
-                        padding=padding.symmetric(horizontal=10, vertical=5),
-                        border_radius=5,
-                    ),
-                ],
+                controls=self.links,
                 alignment="center",
-                vertical_alignment="center"
+                vertical_alignment="center",
+                spacing=0,
             )
         )
 
         self.main_col.controls.append(self.main_content_area)
 
         return self.main_col
+
 
 def categories_page(page: Page):
     page.horizontal_alignment = "center"
@@ -150,6 +176,7 @@ def categories_page(page: Page):
         ),
     )
     page.update()
+
 
 if __name__ == '__main__':
     flet.app(target=categories_page)
