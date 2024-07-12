@@ -81,11 +81,12 @@ class UserWidget(UserControl):
 
     def register(self, e):
         email = self.email_input.current.value
+        username = self.username_input.current.value
         password = self.password_input.current.value
         confirm_password = self.confirm_password_input.current.value
 
         # Wywołanie metody rejestracji w kontrolerze
-        result = self.user_controller.register_user(email, password, confirm_password)
+        result = self.user_controller.register_user(email, username, password, confirm_password)
 
         # Obsługa wyniku rejestracji
         if result["status"] == "error":
@@ -102,6 +103,7 @@ class UserWidget(UserControl):
     def build(self):
         # Definiowanie referencji do pól tekstowych
         self.email_input = Ref[TextField]()
+        self.username_input = Ref[TextField]()
         self.password_input = Ref[TextField]()
         self.confirm_password_input = Ref[TextField]()
 
@@ -185,19 +187,20 @@ class UserWidget(UserControl):
             controls=[
                 self._title,
                 self._sub_title,
-                Container(padding=5),
+                Container(padding=3),
                 Column(
-                    spacing=15,
+                    spacing=10,
                     controls=[
                         self.InputTextField("Email", False, self.email_input),  # Pole tekstowe email z referencją
+                        self.InputTextField("Username", False, self.username_input),
                         self.InputTextField("Password", True, self.password_input),  # Pole tekstowe hasło z referencją
                         self.InputTextField("Confirm Password", True, self.confirm_password_input),
                         # Pole tekstowe potwierdzenia hasła z referencją
                     ],
                 ),
-                Container(padding=3),
+                Container(padding=2),
                 self._sign_up,
-                Container(padding=3),
+                Container(padding=2),
                 Column(
                     horizontal_alignment="center",
                     controls=[
@@ -206,7 +209,7 @@ class UserWidget(UserControl):
                         self.SignInOption("../assets/icon.png", "Google"),
                     ],
                 ),
-                Container(padding=5),
+                Container(padding=2),
                 self._link,
             ],
         )
@@ -218,7 +221,7 @@ def registration_page(page: Page):
             width=320,
             height=700,
             bgcolor="#ffffff",
-            padding=16,
+            padding=10,
             border_radius=35,
             content=Column(
                 spacing=25,
@@ -235,7 +238,7 @@ def registration_page(page: Page):
     )
 
     reg_main = _main_column()
-    reg_main.content.controls.append(Container(padding=15))
+    reg_main.content.controls.append(Container(padding=1))
     reg_main.content.controls.append(user_widget)
 
     drawer = create_navigation_drawer(page)

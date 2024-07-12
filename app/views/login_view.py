@@ -83,20 +83,20 @@ class UserWidget(UserControl):
         page.open(dlg_modal)
 
     def login(self, e):
-        email = self.email_input.current.value
+        identifier = self.identifier_input.current.value
         password = self.password_input.current.value
 
-        result = self.user_controller.login_user(email, password)
+        result = self.user_controller.login_user(identifier, password)
 
         if result["status"] == "error":
             self.show_dialog(e.page, "Error", result["message"], colors.RED, lambda _: None)
         else:
-            self.email_input.current.value = ""
+            self.identifier_input.current.value = ""
             self.password_input.current.value = ""
             self.show_dialog(e.page, "Success", result["message"], colors.GREEN, lambda e: navigate_to(e.page, "Register"))
 
     def build(self):
-        self.email_input = Ref[TextField]()
+        self.identifier_input = Ref[TextField]()
         self.password_input = Ref[TextField]()
 
         self._title = Container(
@@ -196,7 +196,7 @@ class UserWidget(UserControl):
                     spacing=15,
                     horizontal_alignment="center",
                     controls=[
-                        self.InputTextField("Email", False, self.email_input),
+                        self.InputTextField("Email or Username", False, self.identifier_input),
                         self.InputTextField("Password", True, self.password_input),
                         self._forgot_password,
                     ],
@@ -212,7 +212,7 @@ class UserWidget(UserControl):
                         self.SignInOption("../assets/icon.png", "Google"),
                     ],
                 ),
-                Container(padding=5),
+                Container(padding=2),
                 self._link,
             ],
         )
