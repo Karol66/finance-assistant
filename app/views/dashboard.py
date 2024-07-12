@@ -256,7 +256,7 @@ class Expanse(UserControl):
         return self.main_col
 
 
-def main(page: Page):
+def dashboard_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
     page.bgcolor = "black"
@@ -282,7 +282,3 @@ def main(page: Page):
         ),
     )
     page.update()
-
-
-if __name__ == '__main__':
-    flet.app(target=main)

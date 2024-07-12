@@ -5,31 +5,32 @@ def navigate_to(page, destination):
     print(f"Navigating to: {destination}")  # Debugging line
     page.controls.clear()
     if destination == "Login":
-        from login_view import login_page
+        from app.views.login_view import login_page
         login_page(page)
     elif destination == "Register":
-        from registration_view import registration_page
+        from app.views.registration_view import registration_page
         registration_page(page)
     elif destination == "Dashboard":
-        from main import main as dashboard_main
-        dashboard_main(page)
+        from app.views.dashboard import dashboard_page
+        dashboard_page(page)
+        dashboard_page(page)
     elif destination == "Wallet":
-        from app.wallet.main import wallet_page
+        from app.wallet.main import wallet_page #TODO trzeba poprawic
         wallet_page(page)
     elif destination == "Statistic":
-        from statistic import statistic_page
+        from app.views.statistic import statistic_page
         statistic_page(page)
     elif destination == "Categories":
-        from categories import categories_page
+        from app.views.categories import categories_page
         categories_page(page)
     elif destination == "Regular payments":
-        from payments import payments_page
+        from app.views.payments import payments_page
         payments_page(page)
     elif destination == "Notifications":
-        from notifications import notyfications_page
+        from app.views.notifications import notyfications_page
         notyfications_page(page)
     elif destination == "Settings":
-        from settings import settings_page
+        from app.views.settings import settings_page
         settings_page(page)
     elif destination == "Logout":
         page.add(Text("Logout Page"))
