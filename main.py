@@ -1,9 +1,43 @@
 import flet
 from flet import *
+
+from app.models.account import AccountModel
+from app.models.category import CategoryModel
+from app.models.notification import NotificationModel
+from app.models.payment import PaymentModel
+from app.models.statistic import StatisticModel
+from app.models.transaction import TransactionModel
+from app.models.user import UserModel
 from app.views.dashboard import dashboard_page
+
+from app.models import *
+
+
+def initialize_database():
+    user_model = UserModel()
+    user_model.create_table()
+
+    account_model = AccountModel()
+    account_model.create_table()
+
+    category_model = CategoryModel()
+    category_model.create_table()
+
+    notification_model = NotificationModel()
+    notification_model.create_table()
+
+    payment_model = PaymentModel()
+    payment_model.create_table()
+
+    statistic_model = StatisticModel()
+    statistic_model.create_table()
+
+    transaction_model = TransactionModel()
+    transaction_model.create_table()
 
 
 def main(page: Page):
+    initialize_database()
     dashboard_page(page)
     page.update()
 
