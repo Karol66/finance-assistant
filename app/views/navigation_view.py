@@ -1,8 +1,8 @@
 from flet import *
-
+import app.globals as g  # Import global variables
 
 def navigate_to(page, destination):
-    print(f"Navigating to: {destination}")  # Debugging line
+    print(f"Navigating to: {destination}")
     page.controls.clear()
     if destination == "Login":
         from app.views.login_view import login_page
@@ -13,9 +13,8 @@ def navigate_to(page, destination):
     elif destination == "Dashboard":
         from app.views.dashboard import dashboard_page
         dashboard_page(page)
-        dashboard_page(page)
     elif destination == "Wallet":
-        from app.wallet.main import wallet_page #TODO trzeba poprawic
+        from app.wallet.main import wallet_page  # TODO trzeba poprawic
         wallet_page(page)
     elif destination == "Statistic":
         from app.views.statistic import statistic_page
@@ -33,13 +32,30 @@ def navigate_to(page, destination):
         from app.views.settings import settings_page
         settings_page(page)
     elif destination == "Logout":
+        g.logged_in_user = None
         page.add(Text("Logout Page"))
+        from app.views.login_view import login_page
+        login_page(page)
     else:
         page.add(Text(f"Unknown destination: {destination}"))
     page.update()
 
 
 def create_navigation_drawer(page):
+    if g.logged_in_user is None:
+        user_initials = Icon(icons.PERSON, size=24, color="white")
+        username_text = "Register"
+        user_role = ""
+    else:
+        user_initials = Text(
+            value=g.logged_in_user["username"][0].upper() + g.logged_in_user["username"][1].upper(),
+            size=24,
+            weight="bold",
+            color="white"
+        )
+        username_text = g.logged_in_user["username"]
+        user_role = g.logged_in_user["email"]
+
     drawer = NavigationDrawer(
         bgcolor="black",
         controls=[
@@ -54,25 +70,20 @@ def create_navigation_drawer(page):
                             bgcolor="bluegrey900",
                             alignment=alignment.center,
                             border_radius=8,
-                            content=Text(
-                                value="JK",
-                                size=24,
-                                weight="bold",
-                                color="white"
-                            ),
+                            content=user_initials,
                         ),
                         Column(
                             spacing=2,
                             alignment=MainAxisAlignment.CENTER,
                             controls=[
                                 Text(
-                                    value="Jan Kowalski",
+                                    value=username_text,
                                     size=14,
                                     weight="bold",
                                     color="white"
                                 ),
                                 Text(
-                                    value="Software Engineer",
+                                    value=user_role,
                                     size=12,
                                     weight="w400",
                                     color="white54"

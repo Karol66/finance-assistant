@@ -1,7 +1,7 @@
 from flet import *
-from app.controllers.user_controller import UserController
+from app.controllers.user import UserController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
-
+import app.globals as g  # Import global variables
 
 class UserWidget(UserControl):
     def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str,
@@ -91,9 +91,10 @@ class UserWidget(UserControl):
         if result["status"] == "error":
             self.show_dialog(e.page, "Error", result["message"], colors.RED, lambda _: None)
         else:
+            g.logged_in_user = result["user"]
             self.identifier_input.current.value = ""
             self.password_input.current.value = ""
-            self.show_dialog(e.page, "Success", result["message"], colors.GREEN, lambda e: navigate_to(e.page, "Register"))
+            self.show_dialog(e.page, "Success", result["message"], colors.GREEN, lambda e: navigate_to(e.page, "Dashboard"))
 
     def build(self):
         self.identifier_input = Ref[TextField]()

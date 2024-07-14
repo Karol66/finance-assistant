@@ -1,5 +1,6 @@
 from app.models.user import UserModel
 
+
 class UserService:
     def __init__(self):
         self.user_model = UserModel()
@@ -21,8 +22,8 @@ class UserService:
         return {"status": "success", "message": "User registered successfully"}
 
     def login_user(self, identifier, password):
-        if self.user_model.validate_user(identifier, password):
-            return {"status": "success", "message": "Login successful"}
+        user = self.user_model.validate_user(identifier, password)
+        if user:
+            return {"status": "success", "message": "Login successful", "user": user}
         else:
             return {"status": "error", "message": "Invalid email/username or password"}
-

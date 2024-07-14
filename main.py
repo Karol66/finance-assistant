@@ -9,9 +9,8 @@ from app.models.statistic import StatisticModel
 from app.models.transaction import TransactionModel
 from app.models.user import UserModel
 from app.views.dashboard import dashboard_page
-
-from app.models import *
-
+from app.views.login_view import login_page
+import app.globals as g  # Import global variables
 
 def initialize_database():
     user_model = UserModel()
@@ -38,7 +37,11 @@ def initialize_database():
 
 def main(page: Page):
     initialize_database()
-    dashboard_page(page)
+    if g.logged_in_user is None:
+        # login_page(page)
+        dashboard_page(page)
+    else:
+        dashboard_page(page)
     page.update()
 
 

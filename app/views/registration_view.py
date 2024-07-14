@@ -1,6 +1,6 @@
 import flet as ft
 from flet import *
-from app.controllers.user_controller import UserController
+from app.controllers.user import UserController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
 
 

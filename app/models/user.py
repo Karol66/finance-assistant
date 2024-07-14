@@ -53,5 +53,5 @@ class UserModel:
         if user:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             if user['password'] == hashed_password:
-                return True
-        return False
+                return user # Zwraca obiekt użytkownika potrzebne do wyswietlania danych w nawigacji
+        return None
