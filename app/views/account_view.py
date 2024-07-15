@@ -204,9 +204,9 @@ class WalletApp(UserControl):
             self.update()
 
         if (
-            len(self.CardNumber.value) &
-            len(self.BankName.value) &
-            len(self.CardCVV.value) != 0
+                len(self.CardNumber.value) &
+                len(self.BankName.value) &
+                len(self.CardCVV.value) != 0
         ):
             asyncio.run(self.insert_data_into_database())
             self.card_generator(
@@ -384,6 +384,7 @@ class WalletApp(UserControl):
             ],
         )
 
+
 class ColorList:
     BACKGROUND = {
         "from": "#134e4a",
@@ -418,10 +419,10 @@ class ColorList:
         ],
     }
 
-def wallet_page(page: Page):
+
+def account_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
-
 
     app = WalletApp(user_id=g.logged_in_user["user_id"])
 
@@ -444,6 +445,3 @@ def wallet_page(page: Page):
         ),
     )
     page.update()
-
-if __name__ == '__main__':
-    flet.app(target=wallet_page)

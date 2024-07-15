@@ -1,7 +1,11 @@
 from flet import *
 import app.globals as g
 
+# Globalna zmienna drawer
+drawer = None
+
 def navigate_to(page, destination):
+    global drawer  # Odwołanie do globalnej zmiennej drawer
     print(f"Navigating to: {destination}")
     page.controls.clear()
     if destination == "Login":
@@ -14,8 +18,8 @@ def navigate_to(page, destination):
         from app.views.dashboard import dashboard_page
         dashboard_page(page)
     elif destination == "Account":
-        from app.views.account_view import wallet_page
-        wallet_page(page)
+        from app.views.account_view import account_page
+        account_page(page)
     elif destination == "Statistic":
         from app.views.statistic import statistic_page
         statistic_page(page)
@@ -33,15 +37,15 @@ def navigate_to(page, destination):
         settings_page(page)
     elif destination == "Logout":
         g.logged_in_user = None
-        page.add(Text("Logout Page"))
+        drawer.visible = False  # Ukryj pasek nawigacyjny
         from app.views.login_view import login_page
         login_page(page)
     else:
         page.add(Text(f"Unknown destination: {destination}"))
     page.update()
 
-
 def create_navigation_drawer(page):
+    global drawer  # Odwołanie do globalnej zmiennej drawer
     if g.logged_in_user is None:
         user_initials = Icon(icons.PERSON, size=24, color="white")
         username_text = "Register"
@@ -110,7 +114,7 @@ def create_navigation_drawer(page):
                 selected_icon_content=Icon(icons.DASHBOARD, color="black"),
             ),
             NavigationDrawerDestination(
-                label="Wallet",
+                label="Account",
                 icon=icons.WALLET_ROUNDED,
                 selected_icon_content=Icon(icons.WALLET_ROUNDED, color="black"),
             ),
@@ -149,11 +153,23 @@ def create_navigation_drawer(page):
     )
 
     def on_drawer_change(e):
-        selected_index = (e.control.selected_index + 2)
-        selected_control = e.control.controls[selected_index]
-        if isinstance(selected_control, NavigationDrawerDestination):
-            selected_label = selected_control.label
-            navigate_to(page, selected_label)
+        # Pobieramy aktualnie zaznaczony indeks
+        selected_index = e.control.selected_index
+
+        # Filtrujemy tylko elementy, które są instancjami NavigationDrawerDestination
+        destinations = []
+        for ctrl in e.control.controls:
+            if isinstance(ctrl, NavigationDrawerDestination):
+                destinations.append(ctrl)
+
+        # Jeżeli selected_index przekracza liczbę destynacji, ustawiamy go na ostatni indeks
+        if selected_index >= len(destinations):
+            selected_index = len(destinations) - 1
+
+        # Pobieramy wybraną destynację
+        selected_control = destinations[selected_index]
+        selected_label = selected_control.label
+        navigate_to(page, selected_label)
 
     drawer.on_change = on_drawer_change
     return drawer
