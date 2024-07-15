@@ -1,13 +1,13 @@
 import flet
 from flet import *
 
-from app.models.account import AccountModel
+from app.models.account_model import AccountModel
 from app.models.category import CategoryModel
 from app.models.notification import NotificationModel
 from app.models.payment import PaymentModel
 from app.models.statistic import StatisticModel
 from app.models.transaction import TransactionModel
-from app.models.user import UserModel
+from app.models.user_model import UserModel
 from app.views.dashboard import dashboard_page
 from app.views.login_view import login_page
 import app.globals as g  # Import global variables

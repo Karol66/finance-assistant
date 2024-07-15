@@ -1,4 +1,4 @@
-from app.services.user import UserService
+from app.services.user_service import UserService
 
 class UserController:
     def __init__(self):

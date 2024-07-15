@@ -1023,7 +1023,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
     </schema>
     <schema id="297" parent="1" name="finance-assistant">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2024-07-13.17:59:31</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2024-07-15.14:54:31</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <user id="298" parent="1" name="mysql.infoschema">
@@ -1074,7 +1074,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </table>
     <column id="309" parent="302" name="account_id">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>3</AutoIncrement>
       <DasType>int|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>

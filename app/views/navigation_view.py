@@ -1,5 +1,5 @@
 from flet import *
-import app.globals as g  # Import global variables
+import app.globals as g
 
 def navigate_to(page, destination):
     print(f"Navigating to: {destination}")
@@ -13,8 +13,8 @@ def navigate_to(page, destination):
     elif destination == "Dashboard":
         from app.views.dashboard import dashboard_page
         dashboard_page(page)
-    elif destination == "Wallet":
-        from app.wallet.main import wallet_page  # TODO trzeba poprawic
+    elif destination == "Account":
+        from app.views.account_view import wallet_page
         wallet_page(page)
     elif destination == "Statistic":
         from app.views.statistic import statistic_page

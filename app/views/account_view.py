@@ -1,26 +1,25 @@
 import flet
 import asyncio
 from flet import *
-
-from dbFunctions import Database
-from settings import ColorList as cl
+from app.controllers.account_controller import AccountController
 import clipboard
+import app.globals as g
+
+from app.views.navigation_view import create_navigation_drawer
 
 
-class App(UserControl):
-    global HeightCount
-    HeightCount = 25
+class WalletApp(UserControl):
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id
+        self.account_controller = AccountController()
+        self.snack = SnackBar(Text("Number copied!"))
+        self.HeightCount = 25
+        self.ColorCount = 0
+        self.CardCount = 0
+        self.DataDict = {}
 
-    global ColorCount
-    ColorCount = 0
-
-    global CardCount
-    CardCount = 0
-
-    global DataDict
-    DataDict = {}
-
-    def WalletContainer(self):
+    def build(self):
         self.CardList = Column(
             alignment="start",
             spacing=25,
@@ -30,21 +29,20 @@ class App(UserControl):
             icon=icons.DOWNLOAD,
             icon_color=colors.WHITE,
             icon_size=16,
-            on_click=lambda e: asyncio.run(self.CheckDatabase()),
+            on_click=lambda e: asyncio.run(self.load_accounts()),
         )
 
         self.InsertButton = IconButton(
             icon=icons.ADD,
             icon_color=colors.WHITE,
             icon_size=16,
-            on_click=lambda e: self.OpenEntryForm(),
+            on_click=lambda e: self.open_entry_form(),
             disabled=True,
         )
 
         self.WalletContainer = Container(
             alignment=alignment.center_right,
             padding=padding.only(right=200),
-
             content=Card(
                 elevation=15,
                 content=Container(
@@ -58,7 +56,7 @@ class App(UserControl):
                                 alignment="spaceBetween",
                                 controls=[
                                     Text(
-                                        "Wallite",
+                                        "Wallet",
                                         color="white",
                                         size=20,
                                         weight="bold",
@@ -90,14 +88,38 @@ class App(UserControl):
                     padding=padding.all(20),
                     alignment=alignment.top_center,
                     border_radius=border_radius.all(15),
-                    gradient=self.GradientGenerator(
-                        cl.WALLITE["from"], cl.WALLITE["to"]
+                    gradient=LinearGradient(
+                        begin=alignment.bottom_left,
+                        end=alignment.top_right,
+                        colors=[
+                            ColorList.WALLITE["from"], ColorList.WALLITE["to"]
+                        ],
                     ),
                 ),
             ),
         )
 
-        return self.WalletContainer
+        return Container(
+            content=(
+                Column(
+                    alignment="center",
+                    controls=[
+                        self.EntryForm(),
+                        self.WalletContainer,
+                    ],
+                )
+            ),
+            width=900,
+            height=800,
+            margin=margin.all(-10),
+            gradient=self.GradientGenerator(ColorList.BACKGROUND["from"], ColorList.BACKGROUND["to"]),
+            alignment=alignment.center,
+        )
+
+    def open_entry_form(self):
+        self.dialog = self.EntryForm
+        self.EntryForm.open = True
+        self.update()
 
     def EntryForm(self):
         self.BankName = TextField(
@@ -134,23 +156,80 @@ class App(UserControl):
                 height=280,
             ),
             actions=[
-                TextButton("Insert", on_click=lambda e: self.CheckEntryForm()),
-                TextButton("Cancel", on_click=lambda e: self.CheckEntryForm()),
+                TextButton("Insert", on_click=lambda e: self.check_entry_form()),
+                TextButton("Cancel", on_click=lambda e: self.cancel_entry_form()),
             ],
             actions_alignment="center",
-            on_dismiss=lambda e: self.CancelEntryForm(),
+            on_dismiss=lambda e: self.cancel_entry_form(),
         )
 
         return self.EntryForm
 
-    def CardGenerator(self, bank, number, cvv):
-        global HeightCount
-        global ColorCount
-        global CardCount
-        global DataDict
+    def cancel_entry_form(self):
+        self.BankName.value, self.CardNumber.value, self.CardCVV.value = (
+            None,
+            None,
+            None,
+        )
 
+        self.CardNumber.error_text, self.BankName.error_text, self.CardCVV.error_text = (
+            None,
+            None,
+            None,
+        )
+
+        self.EntryForm.open = False
+        self.update()
+
+    def check_entry_form(self):
+        if len(self.CardNumber.value) == 0:
+            self.CardNumber.error_text = "Please enter your card number!"
+            self.update()
+        else:
+            self.CardNumber.error_text = None
+            self.update()
+
+        if len(self.BankName.value) == 0:
+            self.BankName.error_text = "Please enter your bank name!"
+            self.update()
+        else:
+            self.BankName.error_text = None
+            self.update()
+
+        if len(self.CardCVV.value) == 0:
+            self.CardCVV.error_text = "Please enter your card CVV!"
+            self.update()
+        else:
+            self.CardCVV.error_text = None
+            self.update()
+
+        if (
+            len(self.CardNumber.value) &
+            len(self.BankName.value) &
+            len(self.CardCVV.value) != 0
+        ):
+            asyncio.run(self.insert_data_into_database())
+            self.card_generator(
+                self.BankName.value, self.CardNumber.value, self.CardCVV.value
+            )
+
+    async def insert_data_into_database(self):
+        self.account_controller.create_account(
+            self.user_id, self.BankName.value, "Card", 0.0
+        )
+
+    async def load_accounts(self):
+        accounts = self.account_controller.get_user_accounts(self.user_id)
+        for account in accounts:
+            self.card_generator(account['account_name'], account['account_type'], str(account['balance']))
+
+        self.ImportButton.disabled = True
+        self.InsertButton.disabled = False
+        self.update()
+
+    def card_generator(self, bank, number, cvv):
         self.img = Image(
-            src="./icon.png",
+            src="./app/assets/icon.png",
             width=80,
             height=80,
             fit="contain",
@@ -160,7 +239,7 @@ class App(UserControl):
         self.number = number
         self.cvv = cvv
 
-        DataDict[CardCount] = {"number": f"{self.number}", "cvv": f"{self.cvv}"}
+        self.DataDict[self.CardCount] = {"number": f"{self.number}", "cvv": f"{self.cvv}"}
 
         self.CardTest = Card(
             elevation=20,
@@ -230,8 +309,8 @@ class App(UserControl):
                                                     size=15,
                                                     weight="w700",
                                                 ),
-                                                data={DataDict[CardCount]["number"]},
-                                                on_click=lambda e: self.GetValue(e),
+                                                data={self.DataDict[self.CardCount]["number"]},
+                                                on_click=lambda e: self.get_value(e),
                                             ),
                                             Container(
                                                 bgcolor="pink",
@@ -256,8 +335,8 @@ class App(UserControl):
                                                     size=13,
                                                     weight="w700",
                                                 ),
-                                                data=DataDict[CardCount]["cvv"],
-                                                on_click=lambda e: self.GetValue(e),
+                                                data=self.DataDict[self.CardCount]["cvv"],
+                                                on_click=lambda e: self.get_value(e),
                                             ),
                                         ],
                                     ),
@@ -276,27 +355,27 @@ class App(UserControl):
                 height=185,
                 border_radius=border_radius.all(18),
                 gradient=self.GradientGenerator(
-                    cl.CARDCOLORS["from"][ColorCount],
-                    cl.CARDCOLORS["to"][ColorCount],
+                    ColorList.CARDCOLORS["from"][self.ColorCount % len(ColorList.CARDCOLORS["from"])],
+                    ColorList.CARDCOLORS["to"][self.ColorCount % len(ColorList.CARDCOLORS["to"])],
                 ),
             )
         )
 
-        CardCount += 1
-        ColorCount += 1
-        HeightCount += 50
+        self.CardCount += 1
+        self.ColorCount += 1
+        self.HeightCount += 50
 
         self.CardList.controls.append(self.CardTest)
-        self.CancelEntryForm()
+        self.cancel_entry_form()
         self.update()
 
-    def GetValue(self, e):
+    def get_value(self, e):
         clipboard.copy(e.control.data)
         self.snack.open = True
         self.update()
 
     def GradientGenerator(self, start, end):
-        self.ColorGradient = LinearGradient(
+        return LinearGradient(
             begin=alignment.bottom_left,
             end=alignment.top_right,
             colors=[
@@ -305,101 +384,66 @@ class App(UserControl):
             ],
         )
 
-        return self.ColorGradient
+class ColorList:
+    BACKGROUND = {
+        "from": "#134e4a",
+        "to": "#14b8a6",
+    }
 
-    def CheckEntryForm(self):
-        if len(self.CardNumber.value) == 0:
-            self.CardNumber.error_text = "Please enter your card number!"
-            self.update()
-        else:
-            self.CardNumber.error_text = None
-            self.update()
+    WALLITE = {
+        "from": "#1f2937",
+        "to": "#111827",
+    }
 
-        if len(self.BankName.value) == 0:
-            self.BankName.error_text = "Please enter your bank name!"
-            self.update()
-        else:
-            self.BankName.error_text = None
-            self.update()
+    CARDCOLORS = {
+        "from": [
+            "#475569",
+            "#047857",
+            "#3f3f46",
+            "#6d28d9",
+            "#0f766e",
+            "#0e7490",
+            "#334155",
+            "#7dd3fc",
+        ],
+        "to": [
+            "#0f172a",
+            "#064e3b",
+            "#18181b",
+            "#581c87",
+            "#134e4a",
+            "#164e63",
+            "#0f172a",
+            "#0c4a6e",
+        ],
+    }
 
-        if len(self.CardCVV.value) == 0:
-            self.CardCVV.error_text = "Please enter your card CVV!"
-            self.update()
-        else:
-            self.CardCVV.error_text = None
-            self.update()
+def wallet_page(page: Page):
+    page.horizontal_alignment = "center"
+    page.vertical_alignment = "center"
 
-        if (
-                len(self.CardNumber.value) &
-                len(self.BankName.value) &
-                len(self.CardCVV.value) != 0
-        ):
-            asyncio.run(self.InsertDataIntoDatabase())
-            self.CardGenerator(
-                self.BankName.value, self.CardNumber.value, self.CardCVV.value
-            )
 
-    def OpenEntryForm(self):
-        self.dialog = self.EntryForm
-        self.EntryForm.open = True
-        self.update()
+    app = WalletApp(user_id=g.logged_in_user["user_id"])
 
-    def CancelEntryForm(self):
-        self.BankName.value, self.CardNumber.value, self.CardCVV.value = (
-            None,
-            None,
-            None,
-        )
-
-        self.CardNumber.error_text, self.BankName.error_text, self.CardCVV.value = (
-            None,
-            None,
-            None,
-        )
-
-        self.EntryForm.open = False
-        self.update()
-
-    async def InsertDataIntoDatabase(self):
-        db = await Database.ConnectDatabase()
-        await Database.InsertDatabase(
-            db, (self.BankName.value, self.CardNumber.value, self.CardCVV.value)
-        )
-
-        await db.commit()
-        await db.close()
-
-    async def CheckDatabase(self):
-        db = await Database.ConnectDatabase()
-        records = await Database.ReadDatabase(db)
-        if records:
-            for i, __ in enumerate(records):
-                self.CardGenerator(records[i][0], records[i][1], records[i][2])
-                self.ImportButton.disabled = True
-                self.InsertButton.disabled = False
-                self.update()
-        else:
-            self.InsertButton.disabled = False
-            self.ImportButton.disabled = True
-            self.update()
-
-    def build(self):
-        self.CardColumn = Column()
-        self.snack = SnackBar(Text("Number copied!"))
-
-        return Container(
-            content=(
-                Column(
-                    alignment="center",
-                    controls=[
-                        self.EntryForm(),
-                        self.WalletContainer(),
-                    ],
-                )
+    drawer = create_navigation_drawer(page)
+    page.add(
+        app,
+        AppBar(
+            Row(
+                controls=[
+                    IconButton(
+                        icon=icons.MENU_ROUNDED,
+                        icon_size=25,
+                        icon_color="white",
+                        on_click=lambda e: page.open(drawer),
+                    ),
+                ],
             ),
-            width=900,
-            height=800,
-            margin=margin.all(-10),
-            gradient=self.GradientGenerator(cl.BACKGROUND["from"], cl.BACKGROUND["to"]),
-            alignment=alignment.center,
-        )
+            title=Text('Settings', color="white"),
+            bgcolor="black",
+        ),
+    )
+    page.update()
+
+if __name__ == '__main__':
+    flet.app(target=wallet_page)
