@@ -255,7 +255,7 @@ def registration_page(page: Page):
                 ],
             ),
             title=Text('Registration', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
         Container(
             alignment=alignment.center,

@@ -4,7 +4,6 @@ import app.globals as g
 # Globalna zmienna drawer
 drawer = None
 
-
 def navigate_to(page, destination):
     global drawer  # Odwołanie do globalnej zmiennej drawer
     print(f"Navigating to: {destination}")
@@ -47,14 +46,37 @@ def navigate_to(page, destination):
     drawer.selected_index = get_selected_index(destination)
     page.update()
 
-
 def get_selected_index(destination):
-    labels = ["Dashboard", "Account", "Statistic", "Categories", "Regular payments", "Notifications", "Settings",
-              "Logout"]
+    labels = ["Dashboard", "Account", "Statistic", "Categories", "Regular payments", "Notifications", "Settings", "Logout"]
     if destination in labels:
         return labels.index(destination)
     return 0
 
+class CustomNavigationDrawerDestination(UserControl):
+    def __init__(self, icon, label, destination, page, on_click=None):
+        super().__init__()
+        self.icon = icon
+        self.label = label
+        self.destination = destination
+        self.page = page
+        self.on_click = on_click
+
+    def build(self):
+        return Container(
+            content=Row(
+                controls=[
+                    Icon(name=self.icon, color="white", size=25),  # Zwiększenie rozmiaru ikony
+                    Text(value=self.label, color="white", weight="bold", size=15)  # Zwiększenie rozmiaru tekstu
+                ],
+                spacing=15,  # Zwiększenie odstępu między ikoną a tekstem
+                alignment="start",  # Wyrównanie do lewej
+                vertical_alignment="center"
+            ),
+            padding=padding.symmetric(vertical=20, horizontal=20),  # Zwiększenie paddingu dla większej wysokości przycisków
+            on_click=lambda e: navigate_to(self.page, self.destination) if self.on_click is None else self.on_click(e),
+            border_radius=8,
+            ink=True,
+        )
 
 def create_navigation_drawer(page):
     global drawer  # Odwołanie do globalnej zmiennej drawer
@@ -70,6 +92,7 @@ def create_navigation_drawer(page):
                 value="Login in",
                 size=20,
                 color="white",
+                weight="bold",
                 text_align=TextAlign.CENTER
             ),
             on_click=login_click
@@ -81,10 +104,11 @@ def create_navigation_drawer(page):
                 Container(
                     width=52,
                     height=52,
-                    bgcolor="bluegrey900",
+                    bgcolor="#191E29",
                     alignment=alignment.center,
                     border_radius=8,
                     content=user_icon,
+                    margin=margin.only(right=10)
                 ),
                 username_text
             ]
@@ -103,7 +127,7 @@ def create_navigation_drawer(page):
                 Container(
                     width=52,
                     height=52,
-                    bgcolor="bluegrey900",
+                    bgcolor="#132D46",
                     alignment=alignment.center,
                     border_radius=8,
                     content=user_icon,
@@ -125,7 +149,7 @@ def create_navigation_drawer(page):
         )
 
     drawer = NavigationDrawer(
-        bgcolor="black",
+        bgcolor="#132D46",
         controls=[
             Container(
                 height=80,
@@ -136,39 +160,55 @@ def create_navigation_drawer(page):
                     ]
                 )
             ),
-            Divider(height=5, color="white24"),
-            NavigationDrawerDestination(
-                label="Dashboard",
+            Divider(height=10, color="white"),
+            CustomNavigationDrawerDestination(
                 icon=icons.DASHBOARD_OUTLINED,
+                label="Dashboard",
+                destination="Dashboard",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Account",
+            CustomNavigationDrawerDestination(
                 icon=icons.WALLET_ROUNDED,
+                label="Account",
+                destination="Account",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Statistic",
+            CustomNavigationDrawerDestination(
                 icon=icons.BAR_CHART,
+                label="Statistic",
+                destination="Statistic",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Categories",
+            CustomNavigationDrawerDestination(
                 icon=icons.GRID_VIEW_ROUNDED,
+                label="Categories",
+                destination="Categories",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Regular payments",
+            CustomNavigationDrawerDestination(
                 icon=icons.ATTACH_MONEY,
+                label="Regular payments",
+                destination="Regular payments",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Notifications",
+            CustomNavigationDrawerDestination(
                 icon=icons.NOTIFICATIONS,
+                label="Notifications",
+                destination="Notifications",
+                page=page
             ),
-            NavigationDrawerDestination(
-                label="Settings",
+            CustomNavigationDrawerDestination(
                 icon=icons.SETTINGS,
+                label="Settings",
+                destination="Settings",
+                page=page
             ),
-            Divider(height=5, color="white24"),
-            NavigationDrawerDestination(
-                label="Logout",
+            Divider(height=10, color="white"),
+            CustomNavigationDrawerDestination(
                 icon=icons.LOGOUT_ROUNDED,
+                label="Logout",
+                destination="Logout",
+                page=page
             ),
         ],
     )
@@ -180,7 +220,7 @@ def create_navigation_drawer(page):
         # Filtrujemy tylko elementy, które są instancjami NavigationDrawerDestination
         destinations = []
         for ctrl in e.control.controls:
-            if isinstance(ctrl, NavigationDrawerDestination):
+            if isinstance(ctrl, CustomNavigationDrawerDestination):
                 destinations.append(ctrl)
 
         # Jeżeli selected_index przekracza liczbę destynacji, ustawiamy go na ostatni indeks

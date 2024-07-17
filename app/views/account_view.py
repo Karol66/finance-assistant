@@ -441,7 +441,7 @@ def account_page(page: Page):
                 ],
             ),
             title=Text('Settings', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()

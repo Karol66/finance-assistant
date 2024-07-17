@@ -62,28 +62,28 @@ class Expanse(UserControl):
                     40,
                     title="40%",
                     title_style=normal_title_style,
-                    color=colors.BLUE,
+                    color="#132D46",  # Użyj niebieskiego
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     30,
                     title="30%",
                     title_style=normal_title_style,
-                    color=colors.YELLOW,
+                    color="#01C38D",  # Użyj turkusowego
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     15,
                     title="15%",
                     title_style=normal_title_style,
-                    color=colors.PURPLE,
+                    color="#191E29",  # Użyj ciemnego granatu
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     15,
                     title="15%",
                     title_style=normal_title_style,
-                    color=colors.GREEN,
+                    color="#494E59",  # Użyj szarego
                     radius=normal_radius,
                 ),
             ],
@@ -114,7 +114,7 @@ class Expanse(UserControl):
             gradient=LinearGradient(
                 begin=alignment.top_left,
                 end=alignment.bottom_right,
-                colors=["#0f766e", "#064e3b"],
+                colors=["#01C38D", "#132D46"],  # Użyj turkusowego i niebieskiego
             ),
             content=Column(
                 expand=True,
@@ -149,7 +149,7 @@ class Expanse(UserControl):
         self.main_content_area = Container(
             width=350,
             height=700 * 0.50,
-            bgcolor="black",
+            bgcolor="#191E29",  # Użyj ciemnego granatu
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
                 spacing=20,
@@ -181,7 +181,7 @@ class Expanse(UserControl):
             )
         )
 
-        image_path = "./assets/icon.png"
+        image_path = "./app/assets/icon.png"
 
         payment_list = [
             ["Utilites", "$100.25", ],
@@ -195,7 +195,7 @@ class Expanse(UserControl):
             __ = Container(
                 width=100,
                 height=100,
-                bgcolor="white10",
+                bgcolor="#132D46",  # Użyj niebieskiego
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=lambda e: self.click_animation(e),
@@ -282,7 +282,7 @@ class Expanse(UserControl):
 def dashboard_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
-    page.bgcolor = "black"
+    page.bgcolor = "#191E29"  # Użyj ciemnego granatu
 
     app = Expanse()
     page.add(app)
@@ -301,7 +301,7 @@ def dashboard_page(page: Page):
                 ],
             ),
             title=Text('Dashboard', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()

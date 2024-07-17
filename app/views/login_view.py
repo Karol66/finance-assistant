@@ -262,7 +262,7 @@ def login_page(page: Page):
                 ],
             ),
             title=Text('Login', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
         Container(
             alignment=alignment.center,

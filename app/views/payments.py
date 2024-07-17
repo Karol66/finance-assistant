@@ -21,7 +21,7 @@ def payments_page(page: Page):
                 ],
             ),
             title=Text('Regular payments', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()

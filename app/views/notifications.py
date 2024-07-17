@@ -21,7 +21,7 @@ def notyfications_page(page: Page):
                 ],
             ),
             title=Text('Notifications', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()

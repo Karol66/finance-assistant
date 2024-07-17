@@ -153,7 +153,6 @@ class Expanse(UserControl):
 def categories_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
-    page.bgcolor = "black"
 
     app = Expanse()
     page.add(app)
@@ -172,7 +171,7 @@ def categories_page(page: Page):
                 ],
             ),
             title=Text('Categories', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()

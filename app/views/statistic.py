@@ -335,7 +335,7 @@ def statistic_page(page: Page):
                 ],
             ),
             title=Text('Statistic', color="white"),
-            bgcolor="black",
+            bgcolor="#132D46",
         ),
     )
     page.update()
