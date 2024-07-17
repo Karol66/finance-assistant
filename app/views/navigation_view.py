@@ -4,6 +4,7 @@ import app.globals as g
 # Globalna zmienna drawer
 drawer = None
 
+
 def navigate_to(page, destination):
     global drawer  # Odwołanie do globalnej zmiennej drawer
     print(f"Navigating to: {destination}")
@@ -42,18 +43,36 @@ def navigate_to(page, destination):
         login_page(page)
     else:
         page.add(Text(f"Unknown destination: {destination}"))
+
+    drawer.selected_index = get_selected_index(destination)
     page.update()
+
+
+def get_selected_index(destination):
+    labels = ["Dashboard", "Account", "Statistic", "Categories", "Regular payments", "Notifications", "Settings",
+              "Logout"]
+    if destination in labels:
+        return labels.index(destination)
+    return 0
+
 
 def create_navigation_drawer(page):
     global drawer  # Odwołanie do globalnej zmiennej drawer
 
+    def login_click(e):
+        navigate_to(page, "Login")
+
     user_icon = Icon(icons.PERSON_ROUNDED, size=30, color="white")
+
     if g.logged_in_user is None:
-        username_text = Text(
-            value="Login in",
-            size=20,
-            color="white",
-            text_align=TextAlign.CENTER
+        username_text = Container(
+            content=Text(
+                value="Login in",
+                size=20,
+                color="white",
+                text_align=TextAlign.CENTER
+            ),
+            on_click=login_click
         )
 
         username_container = Row(
@@ -118,14 +137,6 @@ def create_navigation_drawer(page):
                 )
             ),
             Divider(height=5, color="white24"),
-            NavigationDrawerDestination(
-                label="Login",
-                icon=icons.LOGIN,
-            ),
-            NavigationDrawerDestination(
-                label="Register",
-                icon=icons.APP_REGISTRATION,
-            ),
             NavigationDrawerDestination(
                 label="Dashboard",
                 icon=icons.DASHBOARD_OUTLINED,
