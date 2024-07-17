@@ -205,8 +205,8 @@ class UserWidget(UserControl):
                     horizontal_alignment="center",
                     controls=[
                         DividerWithText("or"),
-                        self.SignInOption("../assets/icon.png", "Facebook"),
-                        self.SignInOption("../assets/icon.png", "Google"),
+                        self.SignInOption("./app/assets/icon.png", "Facebook"),
+                        self.SignInOption("./app/assets/icon.png", "Google"),
                     ],
                 ),
                 Container(padding=2),
