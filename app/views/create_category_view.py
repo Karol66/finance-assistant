@@ -8,6 +8,10 @@ class Expanse(UserControl):
     def __init__(self):
         super().__init__()
         self.selected_link = None
+        self.selected_color_container = None
+        self.selected_color = None
+        self.last_selected_icon = None
+        self.last_selected_icon_original_color = None
 
     def InputTextField(self, text: str, hide: bool, ref):
         return Container(
@@ -30,6 +34,64 @@ class Expanse(UserControl):
                 ref=ref,
             ),
         )
+
+    def on_color_click(self, e):
+        if self.selected_color_container == e.control:
+            # Odznaczenie obecnie zaznaczonego kontenera
+            self.selected_color_container.content.controls = []
+            self.selected_color_container.update()
+            self.selected_color_container = None
+            self.selected_color = None
+        else:
+            if self.selected_color_container:
+                # Usunięcie ikony zatwierdzenia z poprzednio wybranego kontenera
+                self.selected_color_container.content.controls = []
+                self.selected_color_container.update()
+
+            # Dodanie ikony zatwierdzenia do nowo wybranego kontenera
+            self.selected_color_container = e.control
+            self.selected_color = e.control.bgcolor  # Zapisanie wybranego koloru
+            if self.selected_color_container.content:
+                self.selected_color_container.content.controls.append(
+                    Container(
+                        alignment=alignment.center,
+                        content=Icon(
+                            icons.CHECK,
+                            size=16,
+                            color="white",
+                        ),
+                    )
+                )
+                self.selected_color_container.update()
+
+            # Automatyczna zmiana koloru tła ostatnio wybranej ikony, jeśli jest wybrana
+            if self.last_selected_icon:
+                self.last_selected_icon.bgcolor = self.selected_color
+                self.last_selected_icon.update()
+
+    def on_icon_click(self, e):
+        if self.last_selected_icon:
+            # Przywrócenie oryginalnego koloru i usunięcie cienia z ostatnio wybranego kontenera
+            self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
+            self.last_selected_icon.shadow = None
+            self.last_selected_icon.update()
+
+        # Zapisanie referencji do nowo wybranego kontenera i jego oryginalnego koloru
+        self.last_selected_icon = e.control
+        self.last_selected_icon_original_color = e.control.bgcolor
+
+        # Zmiana koloru nowo wybranego kontenera, jeśli kolor jest wybrany
+        if self.selected_color:
+            e.control.bgcolor = self.selected_color
+
+        # Dodanie cienia do nowo wybranego kontenera
+        e.control.shadow = BoxShadow(
+            spread_radius=2,
+            blur_radius=10,
+            color="white",
+            offset=Offset(0, 0)
+        )
+        e.control.update()
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -82,14 +144,14 @@ class Expanse(UserControl):
                     Row(
                         alignment="center",
                         controls=[
-                            Container(width=30, height=30, bgcolor=colors.RED, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.GREEN, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.BLUE, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.YELLOW, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.ORANGE, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.PURPLE, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.BROWN, border_radius=15, margin=1),
-                            Container(width=30, height=30, bgcolor=colors.PINK, border_radius=15, margin=1),
+                            Container(width=30, height=30, bgcolor=colors.RED, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.GREEN, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.BLUE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.YELLOW, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.ORANGE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.PURPLE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.BROWN, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.PINK, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
                             Container(
                                 width=30,
                                 height=30,
@@ -135,6 +197,7 @@ class Expanse(UserControl):
                 bgcolor="#132D46",
                 border_radius=15,
                 alignment=alignment.center,
+                on_click=self.on_icon_click,
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
