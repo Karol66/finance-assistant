@@ -24,7 +24,7 @@ def navigate_to(page, destination):
         from app.views.statistic import statistic_page
         statistic_page(page)
     elif destination == "Categories":
-        from app.views.categories import categories_page
+        from app.views.categories_view import categories_page
         categories_page(page)
     elif destination == "Regular payments":
         from app.views.payments import payments_page
@@ -127,7 +127,7 @@ def create_navigation_drawer(page):
                 Container(
                     width=52,
                     height=52,
-                    bgcolor="#132D46",
+                    bgcolor="#191E29",
                     alignment=alignment.center,
                     border_radius=8,
                     content=user_icon,

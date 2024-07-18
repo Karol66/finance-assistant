@@ -237,14 +237,14 @@ class Expanse(UserControl):
             Container(
                 width=175,
                 content=Text(
-                    "Revenue",
+                    "Expenses",
                     size=18,
                     color=colors.WHITE,
                     weight="bold",
                 ),
-                on_click=lambda e: self.on_link_click(e, "Revenue"),
+                on_click=lambda e: self.on_link_click(e, "Expenses"),
                 padding=padding.symmetric(horizontal=10, vertical=5),
-                data="Revenue",
+                data="Expenses",
                 border=border.only(bottom=border.BorderSide(2, "transparent")),
                 alignment=alignment.center,
             ),

@@ -37,7 +37,7 @@ class Expanse(UserControl):
         self.main_content_area = Container(
             width=400,
             height=700,
-            bgcolor="black",
+            bgcolor="#191E29",  # Zmieniono kolor tła na ciemny granat
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
                 spacing=20,
@@ -45,8 +45,7 @@ class Expanse(UserControl):
                     Row(
                         alignment="spaceBetween",
                         vertical_alignment="end",
-                        controls=[
-                        ]
+                        controls=[]
                     ),
                     self.grid_transfers,
                 ]
@@ -66,7 +65,7 @@ class Expanse(UserControl):
             item_container = Container(
                 width=100,
                 height=100,
-                bgcolor="white10",
+                bgcolor="#132D46",  # Zmieniono kolor tła na niebieski
                 border_radius=15,
                 alignment=alignment.center,
                 content=Column(
@@ -87,7 +86,7 @@ class Expanse(UserControl):
         add_button = Container(
             width=100,
             height=100,
-            bgcolor="green",
+            bgcolor="#01C38D",  # Zmieniono kolor na turkusowy
             border_radius=15,
             alignment=alignment.center,
             content=Column(
@@ -109,14 +108,14 @@ class Expanse(UserControl):
             Container(
                 width=175,
                 content=Text(
-                    "Revenue",
+                    "Expenses",
                     size=18,
                     color=colors.WHITE,
                     weight="bold",
                 ),
-                on_click=lambda e: self.on_link_click(e, "Revenue"),
+                on_click=lambda e: self.on_link_click(e, "Expenses"),
                 padding=padding.symmetric(horizontal=10, vertical=5),
-                data="Revenue",
+                data="Expenses",
                 border=border.only(bottom=border.BorderSide(2, "transparent")),
                 alignment=alignment.center,
             ),
@@ -175,7 +174,3 @@ def categories_page(page: Page):
         ),
     )
     page.update()
-
-
-if __name__ == '__main__':
-    flet.app(target=categories_page)
