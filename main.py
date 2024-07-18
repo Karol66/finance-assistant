@@ -10,7 +10,7 @@ from app.models.transaction import TransactionModel
 from app.models.user_model import UserModel
 from app.views.dashboard import dashboard_page
 from app.views.login_view import login_page
-import app.globals as g  # Import global variables
+import app.globals as g
 
 def initialize_database():
     user_model = UserModel()

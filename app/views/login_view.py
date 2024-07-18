@@ -1,7 +1,7 @@
 from flet import *
 from app.controllers.user_controller import UserController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
-import app.globals as g  # Import global variables
+import app.globals as g
 
 class UserWidget(UserControl):
     def __init__(self, title: str, sub_title: str, btn_name: str, link: str, forgot_password: str,

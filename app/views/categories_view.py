@@ -1,6 +1,6 @@
 import flet
 from flet import *
-from app.views.navigation_view import create_navigation_drawer
+from app.views.navigation_view import navigate_to, create_navigation_drawer
 
 
 class Expanse(UserControl):
@@ -20,6 +20,9 @@ class Expanse(UserControl):
                 link.border = border.only(bottom=border.BorderSide(2, "white"))
             link.update()
 
+    def create_category_click(self, e):
+        navigate_to(e.page, "Create categories")
+
     def build(self):
         self.main_col = Column(
             expand=True,
@@ -37,7 +40,7 @@ class Expanse(UserControl):
         self.main_content_area = Container(
             width=400,
             height=700,
-            bgcolor="#191E29",  # Zmieniono kolor tła na ciemny granat
+            bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
                 spacing=20,
@@ -65,7 +68,7 @@ class Expanse(UserControl):
             item_container = Container(
                 width=100,
                 height=100,
-                bgcolor="#132D46",  # Zmieniono kolor tła na niebieski
+                bgcolor="#132D46",
                 border_radius=15,
                 alignment=alignment.center,
                 content=Column(
@@ -86,9 +89,10 @@ class Expanse(UserControl):
         add_button = Container(
             width=100,
             height=100,
-            bgcolor="#01C38D",  # Zmieniono kolor na turkusowy
+            bgcolor="#01C38D",
             border_radius=15,
             alignment=alignment.center,
+            on_click=self.create_category_click,
             content=Column(
                 alignment="center",
                 horizontal_alignment="center",

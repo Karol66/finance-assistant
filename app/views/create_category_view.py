@@ -14,7 +14,7 @@ class Expanse(UserControl):
             alignment=alignment.center,
             content=TextField(
                 height=58,
-                width=300,
+                width=380,
                 bgcolor="#f0f3f6",
                 text_size=14,
                 color="black",
@@ -30,17 +30,6 @@ class Expanse(UserControl):
                 ref=ref,
             ),
         )
-
-    def on_link_click(self, e, link_name):
-        self.selected_link = link_name
-        self.update_links()
-
-    def update_links(self):
-        for link in self.links:
-            link.border = border.only(bottom=border.BorderSide(2, "transparent"))
-            if link.data == self.selected_link:
-                link.border = border.only(bottom=border.BorderSide(2, "white"))
-            link.update()
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -62,7 +51,7 @@ class Expanse(UserControl):
         self.main_content_area = Container(
             width=400,
             height=700,
-            bgcolor="black",
+            bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
                 spacing=20,
@@ -74,13 +63,13 @@ class Expanse(UserControl):
                             Column(
                                 controls=[
                                     self.InputTextField("Category name", False, self.category_name_input),
-                                    # Dodane RadioGroup z białymi etykietami
                                     RadioGroup(
                                         content=Row(
                                             controls=[
                                                 Radio(value="Expenses", label="Expenses", label_style=TextStyle(color=colors.WHITE)),
                                                 Radio(value="Income", label="Income", label_style=TextStyle(color=colors.WHITE)),
                                             ],
+                                            spacing=50,
                                             alignment="center"
                                         ),
                                     ),
@@ -89,7 +78,7 @@ class Expanse(UserControl):
                             )
                         ]
                     ),
-                    # Dodany pasek z kolorowymi kółkami i szarym kółkiem z ikoną plusa
+
                     Row(
                         alignment="center",
                         controls=[
@@ -143,7 +132,7 @@ class Expanse(UserControl):
             item_container = Container(
                 width=100,
                 height=100,
-                bgcolor="white10",
+                bgcolor="#132D46",
                 border_radius=15,
                 alignment=alignment.center,
                 content=Column(
@@ -163,7 +152,7 @@ class Expanse(UserControl):
         more_button = Container(
             width=100,
             height=100,
-            bgcolor="green",
+            bgcolor="#01C38D",
             border_radius=15,
             alignment=alignment.center,
             content=Column(
@@ -179,53 +168,12 @@ class Expanse(UserControl):
             )
         )
         self.grid_transfers.controls.append(more_button)
-
-        self.links = [
-            Container(
-                width=175,
-                content=Text(
-                    "Revenue",
-                    size=18,
-                    color=colors.WHITE,
-                    weight="bold",
-                ),
-                on_click=lambda e: self.on_link_click(e, "Expenses"),
-                padding=padding.symmetric(horizontal=10, vertical=5),
-                data="Revenue",
-                border=border.only(bottom=border.BorderSide(2, "transparent")),
-                alignment=alignment.center,
-            ),
-            Container(
-                width=175,
-                content=Text(
-                    "Income",
-                    size=18,
-                    color=colors.WHITE,
-                    weight="bold",
-                ),
-                on_click=lambda e: self.on_link_click(e, "Income"),
-                padding=padding.symmetric(horizontal=10, vertical=5),
-                data="Income",
-                border=border.only(bottom=border.BorderSide(2, "transparent")),
-                alignment=alignment.center,
-            ),
-        ]
-
-        self.main_col.controls.append(
-            Row(
-                controls=self.links,
-                alignment="center",
-                vertical_alignment="center",
-                spacing=0,
-            )
-        )
-
         self.main_col.controls.append(self.main_content_area)
 
         return self.main_col
 
 
-def categories_page(page: Page):
+def create_categories_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
@@ -245,7 +193,7 @@ def categories_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Categories', color="white"),
+            title=Text('Create categories', color="white"),
             bgcolor="#132D46",
         ),
     )
@@ -253,4 +201,4 @@ def categories_page(page: Page):
 
 
 if __name__ == '__main__':
-    flet.app(target=categories_page)
+    flet.app(target=create_categories_page)

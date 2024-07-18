@@ -26,6 +26,9 @@ def navigate_to(page, destination):
     elif destination == "Categories":
         from app.views.categories_view import categories_page
         categories_page(page)
+    elif destination == "Create categories":
+        from app.views.create_category_view import create_categories_page
+        create_categories_page(page)
     elif destination == "Regular payments":
         from app.views.payments import payments_page
         payments_page(page)
