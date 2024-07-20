@@ -12,6 +12,8 @@ class CategoryModel:
                 user_id INT,
                 category_name VARCHAR(100) NOT NULL,
                 category_type VARCHAR(50) NOT NULL,
+                planned_expanses VARCHAR(50) NOT NULL,
+                category_color VARCHAR(50) NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             )
         ''')

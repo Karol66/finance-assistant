@@ -35,6 +35,7 @@ class Expanse(UserControl):
             ),
         )
 
+    # TODO uproscic
     def on_color_click(self, e):
         if self.selected_color_container == e.control:
             # Odznaczenie obecnie zaznaczonego kontenera
@@ -93,6 +94,8 @@ class Expanse(UserControl):
         )
         e.control.update()
 
+    #
+
     def build(self):
         self.category_name_input = Ref[TextField]()
         self.planned_expenses_input = Ref[TextField]()
@@ -112,7 +115,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=700,
+            height=720,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -128,8 +131,10 @@ class Expanse(UserControl):
                                     RadioGroup(
                                         content=Row(
                                             controls=[
-                                                Radio(value="Expenses", label="Expenses", label_style=TextStyle(color=colors.WHITE)),
-                                                Radio(value="Income", label="Income", label_style=TextStyle(color=colors.WHITE)),
+                                                Radio(value="Expenses", label="Expenses",
+                                                      label_style=TextStyle(color=colors.WHITE)),
+                                                Radio(value="Income", label="Income",
+                                                      label_style=TextStyle(color=colors.WHITE)),
                                             ],
                                             spacing=50,
                                             alignment="center"
@@ -144,14 +149,22 @@ class Expanse(UserControl):
                     Row(
                         alignment="center",
                         controls=[
-                            Container(width=30, height=30, bgcolor=colors.RED, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.GREEN, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.BLUE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.YELLOW, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.ORANGE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.PURPLE, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.BROWN, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
-                            Container(width=30, height=30, bgcolor=colors.PINK, border_radius=15, margin=1, on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.RED, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.GREEN, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.BLUE, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.YELLOW, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.ORANGE, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.PURPLE, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.BROWN, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
+                            Container(width=30, height=30, bgcolor=colors.PINK, border_radius=15, margin=1,
+                                      on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
                             Container(
                                 width=30,
                                 height=30,
@@ -168,6 +181,26 @@ class Expanse(UserControl):
                         ]
                     ),
                     self.grid_transfers,
+
+                    Container(
+                        alignment=alignment.center,
+                        content=ElevatedButton(
+                            content=Text(
+                                "Add",
+                                size=14,
+                                weight="bold",
+                            ),
+                            bgcolor="#01C38D",
+                            color="white",
+                            style=ButtonStyle(
+                                shape={
+                                    "": RoundedRectangleBorder(radius=8)
+                                },
+                            ),
+                            height=58,
+                            width=300,
+                        )
+                    )
                 ]
             )
         )
@@ -215,7 +248,7 @@ class Expanse(UserControl):
         more_button = Container(
             width=100,
             height=100,
-            bgcolor="#01C38D",
+            bgcolor="#e3cc02",
             border_radius=15,
             alignment=alignment.center,
             content=Column(
