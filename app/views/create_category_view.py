@@ -1,17 +1,22 @@
 import flet
 from flet import *
 from app.views.navigation_view import create_navigation_drawer
+from app.services.category_service import CategoryService
+import app.globals as g
 
 
 class Expanse(UserControl):
 
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__()
         self.selected_link = None
         self.selected_color_container = None
         self.selected_color = None
         self.last_selected_icon = None
         self.last_selected_icon_original_color = None
+        self.selected_icon = None
+        self.category_service = CategoryService()
+        self.user_id = user_id
 
     def InputTextField(self, text: str, hide: bool, ref):
         return Container(
@@ -94,11 +99,42 @@ class Expanse(UserControl):
         )
         e.control.update()
 
+        self.selected_icon = e.control.data #Dodana nazwa ikony
+
     #
+
+    def add_category(self, e):
+        category_name = self.category_name_input.current.value
+        planned_expenses = self.planned_expenses_input.current.value
+        category_type = self.category_type_radio_group.current.value
+        category_color = self.selected_color
+        category_icon = self.selected_icon
+
+        # Add the category using the service
+        self.category_service.create_category(self.user_id, category_name, category_type, planned_expenses,
+                                              category_color, category_icon)
+        print("Category added successfully")
+
+    # TODO przerzucic do innego apnelu i poprawic rzeby dzialalo
+    def fetch_and_display_categories(self):
+        categories = self.category_service.get_user_categories(self.user_id)
+        for category in categories:
+            category_item = Container(
+                content=Text(
+                    f"{category['category_name']} ({category['category_type']}) - {category['planned_expanses']}",
+                    color="white"),
+                bgcolor=category['category_color'],
+                padding=10,
+                margin=5,
+                border_radius=8
+            )
+            self.grid_transfers.controls.append(category_item)
+        self.update()
 
     def build(self):
         self.category_name_input = Ref[TextField]()
         self.planned_expenses_input = Ref[TextField]()
+        self.category_type_radio_group = Ref[RadioGroup]()
 
         self.main_col = Column(
             expand=True,
@@ -129,6 +165,7 @@ class Expanse(UserControl):
                                 controls=[
                                     self.InputTextField("Category name", False, self.category_name_input),
                                     RadioGroup(
+                                        ref=self.category_type_radio_group,
                                         content=Row(
                                             controls=[
                                                 Radio(value="Expenses", label="Expenses",
@@ -199,6 +236,7 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
+                            on_click=self.add_category
                         )
                     )
                 ]
@@ -231,6 +269,7 @@ class Expanse(UserControl):
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=self.on_icon_click,
+                data=i[0],  # Dodaje nazwę ikony jako dane do kontenera
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -266,6 +305,8 @@ class Expanse(UserControl):
         self.grid_transfers.controls.append(more_button)
         self.main_col.controls.append(self.main_content_area)
 
+        # self.fetch_and_display_categories()  # Fetch and display categories
+
         return self.main_col
 
 
@@ -273,11 +314,11 @@ def create_categories_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
-    app = Expanse()
-    page.add(app)
+    app = Expanse(user_id=g.logged_in_user["user_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(
+        app,
         AppBar(
             Row(
                 controls=[

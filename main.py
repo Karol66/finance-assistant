@@ -2,7 +2,7 @@ import flet
 from flet import *
 
 from app.models.account_model import AccountModel
-from app.models.category import CategoryModel
+from app.models.category_model import CategoryModel
 from app.models.notification import NotificationModel
 from app.models.payment import PaymentModel
 from app.models.statistic import StatisticModel
