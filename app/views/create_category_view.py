@@ -99,7 +99,7 @@ class Expanse(UserControl):
         )
         e.control.update()
 
-        self.selected_icon = e.control.data #Dodana nazwa ikony
+        self.selected_icon = e.control.data  # Dodana nazwa ikony
 
     #
 
@@ -114,22 +114,6 @@ class Expanse(UserControl):
         self.category_service.create_category(self.user_id, category_name, category_type, planned_expenses,
                                               category_color, category_icon)
         print("Category added successfully")
-
-    # TODO przerzucic do innego apnelu i poprawic rzeby dzialalo
-    def fetch_and_display_categories(self):
-        categories = self.category_service.get_user_categories(self.user_id)
-        for category in categories:
-            category_item = Container(
-                content=Text(
-                    f"{category['category_name']} ({category['category_type']}) - {category['planned_expanses']}",
-                    color="white"),
-                bgcolor=category['category_color'],
-                padding=10,
-                margin=5,
-                border_radius=8
-            )
-            self.grid_transfers.controls.append(category_item)
-        self.update()
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -304,8 +288,6 @@ class Expanse(UserControl):
         )
         self.grid_transfers.controls.append(more_button)
         self.main_col.controls.append(self.main_content_area)
-
-        # self.fetch_and_display_categories()  # Fetch and display categories
 
         return self.main_col
 

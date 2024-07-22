@@ -1,13 +1,17 @@
 import flet
 from flet import *
 from app.views.navigation_view import navigate_to, create_navigation_drawer
+from app.controllers.category_controller import CategoryController
+import app.globals as g
 
 
 class Expanse(UserControl):
 
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__()
         self.selected_link = None
+        self.user_id = user_id
+        self.category_controller = CategoryController()
 
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
@@ -22,6 +26,30 @@ class Expanse(UserControl):
 
     def create_category_click(self, e):
         navigate_to(e.page, "Create categories")
+
+    def load_categories(self):
+        categories = self.category_controller.get_user_categories(self.user_id)
+        for category in categories:
+            item_container = Container(
+                width=100,
+                height=100,
+                bgcolor=category["category_color"],
+                border_radius=15,
+                alignment=alignment.center,
+                content=Column(
+                    alignment="center",
+                    horizontal_alignment="center",
+                    controls=[
+                        Icon(
+                            f"{category['category_icon']}",
+                            size=30,
+                            color="white",
+                        ),
+                        Text(f"{category['category_name']}", size=12, color="white", weight="bold"),
+                    ]
+                )
+            )
+            self.grid_transfers.controls.append(item_container)
 
     def build(self):
         self.main_col = Column(
@@ -55,36 +83,7 @@ class Expanse(UserControl):
             )
         )
 
-        payment_list = [
-            [icons.DIRECTIONS_CAR, "Car"],
-            [icons.PHONE, "Phone"],
-            [icons.BOLT, "Electricity"],
-            [icons.FLIGHT, "Travels"],
-            [icons.NETWORK_WIFI, "Network"],
-            [icons.HOME, "Utilities"],
-        ]
-
-        for i in payment_list:
-            item_container = Container(
-                width=100,
-                height=100,
-                bgcolor="#132D46",
-                border_radius=15,
-                alignment=alignment.center,
-                content=Column(
-                    alignment="center",
-                    horizontal_alignment="center",
-                    controls=[
-                        Icon(
-                            f"{i[0]}",
-                            size=30,
-                            color="white",
-                        ),
-                        Text(f"{i[1]}", size=12, color="white", weight="bold"),
-                    ]
-                )
-            )
-            self.grid_transfers.controls.append(item_container)
+        self.load_categories()
 
         add_button = Container(
             width=100,
@@ -157,11 +156,11 @@ def categories_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
-    app = Expanse()
-    page.add(app)
+    app = Expanse(user_id=g.logged_in_user["user_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(
+        app,
         AppBar(
             Row(
                 controls=[
