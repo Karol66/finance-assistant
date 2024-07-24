@@ -12,6 +12,7 @@ from app.views.dashboard import dashboard_page
 from app.views.login_view import login_page
 import app.globals as g
 
+
 def initialize_database():
     user_model = UserModel()
     user_model.create_table()
@@ -36,10 +37,15 @@ def initialize_database():
 
 
 def main(page: Page):
+    page.horizontal_alignment = "center"
+    page.vertical_alignment = "center"
+    page.bgcolor = "#191E29"
+
     initialize_database()
+
     if g.logged_in_user is None:
-        # login_page(page)
-        dashboard_page(page)
+        login_page(page)
+        # dashboard_page(page)
     else:
         dashboard_page(page)
     page.update()

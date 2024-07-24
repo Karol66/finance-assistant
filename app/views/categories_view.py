@@ -16,6 +16,9 @@ class Expanse(UserControl):
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
         self.update_links()
+        self.grid_transfers.controls.clear()
+        self.load_categories(link_name)
+        self.grid_transfers.update()
 
     def update_links(self):
         for link in self.links:
@@ -27,9 +30,15 @@ class Expanse(UserControl):
     def create_category_click(self, e):
         navigate_to(e.page, "Create categories")
 
-    def load_categories(self):
+    def load_categories(self, category_type):
         categories = self.category_controller.get_user_categories(self.user_id)
+
+        filtered_categories = []
         for category in categories:
+            if category["category_type"] == category_type:
+                filtered_categories.append(category)
+
+        for category in filtered_categories:
             item_container = Container(
                 width=100,
                 height=100,
@@ -50,6 +59,31 @@ class Expanse(UserControl):
                 )
             )
             self.grid_transfers.controls.append(item_container)
+
+        add_button = self.create_add_button()
+        self.grid_transfers.controls.append(add_button)
+
+    def create_add_button(self):
+        return Container(
+            width=100,
+            height=100,
+            bgcolor="#01C38D",
+            border_radius=15,
+            alignment=alignment.center,
+            on_click=self.create_category_click,
+            content=Column(
+                alignment="center",
+                horizontal_alignment="center",
+                controls=[
+                    Icon(
+                        icons.ADD,
+                        size=30,
+                        color="white",
+                    ),
+                    # Text("Create", size=12, color="white", weight="bold"),
+                ]
+            )
+        )
 
     def build(self):
         self.main_col = Column(
@@ -83,29 +117,7 @@ class Expanse(UserControl):
             )
         )
 
-        self.load_categories()
-
-        add_button = Container(
-            width=100,
-            height=100,
-            bgcolor="#01C38D",
-            border_radius=15,
-            alignment=alignment.center,
-            on_click=self.create_category_click,
-            content=Column(
-                alignment="center",
-                horizontal_alignment="center",
-                controls=[
-                    Icon(
-                        icons.ADD,
-                        size=30,
-                        color="white",
-                    ),
-                    # Text("Create", size=12, color="white", weight="bold"),
-                ]
-            )
-        )
-        self.grid_transfers.controls.append(add_button)
+        self.load_categories("Expenses")
 
         self.links = [
             Container(
@@ -119,7 +131,7 @@ class Expanse(UserControl):
                 on_click=lambda e: self.on_link_click(e, "Expenses"),
                 padding=padding.symmetric(horizontal=10, vertical=5),
                 data="Expenses",
-                border=border.only(bottom=border.BorderSide(2, "transparent")),
+                border=border.only(bottom=border.BorderSide(2, "white")),
                 alignment=alignment.center,
             ),
             Container(

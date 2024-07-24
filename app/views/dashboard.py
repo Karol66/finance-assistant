@@ -282,7 +282,7 @@ class Expanse(UserControl):
 def dashboard_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
-    page.bgcolor = "#191E29"  # Użyj ciemnego granatu
+    page.bgcolor = "#191E29"
 
     app = Expanse()
     page.add(app)
