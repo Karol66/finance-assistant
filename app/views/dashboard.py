@@ -50,7 +50,7 @@ class Expanse(UserControl):
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=lambda e: self.click_animation(e),
-                padding=padding.all(20),
+                padding=padding.all(13),
             )
             __.content = Row(
                 alignment="spaceBetween",
@@ -60,12 +60,19 @@ class Expanse(UserControl):
                     Row(
                         alignment="start",
                         vertical_alignment="center",
-                        spacing=35,
+                        spacing=20,
                         controls=[
-                            Icon(
-                                f"{category['category_icon']}",
-                                size=30,
-                                color="white",
+                            Container(
+                                width=40,
+                                height=40,
+                                bgcolor=category['category_color'],
+                                border_radius=20,
+                                alignment=alignment.center,
+                                content=Icon(
+                                    f"{category['category_icon']}",
+                                    size=20,
+                                    color="white",
+                                ),
                             ),
                             Text(
                                 f"{category['category_name']}",
