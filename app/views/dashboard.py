@@ -25,6 +25,7 @@ class Expanse(UserControl):
         self.update_links()
         self.grid_categories.controls.clear()
         self.load_categories(link_name)
+        self.update_total_balance()
         self.grid_categories.update()
 
     def update_links(self):
@@ -90,6 +91,26 @@ class Expanse(UserControl):
                 ],
             )
             self.grid_categories.controls.append(__)
+
+
+    def update_total_balance(self):
+        categories = self.category_controller.get_user_categories(self.user_id)
+        total_balance = 0.0
+
+        for category in categories:
+            planned_expenses = category["planned_expenses"]
+
+            if planned_expenses:
+                planned_expenses_value = float(planned_expenses)
+            else:
+                planned_expenses_value = 0.0
+
+            if category["category_type"] == "Income":
+                total_balance += planned_expenses_value
+            elif category["category_type"] == "Expenses":
+                total_balance -= planned_expenses_value
+
+        self.total_balance_amount.value = f"{total_balance:.2f}$"
 
     def build(self):
         self.main_col = Column(
@@ -165,11 +186,13 @@ class Expanse(UserControl):
         )
 
         self.total_balance_amount = Text(
-            "$400.00",
+            "0.00$",
             size=24,
             weight="bold",
             color="white"
         )
+
+        self.update_total_balance()
 
         self.green_container = Container(
             width=350,
