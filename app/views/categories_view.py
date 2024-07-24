@@ -16,9 +16,9 @@ class Expanse(UserControl):
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
         self.update_links()
-        self.grid_transfers.controls.clear()
+        self.grid_categories.controls.clear()
         self.load_categories(link_name)
-        self.grid_transfers.update()
+        self.grid_categories.update()
 
     def update_links(self):
         for link in self.links:
@@ -58,10 +58,10 @@ class Expanse(UserControl):
                     ]
                 )
             )
-            self.grid_transfers.controls.append(item_container)
+            self.grid_categories.controls.append(item_container)
 
         add_button = self.create_add_button()
-        self.grid_transfers.controls.append(add_button)
+        self.grid_categories.controls.append(add_button)
 
     def create_add_button(self):
         return Container(
@@ -92,7 +92,7 @@ class Expanse(UserControl):
             horizontal_alignment="center",
         )
 
-        self.grid_transfers = GridView(
+        self.grid_categories = GridView(
             expand=True,
             max_extent=100,
             spacing=10,
@@ -112,7 +112,7 @@ class Expanse(UserControl):
                         vertical_alignment="end",
                         controls=[]
                     ),
-                    self.grid_transfers,
+                    self.grid_categories,
                 ]
             )
         )

@@ -1,13 +1,17 @@
 import flet
 from flet import *
 
+from app.controllers.category_controller import CategoryController
 from app.views.navigation_view import create_navigation_drawer
+import app.globals as g
 
 
 class Expanse(UserControl):
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__()
         self.selected_link = None
+        self.user_id = user_id
+        self.category_controller = CategoryController()
 
     def click_animation(self, e):
         if e.control.bgcolor == "white10":
@@ -19,6 +23,9 @@ class Expanse(UserControl):
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
         self.update_links()
+        self.grid_categories.controls.clear()
+        self.load_categories(link_name)
+        self.grid_categories.update()
 
     def update_links(self):
         for link in self.links:
@@ -26,6 +33,56 @@ class Expanse(UserControl):
             if link.data == self.selected_link:
                 link.border = border.only(bottom=border.BorderSide(2, "white"))
             link.update()
+
+    def load_categories(self, category_type):
+        categories = self.category_controller.get_user_categories(self.user_id)
+
+        filtered_categories = []
+        for category in categories:
+            if category["category_type"] == category_type:
+                filtered_categories.append(category)
+
+        for category in filtered_categories:
+            __ = Container(
+                width=100,
+                height=100,
+                bgcolor="#132D46",
+                border_radius=15,
+                alignment=alignment.center,
+                on_click=lambda e: self.click_animation(e),
+                padding=padding.all(20),
+            )
+            __.content = Row(
+                alignment="spaceBetween",
+                vertical_alignment="center",
+                spacing=10,
+                controls=[
+                    Row(
+                        alignment="start",
+                        vertical_alignment="center",
+                        spacing=35,
+                        controls=[
+                            Icon(
+                                f"{category['category_icon']}",
+                                size=30,
+                                color="white",
+                            ),
+                            Text(
+                                f"{category['category_name']}",
+                                size=16,
+                                color="white54",
+                            ),
+                        ]
+                    ),
+                    Text(
+                        f"{category['planned_expenses']}$",
+                        size=16,
+                        weight="bold",
+                        color="white",
+                    ),
+                ],
+            )
+            self.grid_categories.controls.append(__)
 
     def build(self):
         self.main_col = Column(
@@ -62,28 +119,28 @@ class Expanse(UserControl):
                     40,
                     title="40%",
                     title_style=normal_title_style,
-                    color="#132D46",  # Użyj niebieskiego
+                    color="#132D46",
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     30,
                     title="30%",
                     title_style=normal_title_style,
-                    color="#01C38D",  # Użyj turkusowego
+                    color="#01C38D",
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     15,
                     title="15%",
                     title_style=normal_title_style,
-                    color="#191E29",  # Użyj ciemnego granatu
+                    color="#191E29",
                     radius=normal_radius,
                 ),
                 PieChartSection(
                     15,
                     title="15%",
                     title_style=normal_title_style,
-                    color="#494E59",  # Użyj szarego
+                    color="#494E59",
                     radius=normal_radius,
                 ),
             ],
@@ -114,7 +171,7 @@ class Expanse(UserControl):
             gradient=LinearGradient(
                 begin=alignment.top_left,
                 end=alignment.bottom_right,
-                colors=["#01C38D", "#132D46"],  # Użyj turkusowego i niebieskiego
+                colors=["#01C38D", "#132D46"],
             ),
             content=Column(
                 expand=True,
@@ -138,7 +195,7 @@ class Expanse(UserControl):
             )
         )
 
-        self.grid_payments = GridView(
+        self.grid_categories = GridView(
             expand=True,
             spacing=12,
             runs_count=1,
@@ -149,7 +206,7 @@ class Expanse(UserControl):
         self.main_content_area = Container(
             width=350,
             height=700 * 0.50,
-            bgcolor="#191E29",  # Użyj ciemnego granatu
+            bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
                 spacing=20,
@@ -176,62 +233,12 @@ class Expanse(UserControl):
                             ),
                         ]
                     ),
-                    self.grid_payments,
+                    self.grid_categories,
                 ]
             )
         )
 
-        image_path = "./app/assets/icon.png"
-
-        payment_list = [
-            ["Utilites", "$100.25", ],
-            ["Phone", "$100.25"],
-            ["Electricity", "$100.25"],
-            ["Car", "$100.25"],
-            ["Travels", "$100.25"],
-            ["Network", "$100.25"],
-        ]
-        for i in payment_list:
-            __ = Container(
-                width=100,
-                height=100,
-                bgcolor="#132D46",  # Użyj niebieskiego
-                border_radius=15,
-                alignment=alignment.center,
-                on_click=lambda e: self.click_animation(e),
-                padding=padding.all(20),
-            )
-            __.content = Row(
-                alignment="spaceBetween",
-                vertical_alignment="center",
-                spacing=10,
-                controls=[
-                    Row(
-                        alignment="start",
-                        vertical_alignment="center",
-                        spacing=10,
-                        controls=[
-                            Image(
-                                src=image_path,
-                                width=30,
-                                height=30,
-                            ),
-                            Text(
-                                f"{i[0]}",
-                                size=16,
-                                color="white54",
-                            ),
-                        ]
-                    ),
-                    Text(
-                        f"{i[1]}",
-                        size=16,
-                        weight="bold",
-                        color="white",
-                    ),
-                ],
-            )
-            self.grid_payments.controls.append(__)
+        self.load_categories("Expenses")
 
         self.links = [
             Container(
@@ -245,7 +252,7 @@ class Expanse(UserControl):
                 on_click=lambda e: self.on_link_click(e, "Expenses"),
                 padding=padding.symmetric(horizontal=10, vertical=5),
                 data="Expenses",
-                border=border.only(bottom=border.BorderSide(2, "transparent")),
+                border=border.only(bottom=border.BorderSide(2, "white")),
                 alignment=alignment.center,
             ),
             Container(
@@ -284,11 +291,11 @@ def dashboard_page(page: Page):
     page.vertical_alignment = "center"
     page.bgcolor = "#191E29"
 
-    app = Expanse()
-    page.add(app)
+    app = Expanse(user_id=g.logged_in_user["user_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(
+        app,
         AppBar(
             Row(
                 controls=[
