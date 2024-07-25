@@ -26,6 +26,7 @@ class Expanse(UserControl):
         self.grid_categories.controls.clear()
         self.load_categories(link_name)
         self.update_total_balance()
+        self.update_chart(link_name)
         self.grid_categories.update()
 
     def update_links(self):
@@ -92,7 +93,6 @@ class Expanse(UserControl):
             )
             self.grid_categories.controls.append(__)
 
-
     def update_total_balance(self):
         categories = self.category_controller.get_user_categories(self.user_id)
         total_balance = 0.0
@@ -112,6 +112,31 @@ class Expanse(UserControl):
 
         self.total_balance_amount.value = f"{total_balance:.2f}$"
 
+    def update_chart(self, category_type):
+        chart_data = self.category_controller.get_chart_data(self.user_id, category_type)
+        self.chart.sections.clear()
+        total_value = sum(item["value"] for item in chart_data)
+
+        for data in chart_data:
+            if total_value > 0:
+                percentage = (data["value"] / total_value) * 100
+            else:
+                percentage = 0
+
+            self.chart.sections.append(
+                PieChartSection(
+                    value=percentage,
+                    title=f"{percentage:.2f}%",
+                    title_style=TextStyle(
+                        size=16,
+                        color="white",
+                        weight="bold",
+                    ),
+                    color=data["color"],
+                    radius=50,
+                )
+            )
+
     def build(self):
         self.main_col = Column(
             expand=True,
@@ -119,59 +144,19 @@ class Expanse(UserControl):
             horizontal_alignment="center",
         )
 
-        normal_radius = 50
-        hover_radius = 60
-        normal_title_style = TextStyle(
-            size=16, color=colors.WHITE, weight=FontWeight.BOLD
-        )
-        hover_title_style = TextStyle(
-            size=22,
-            color=colors.WHITE,
-            weight=FontWeight.BOLD,
-            shadow=BoxShadow(blur_radius=2, color=colors.BLACK54),
-        )
-
         def on_chart_event(e: PieChartEvent):
-            for idx, section in enumerate(chart.sections):
+            for idx, section in enumerate(self.chart.sections):
                 if idx == e.section_index:
-                    section.radius = hover_radius
-                    section.title_style = hover_title_style
+                    section.radius = 60
+                    section.title_style = TextStyle(size=22, color=colors.WHITE, weight=FontWeight.BOLD,
+                                                    shadow=BoxShadow(blur_radius=2, color=colors.BLACK54))
                 else:
-                    section.radius = normal_radius
-                    section.title_style = normal_title_style
-            chart.update()
+                    section.radius = 50
+                    section.title_style = TextStyle(size=16, color=colors.WHITE, weight=FontWeight.BOLD)
+            self.chart.update()
 
-        chart = PieChart(
-            sections=[
-                PieChartSection(
-                    40,
-                    title="40%",
-                    title_style=normal_title_style,
-                    color="#132D46",
-                    radius=normal_radius,
-                ),
-                PieChartSection(
-                    30,
-                    title="30%",
-                    title_style=normal_title_style,
-                    color="#01C38D",
-                    radius=normal_radius,
-                ),
-                PieChartSection(
-                    15,
-                    title="15%",
-                    title_style=normal_title_style,
-                    color="#191E29",
-                    radius=normal_radius,
-                ),
-                PieChartSection(
-                    15,
-                    title="15%",
-                    title_style=normal_title_style,
-                    color="#494E59",
-                    radius=normal_radius,
-                ),
-            ],
+        self.chart = PieChart(
+            sections=[],
             sections_space=0,
             center_space_radius=90,
             on_chart_event=on_chart_event,
@@ -193,6 +178,7 @@ class Expanse(UserControl):
         )
 
         self.update_total_balance()
+        self.update_chart("Expenses")
 
         self.green_container = Container(
             width=350,
@@ -208,7 +194,7 @@ class Expanse(UserControl):
                 alignment=alignment.center,
                 horizontal_alignment="center",
                 controls=[
-                    chart,
+                    self.chart,
                     Container(
                         alignment=alignment.center,
                         content=Column(

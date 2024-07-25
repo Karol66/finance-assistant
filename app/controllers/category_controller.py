@@ -10,3 +10,6 @@ class CategoryController:
 
     def get_user_categories(self, user_id):
         return self.category_service.get_user_categories(user_id)
+
+    def get_chart_data(self, user_id, category_type):
+        return self.category_service.get_chart_data(user_id, category_type)

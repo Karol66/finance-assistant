@@ -6,7 +6,6 @@ drawer = None
 
 def navigate_to(page, destination):
     global drawer  # Odwołanie do globalnej zmiennej drawer
-    print(f"Navigating to: {destination}")
     page.controls.clear()
     if destination == "Login":
         from app.views.login_view import login_page
