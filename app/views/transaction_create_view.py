@@ -292,7 +292,7 @@ class Expanse(UserControl):
         return self.main_col
 
 
-def create_categories_page(page: Page):
+def create_transactions_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
@@ -318,6 +318,3 @@ def create_categories_page(page: Page):
     )
     page.update()
 
-
-if __name__ == '__main__':
-    flet.app(target=create_categories_page)

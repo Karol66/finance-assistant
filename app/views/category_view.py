@@ -20,15 +20,15 @@ class Expanse(UserControl):
         self.load_categories(link_name)
         self.grid_categories.update()
 
+    def create_category_click(self, e):
+        navigate_to(e.page, "Create category")
+
     def update_links(self):
         for link in self.links:
             link.border = border.only(bottom=border.BorderSide(2, "transparent"))
             if link.data == self.selected_link:
                 link.border = border.only(bottom=border.BorderSide(2, "white"))
             link.update()
-
-    def create_category_click(self, e):
-        navigate_to(e.page, "Create categories")
 
     def load_categories(self, category_type):
         categories = self.category_controller.get_user_categories(self.user_id)

@@ -2,7 +2,7 @@ import flet
 from flet import *
 
 from app.controllers.category_controller import CategoryController
-from app.views.navigation_view import create_navigation_drawer
+from app.views.navigation_view import navigate_to, create_navigation_drawer
 import app.globals as g
 
 
@@ -28,6 +28,9 @@ class Expanse(UserControl):
         self.update_total_balance()
         self.update_chart(link_name)
         self.grid_categories.update()
+
+    def create_transaction_click(self, e):
+        navigate_to(e.page, "Create transaction")
 
     def update_links(self):
         for link in self.links:
@@ -182,7 +185,7 @@ class Expanse(UserControl):
 
         self.green_container = Container(
             width=350,
-            height=700 * 0.45,
+            height=700 * 0.55,
             border_radius=30,
             gradient=LinearGradient(
                 begin=alignment.top_left,
@@ -206,6 +209,20 @@ class Expanse(UserControl):
                             ],
                         ),
                         margin=margin.only(top=-320)
+                    ),
+                    Container(
+                        width=50,
+                        height=50,
+                        bgcolor="#FFD700",
+                        border_radius=25,
+                        alignment=alignment.center,
+                        content=Icon(
+                            name="add",
+                            size=24,
+                            color="white"
+                        ),
+                        margin=margin.only(top=-18, left=280, bottom=20, right=20),
+                        on_click=self.create_transaction_click,
                     ),
                 ],
             )
