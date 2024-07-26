@@ -144,6 +144,7 @@ class Expanse(UserControl):
                     Container(
                         width=400,
                         content=Column(
+                            spacing=10,
                             controls=[
                                 self.InputTextField("Category name", False, self.category_name_input, width="100%"),
                                 RadioGroup(
@@ -269,7 +270,7 @@ class Expanse(UserControl):
         more_button = Container(
             width=100,
             height=100,
-            bgcolor="#e3cc02",
+            bgcolor="#494E59",
             border_radius=15,
             alignment=alignment.center,
             content=Column(
