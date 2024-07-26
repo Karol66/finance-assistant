@@ -18,12 +18,12 @@ class Expanse(UserControl):
         self.category_service = CategoryService()
         self.user_id = user_id
 
-    def InputTextField(self, text: str, hide: bool, ref):
+    def InputTextField(self, text: str, hide: bool, ref, width="100%"):
         return Container(
             alignment=alignment.center,
             content=TextField(
                 height=58,
-                width=380,
+                width=width,
                 bgcolor="#f0f3f6",
                 text_size=14,
                 color="black",
@@ -141,34 +141,32 @@ class Expanse(UserControl):
             content=Column(
                 spacing=20,
                 controls=[
-                    Row(
-                        alignment="spaceBetween",
-                        vertical_alignment="end",
-                        controls=[
-                            Column(
-                                controls=[
-                                    self.InputTextField("Category name", False, self.category_name_input),
-                                    RadioGroup(
-                                        ref=self.category_type_radio_group,
-                                        content=Row(
-                                            controls=[
-                                                Radio(value="Expenses", label="Expenses",
-                                                      label_style=TextStyle(color=colors.WHITE)),
-                                                Radio(value="Income", label="Income",
-                                                      label_style=TextStyle(color=colors.WHITE)),
-                                            ],
-                                            spacing=50,
-                                            alignment="center"
-                                        ),
+                    Container(
+                        width=400,
+                        content=Column(
+                            controls=[
+                                self.InputTextField("Category name", False, self.category_name_input, width="100%"),
+                                RadioGroup(
+                                    ref=self.category_type_radio_group,
+                                    content=Row(
+                                        controls=[
+                                            Radio(value="Expenses", label="Expenses",
+                                                  label_style=TextStyle(color=colors.WHITE)),
+                                            Radio(value="Income", label="Income",
+                                                  label_style=TextStyle(color=colors.WHITE)),
+                                        ],
+                                        spacing=50,
                                     ),
-                                    self.InputTextField("Planned expenses", False, self.planned_expenses_input),
-                                ]
-                            )
-                        ]
+                                ),
+                                self.InputTextField("Planned expenses", False, self.planned_expenses_input, width="100%"),
+                            ]
+                        )
+
                     ),
 
                     Row(
                         alignment="center",
+                        wrap=True,
                         controls=[
                             Container(width=30, height=30, bgcolor=colors.RED, border_radius=15, margin=1,
                                       on_click=self.on_color_click, content=Column(alignment="center", controls=[])),
