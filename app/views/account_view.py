@@ -1,5 +1,6 @@
 import flet
 from flet import *
+from app.views.navigation_view import create_navigation_drawer
 
 class Expanse(UserControl):
     def __init__(self, user_id):
@@ -61,7 +62,7 @@ class Expanse(UserControl):
                         ),
                         Text(
                             f"{account['balance']}",
-                            size=16,
+                            size=14,
                             weight="bold",
                             color="white",
                         ),
@@ -79,24 +80,31 @@ class Expanse(UserControl):
 
         self.grid_buttons = GridView(
             expand=False,
-            max_extent=170,
+            max_extent=155,
             spacing=10,
             run_spacing=10,
             controls=[
                 Container(
                     width=150,
                     height=150,
-                    bgcolor="#4CAF50",
+                    bgcolor="#191E29",
                     border_radius=15,
                     alignment=alignment.center,
                     content=Column(
                         alignment="center",
                         horizontal_alignment="center",
                         controls=[
-                            Icon(
-                                icons.HISTORY,
-                                size=40,
-                                color="white",
+                            Container(
+                                width=60,
+                                height=60,
+                                bgcolor="#1EB980",
+                                border_radius=18,
+                                alignment=alignment.center,
+                                content=Icon(
+                                    icons.HISTORY,
+                                    size=40,
+                                    color="white",
+                                ),
                             ),
                             Text(
                                 "Historia przelewów",
@@ -110,17 +118,24 @@ class Expanse(UserControl):
                 Container(
                     width=150,
                     height=150,
-                    bgcolor="#4CAF50",
+                    bgcolor="#191E29",
                     border_radius=15,
                     alignment=alignment.center,
                     content=Column(
                         alignment="center",
                         horizontal_alignment="center",
                         controls=[
-                            Icon(
-                                icons.ADD,
-                                size=40,
-                                color="white",
+                            Container(
+                                width=60,
+                                height=60,
+                                bgcolor="#1EB980",
+                                border_radius=18,
+                                alignment=alignment.center,
+                                content=Icon(
+                                    icons.SYNC,
+                                    size=40,
+                                    color="white",
+                                ),
                             ),
                             Text(
                                 "Nowy przelew",
@@ -144,20 +159,34 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=350,
-            height=700,
+            height=640,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
-                spacing=20,
+                spacing=10,
                 expand=True,
                 alignment="start",
                 horizontal_alignment="center",
                 controls=[
-                    Text(
-                        "Suma: 10 zł",
-                        size=20,
-                        color="white",
-                        weight="bold",
+                    Container(
+                        content=Column(
+                            alignment="center",
+                            horizontal_alignment="center",
+                            spacing=0,
+                            controls=[
+                                Text(
+                                    "Suma:",
+                                    size=16,
+                                    color="white",
+                                ),
+                                Text(
+                                    "10 zł",
+                                    size=28,
+                                    color="white",
+                                    weight="bold",
+                                ),
+                            ],
+                        ),
                     ),
                     self.grid_buttons,
                     self.grid_accounts,
@@ -169,31 +198,49 @@ class Expanse(UserControl):
 
         self.main_col.controls.append(self.main_content_area)
 
+        self.main_col.controls.append(Container(
+            width=60,
+            height=60,
+            bgcolor="yellow",
+            border_radius=30,
+            alignment=alignment.center,
+            content=Icon(
+                icons.ADD,
+                size=40,
+                color="black",
+            ),
+        ))
+
         return self.main_col
 
 
 def account_page(page: Page):
-    page.title = "Finance Assistant"
-    page.horizontal_alignment = CrossAxisAlignment.CENTER
-    page.auto_scroll = False
-    page.scroll = ScrollMode.AUTO
-    page.bgcolor = "#191E29"
+    # page.horizontal_alignment = CrossAxisAlignment.CENTER
+    # page.auto_scroll = False
+    # page.scroll = ScrollMode.AUTO
+    # page.bgcolor = "#191E29"
 
     app = Expanse(user_id="example_user_id")
 
-    page.add(app)
-
-    fab_container = Container(
-        alignment=alignment.bottom_center,
-        margin=margin.only(bottom=20),
-        content=FloatingActionButton(
-            icon=icons.ADD,
-            bgcolor=colors.LIME_300,
-            on_click=lambda e: print("Create account clicked")
-        )
+    drawer = create_navigation_drawer(page)
+    page.add(
+        app,
+        AppBar(
+            Row(
+                controls=[
+                    IconButton(
+                        icon=icons.MENU_ROUNDED,
+                        icon_size=25,
+                        icon_color="white",
+                        on_click=lambda e: page.open(drawer),
+                    ),
+                ],
+            ),
+            title=Text('Account', color="white"),
+            bgcolor="#132D46",
+        ),
     )
 
-    page.overlay.append(fab_container)
     page.update()
 
 
