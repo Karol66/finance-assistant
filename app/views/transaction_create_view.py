@@ -43,8 +43,8 @@ class Expanse(UserControl):
         self.load_categories(link_name)
         self.grid_categories.update()
 
-    def create_category_click(self, e):
-        navigate_to(e.page, "Create category")
+    def category_click(self, e):
+        navigate_to(e.page, "Categories")
 
     def update_links(self):
         for link in self.links:
@@ -93,7 +93,7 @@ class Expanse(UserControl):
             bgcolor="#494E59",
             border_radius=15,
             alignment=alignment.center,
-            on_click=self.create_category_click,
+            on_click=self.category_click,
             content=Column(
                 alignment="center",
                 horizontal_alignment="center",
