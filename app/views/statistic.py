@@ -302,6 +302,7 @@ class Tracker(Container):
 def statistic_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
+    page.scroll = True
 
     graph_in: Container = GraphIn()
     graph_out: Container = GraphOut()

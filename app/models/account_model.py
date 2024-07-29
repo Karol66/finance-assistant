@@ -13,17 +13,22 @@ class AccountModel:
                 account_name VARCHAR(100) NOT NULL,
                 account_type VARCHAR(100) NOT NULL,
                 balance FLOAT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(user_id)
+                account_color VARCHAR(50) NOT NULL,
+                account_icon VARCHAR(50) NOT NULL,
+                card_id INT,
+                include_in_total INT(1) NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id),
+                FOREIGN KEY (card_id) REFERENCES cards(card_id)
             )
         ''')
         self.connection.commit()
 
-    def add_account(self, user_id, account_name, account_type, balance):
+    def add_account(self, user_id, account_name, account_type, balance, account_color, account_icon, card_id, include_in_total):
         cursor = self.connection.cursor()
         cursor.execute('''
-            INSERT INTO accounts (user_id, account_name, account_type, balance)
-            VALUES (%s, %s, %s, %s)
-        ''', (user_id, account_name, account_type, balance))
+            INSERT INTO accounts (user_id, account_name, account_type, balance, account_color, account_icon, card_id, include_in_total)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (user_id, account_name, account_type, balance, account_color, account_icon, card_id, include_in_total))
         self.connection.commit()
 
     def get_accounts_by_user_id(self, user_id):

@@ -6,6 +6,7 @@ from app.views.navigation_view import create_navigation_drawer
 def payments_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
+    page.scroll = True
 
     drawer = create_navigation_drawer(page)
     page.add(

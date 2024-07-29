@@ -219,10 +219,10 @@ class Expanse(UserControl):
 
 
 def account_page(page: Page):
-    # page.horizontal_alignment = CrossAxisAlignment.CENTER
-    # page.auto_scroll = False
-    # page.scroll = ScrollMode.AUTO
-    # page.bgcolor = "#191E29"
+    page.horizontal_alignment = "center"
+    page.vertical_alignment = "center"
+    page.scroll = True
+
 
     app = Expanse(user_id="example_user_id")
 

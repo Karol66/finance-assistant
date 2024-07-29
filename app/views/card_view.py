@@ -1,7 +1,7 @@
 import flet
 import asyncio
 from flet import *
-from app.controllers.card_controller import AccountController
+from app.controllers.card_controller import CardController
 import clipboard
 import app.globals as g
 
@@ -12,7 +12,7 @@ class WalletApp(UserControl):
     def __init__(self, user_id):
         super().__init__()
         self.user_id = user_id
-        self.account_controller = AccountController()
+        self.account_controller = CardController()
         self.snack = SnackBar(Text("Number copied!"))
         self.HeightCount = 25
         self.ColorCount = 0

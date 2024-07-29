@@ -2,6 +2,7 @@ import flet
 from flet import *
 
 from app.models.account_model import AccountModel
+from app.models.card_model import CardModel
 from app.models.category_model import CategoryModel
 from app.models.notification import NotificationModel
 from app.models.payment import PaymentModel
@@ -16,6 +17,9 @@ import app.globals as g
 def initialize_database():
     user_model = UserModel()
     user_model.create_table()
+
+    card_model = CardModel()
+    card_model.create_table()
 
     account_model = AccountModel()
     account_model.create_table()

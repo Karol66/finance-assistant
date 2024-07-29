@@ -1,7 +1,7 @@
 import flet
 from flet import *
 from app.views.navigation_view import create_navigation_drawer
-from app.services.category_service import CategoryService
+from app.controllers.category_controller import CategoryController
 import app.globals as g
 
 
@@ -15,7 +15,7 @@ class Expanse(UserControl):
         self.last_selected_icon = None
         self.last_selected_icon_original_color = None
         self.selected_icon = None
-        self.category_service = CategoryService()
+        self.category_controller = CategoryController()
         self.user_id = user_id
 
     def InputTextField(self, text: str, hide: bool, ref, width="100%"):
@@ -111,7 +111,7 @@ class Expanse(UserControl):
         category_icon = self.selected_icon
 
         # Add the category using the service
-        self.category_service.create_category(self.user_id, category_name, category_type, planned_expenses,
+        self.category_controller.create_category(self.user_id, category_name, category_type, planned_expenses,
                                               category_color, category_icon)
         print("Category added successfully")
 

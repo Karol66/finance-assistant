@@ -1,8 +1,8 @@
-import datetime
-import flet
 from flet import *
-from app.views.navigation_view import navigate_to, create_navigation_drawer
-from app.controllers.category_controller import CategoryController
+
+from app.controllers.account_controller import AccountController
+from app.controllers.card_controller import CardController
+from app.views.navigation_view import create_navigation_drawer
 import app.globals as g
 
 
@@ -16,6 +16,8 @@ class Expanse(UserControl):
         self.last_selected_icon = None
         self.last_selected_icon_original_color = None
         self.selected_icon = None
+        self.account_controller = AccountController()
+        self.card_controller = CardController()
         self.user_id = user_id
 
     def InputTextField(self, text: str, hide: bool, ref, width="100%"):
@@ -101,19 +103,21 @@ class Expanse(UserControl):
 
         self.selected_icon = e.control.data  # Dodana nazwa ikony
 
-    #
+    def add_account(self, e):
+        account_name = self.account_name_input.current.value
+        balance = self.amount_input.current.value
+        account_color = self.selected_color
+        account_icon = self.selected_icon
+        card_id = self.card_selection.value
+        account_type = self.account_type_selection.value
+        if self.include_in_total_switch.current.value:
+            include_in_total = 0
+        else:
+            include_in_total = 1
 
-    def add_category(self, e):
-        category_name = self.category_name_input.current.value
-        planned_expenses = self.planned_expenses_input.current.value
-        category_type = self.category_type_radio_group.current.value
-        category_color = self.selected_color
-        category_icon = self.selected_icon
-
-        # Add the category using the service
-        self.category_service.create_category(self.user_id, category_name, category_type, planned_expenses,
-                                              category_color, category_icon)
-        print("Category added successfully")
+        self.account_controller.create_account(self.user_id, account_name, account_type, balance, account_color,
+                                               account_icon, card_id, include_in_total)
+        print("Account added successfully")
 
     def build(self):
         self.amount_input = Ref[TextField]()
@@ -127,6 +131,27 @@ class Expanse(UserControl):
                 dropdown.Option("Currency 3")
             ],
             label="Select currency",
+            width="100%",
+            bgcolor=colors.WHITE,
+            color=colors.BLACK
+        )
+
+        self.account_type_selection = Dropdown(
+            options=[
+                dropdown.Option("Savings"),
+                dropdown.Option("Checking"),
+                dropdown.Option("Credit")
+            ],
+            label="Select account type",
+            width="100%",
+            bgcolor=colors.WHITE,
+            color=colors.BLACK
+        )
+
+        user_cards = self.card_controller.get_user_cards(self.user_id)
+        self.card_selection = Dropdown(
+            options=[dropdown.Option(card["card_id"], card["card_name"]) for card in user_cards],
+            label="Select card",
             width="100%",
             bgcolor=colors.WHITE,
             color=colors.BLACK
@@ -147,7 +172,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=790,
+            height=870,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -161,6 +186,11 @@ class Expanse(UserControl):
                                 self.InputTextField("Amount", False, self.amount_input, width="100%"),
                                 self.InputTextField("Account name", False, self.account_name_input, width="100%"),
                                 self.currency_selection,
+                                # opakowne żeby był jednakowy odstep w polach w formularzu
+                                Container(
+                                    margin=margin.only(top=10, bottom=10),
+                                    content=self.account_type_selection,
+                                ),
                                 Container(
                                     alignment=alignment.center_left,
                                     content=Row(
@@ -233,7 +263,7 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
-                            on_click=self.add_category
+                            on_click=self.add_account
                         )
                     )
                 ]
@@ -290,6 +320,7 @@ class Expanse(UserControl):
 def create_account_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
+    page.scroll = True
 
     app = Expanse(user_id=g.logged_in_user["user_id"])
 

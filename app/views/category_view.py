@@ -167,6 +167,7 @@ class Expanse(UserControl):
 def categories_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
+    page.scroll = True
 
     app = Expanse(user_id=g.logged_in_user["user_id"])
 
