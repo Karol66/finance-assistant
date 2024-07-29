@@ -1,7 +1,8 @@
+import datetime
 import flet
 from flet import *
-from app.views.navigation_view import create_navigation_drawer
-from app.services.category_service import CategoryService
+from app.views.navigation_view import navigate_to, create_navigation_drawer
+from app.controllers.category_controller import CategoryController
 import app.globals as g
 
 
@@ -15,7 +16,6 @@ class Expanse(UserControl):
         self.last_selected_icon = None
         self.last_selected_icon_original_color = None
         self.selected_icon = None
-        self.category_service = CategoryService()
         self.user_id = user_id
 
     def InputTextField(self, text: str, hide: bool, ref, width="100%"):
@@ -116,9 +116,21 @@ class Expanse(UserControl):
         print("Category added successfully")
 
     def build(self):
-        self.category_name_input = Ref[TextField]()
-        self.planned_expenses_input = Ref[TextField]()
-        self.category_type_radio_group = Ref[RadioGroup]()
+        self.amount_input = Ref[TextField]()
+        self.account_name_input = Ref[TextField]()
+        self.include_in_total_switch = Ref[Switch]()
+
+        self.currency_selection = Dropdown(
+            options=[
+                dropdown.Option("Currency 1"),
+                dropdown.Option("Currency 2"),
+                dropdown.Option("Currency 3")
+            ],
+            label="Select currency",
+            width="100%",
+            bgcolor=colors.WHITE,
+            color=colors.BLACK
+        )
 
         self.main_col = Column(
             expand=True,
@@ -135,7 +147,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=720,
+            height=790,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -146,20 +158,22 @@ class Expanse(UserControl):
                         content=Column(
                             spacing=10,
                             controls=[
-                                self.InputTextField("Category name", False, self.category_name_input, width="100%"),
-                                RadioGroup(
-                                    ref=self.category_type_radio_group,
+                                self.InputTextField("Amount", False, self.amount_input, width="100%"),
+                                self.InputTextField("Account name", False, self.account_name_input, width="100%"),
+                                self.currency_selection,
+                                Container(
+                                    alignment=alignment.center_left,
                                     content=Row(
                                         controls=[
-                                            Radio(value="Expenses", label="Expenses",
-                                                  label_style=TextStyle(color=colors.WHITE)),
-                                            Radio(value="Income", label="Income",
-                                                  label_style=TextStyle(color=colors.WHITE)),
-                                        ],
-                                        spacing=50,
+                                            Text(
+                                                "Do not include in the total account",
+                                                color="white",
+                                            ),
+                                            Switch(ref=self.include_in_total_switch),
+
+                                        ]
                                     ),
-                                ),
-                                self.InputTextField("Planned expenses", False, self.planned_expenses_input, width="100%"),
+                                )
                             ]
                         )
 
@@ -242,6 +256,7 @@ class Expanse(UserControl):
             [icons.WORK],
             [icons.FOREST],
             [icons.TRAVEL_EXPLORE],
+            [icons.TRAVEL_EXPLORE],
         ]
 
         for i in icon_list:
@@ -267,31 +282,12 @@ class Expanse(UserControl):
             )
             self.grid_transfers.controls.append(item_container)
 
-        more_button = Container(
-            width=100,
-            height=100,
-            bgcolor="#494E59",
-            border_radius=15,
-            alignment=alignment.center,
-            content=Column(
-                alignment="center",
-                horizontal_alignment="center",
-                controls=[
-                    Icon(
-                        icons.MORE_HORIZ,
-                        size=30,
-                        color="white",
-                    ),
-                ]
-            )
-        )
-        self.grid_transfers.controls.append(more_button)
         self.main_col.controls.append(self.main_content_area)
 
         return self.main_col
 
 
-def create_category_page(page: Page):
+def create_account_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
@@ -311,7 +307,7 @@ def create_category_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Create categories', color="white"),
+            title=Text('Create account', color="white"),
             bgcolor="#132D46",
         ),
     )

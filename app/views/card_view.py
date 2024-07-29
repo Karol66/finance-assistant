@@ -1,7 +1,7 @@
 import flet
 import asyncio
 from flet import *
-from app.controllers.account_controller import AccountController
+from app.controllers.card_controller import AccountController
 import clipboard
 import app.globals as g
 

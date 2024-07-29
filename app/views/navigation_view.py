@@ -19,6 +19,9 @@ def navigate_to(page, destination):
     elif destination == "Account":
         from app.views.account_view import account_page
         account_page(page)
+    elif destination == "Create account":
+        from app.views.account_create_view import create_account_page
+        create_account_page(page)
     elif destination == "Statistic":
         from app.views.statistic import statistic_page
         statistic_page(page)
@@ -26,14 +29,14 @@ def navigate_to(page, destination):
         from app.views.category_view import categories_page
         categories_page(page)
     elif destination == "Create category":
-        from app.views.category_create_view import create_categories_page
-        create_categories_page(page)
+        from app.views.category_create_view import create_category_page
+        create_category_page(page)
     elif destination == "Transactions":
         from app.views.transaction_view import transactions_page
         transactions_page(page)
     elif destination == "Create transaction":
-        from app.views.transaction_create_view import create_transactions_page
-        create_transactions_page(page)
+        from app.views.transaction_create_view import create_transaction_page
+        create_transaction_page(page)
     elif destination == "Regular payments":
         from app.views.payments import payments_page
         payments_page(page)

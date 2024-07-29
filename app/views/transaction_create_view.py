@@ -248,7 +248,7 @@ class Expanse(UserControl):
 
         return self.main_col
 
-def create_transactions_page(page: Page):
+def create_transaction_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 

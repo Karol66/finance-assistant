@@ -1,12 +1,15 @@
 import flet
 from flet import *
-from app.views.navigation_view import create_navigation_drawer
+from app.views.navigation_view import navigate_to, create_navigation_drawer
 
 class Expanse(UserControl):
     def __init__(self, user_id):
         super().__init__()
         self.selected_link = None
         self.user_id = user_id
+
+    def create_account_click(self, e):
+        navigate_to(e.page, "Create account")
 
     def load_accounts(self, account_type):
         accounts = [
@@ -209,6 +212,7 @@ class Expanse(UserControl):
                 size=40,
                 color="black",
             ),
+            on_click=self.create_account_click
         ))
 
         return self.main_col
