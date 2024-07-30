@@ -5,19 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="beea26d1-6b17-4825-b523-72723ae33e60" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/controllers/transaction_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/transaction_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/63107a3a-6466-42d2-8d40-82764a50b8e3.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/63107a3a-6466-42d2-8d40-82764a50b8e3.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/account_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/account_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/category_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/category_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/transaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/transaction_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/views/account_create_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/account_create_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/account_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/account_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/card_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/card_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/views/category_create_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/category_create_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/category_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/category_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/dashboard_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/dashboard_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/payments.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/payments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/statistic.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/statistic.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/views/transaction_create_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/transaction_create_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -45,57 +41,57 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.account_view.executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.categories.executor": "Run",
-    "Python.create_category_view.executor": "Run",
-    "Python.dashboard (1).executor": "Run",
-    "Python.dashboard.executor": "Run",
-    "Python.dashboard2.executor": "Run",
-    "Python.db_config.executor": "Run",
-    "Python.login.executor": "Run",
-    "Python.login_view.executor": "Run",
-    "Python.main (1).executor": "Run",
-    "Python.main (2).executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.main2 (1).executor": "Run",
-    "Python.menu.executor": "Run",
-    "Python.navigation.executor": "Run",
-    "Python.navigation_view.executor": "Run",
-    "Python.registration (1).executor": "Run",
-    "Python.registration.executor": "Run",
-    "Python.registration_view.executor": "Run",
-    "Python.sidebar.executor": "Run",
-    "Python.signup (1).executor": "Run",
-    "Python.signup.executor": "Run",
-    "Python.statistic.executor": "Run",
-    "Python.theme.executor": "Run",
-    "Python.transaction_create_view.executor": "Run",
-    "Python.user_model.executor": "Run",
-    "Python.wallet.executor": "Run",
-    "Python.wallet_view.executor": "Run",
-    "Python.xd.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ShowUsagesActions.previewPropertyKey": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/Acer/Desktop/finance-assistant/app/views",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.account_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.categories.executor&quot;: &quot;Run&quot;,
+    &quot;Python.create_category_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dashboard (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.dashboard.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dashboard2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.db_config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.login.executor&quot;: &quot;Run&quot;,
+    &quot;Python.login_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.main (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main2 (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.navigation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.navigation_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.registration (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.registration.executor&quot;: &quot;Run&quot;,
+    &quot;Python.registration_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sidebar.executor&quot;: &quot;Run&quot;,
+    &quot;Python.signup (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.signup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.statistic.executor&quot;: &quot;Run&quot;,
+    &quot;Python.theme.executor&quot;: &quot;Run&quot;,
+    &quot;Python.transaction_create_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.user_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wallet.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wallet_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.xd.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ShowUsagesActions.previewPropertyKey&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Acer/Desktop/finance-assistant/app/views&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "sqlite",
-      "mysql_aurora_aws"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;sqlite&quot;,
+      &quot;mysql_aurora_aws&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Acer\Desktop\finance-assistant\app\views" />
@@ -310,7 +306,8 @@
       <workItem from="1722089359576" duration="572000" />
       <workItem from="1722109544315" duration="9958000" />
       <workItem from="1722251271520" duration="1413000" />
-      <workItem from="1722282248540" duration="8468000" />
+      <workItem from="1722282248540" duration="8637000" />
+      <workItem from="1722346025490" duration="6638000" />
     </task>
     <servers />
   </component>
@@ -320,8 +317,8 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/finance_assistant$signup__1_.coverage" NAME="signup (1) Coverage Results" MODIFIED="1719574607218" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$registration.coverage" NAME="registration Coverage Results" MODIFIED="1720024770940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
-    <SUITE FILE_PATH="coverage/finance_assistant$app.coverage" NAME="app Coverage Results" MODIFIED="1721054044396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
     <SUITE FILE_PATH="coverage/finance_assistant$main__1_.coverage" NAME="main (1) Coverage Results" MODIFIED="1721316573123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/finance_assistant$app.coverage" NAME="app Coverage Results" MODIFIED="1721054044396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
     <SUITE FILE_PATH="coverage/finance_assistant$menu.coverage" NAME="menu Coverage Results" MODIFIED="1719862954002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$navigation_view.coverage" NAME="navigation_view Coverage Results" MODIFIED="1721234378574" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
     <SUITE FILE_PATH="coverage/finance_assistant$statistic.coverage" NAME="statistic Coverage Results" MODIFIED="1720545925451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
@@ -333,7 +330,7 @@
     <SUITE FILE_PATH="coverage/finance_assistant$categories.coverage" NAME="categories Coverage Results" MODIFIED="1720450727900" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$db_config.coverage" NAME="db_config Coverage Results" MODIFIED="1720699889584" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/config" />
     <SUITE FILE_PATH="coverage/finance_assistant$registration_view.coverage" NAME="registration_view Coverage Results" MODIFIED="1720714194032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
-    <SUITE FILE_PATH="coverage/finance_assistant$main.coverage" NAME="main Coverage Results" MODIFIED="1722291712731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/finance_assistant$main.coverage" NAME="main Coverage Results" MODIFIED="1722361900993" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance_assistant$main__2_.coverage" NAME="main (2) Coverage Results" MODIFIED="1721054394846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
     <SUITE FILE_PATH="coverage/finance_assistant$theme.coverage" NAME="theme Coverage Results" MODIFIED="1720075823973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/AppData/Local/Programs/Python/Python311/Lib/site-packages/flet_core" />
     <SUITE FILE_PATH="coverage/finance_assistant$account_view.coverage" NAME="account_view Coverage Results" MODIFIED="1722118749595" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />

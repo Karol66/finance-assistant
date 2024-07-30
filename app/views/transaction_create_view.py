@@ -1,8 +1,11 @@
 import datetime
 import flet
 from flet import *
+
+from app.controllers.account_controller import AccountController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
 from app.controllers.category_controller import CategoryController
+from app.controllers.transaction_controller import TransactionController
 import app.globals as g
 
 
@@ -13,6 +16,9 @@ class Expanse(UserControl):
         self.selected_link = None
         self.user_id = user_id
         self.category_controller = CategoryController()
+        self.transaction_controller = TransactionController()
+        self.account_controller = AccountController()
+        self.selected_category_id = None  # To store selected category_id
 
     def InputTextField(self, text: str, hide: bool, ref, width="100%"):
         return Container(
@@ -43,8 +49,17 @@ class Expanse(UserControl):
         self.load_categories(link_name)
         self.grid_categories.update()
 
-    def category_click(self, e):
-        navigate_to(e.page, "Categories")
+    def category_click(self, e, category_id):
+        self.selected_category_id = category_id
+        self.highlight_selected_category()
+        self.grid_categories.update()
+
+    def highlight_selected_category(self):
+        for container in self.grid_categories.controls:
+            if hasattr(container, 'data') and container.data == self.selected_category_id:
+                container.border = border.all(4, colors.WHITE)
+            else:
+                container.border = None
 
     def update_links(self):
         for link in self.links:
@@ -68,6 +83,8 @@ class Expanse(UserControl):
                 bgcolor=category["category_color"],
                 border_radius=15,
                 alignment=alignment.center,
+                data=category["category_id"],
+                on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -109,6 +126,7 @@ class Expanse(UserControl):
 
     def create_datepicker(self):
         def handle_change(e):
+            self.date_value = e.control.value
             self.page.add(Text(f"Date changed: {e.control.value.strftime('%Y-%m-%d')}"))
 
         def handle_dismissal(e):
@@ -136,21 +154,31 @@ class Expanse(UserControl):
             )
         )
 
+    def handle_submit(self, e):
+        amount = float(self.amount_input.current.value)
+        account_id = int(self.account_selection.value)
+        transaction_date = self.date_value
+        description = self.description_input.current.value
+        category_id = self.selected_category_id  # Use the selected category_id
+        user_id = self.user_id
+
+        self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)
+        self.page.add(Text("Transaction added successfully!"))
+
     def build(self):
         self.amount_input = Ref[TextField]()
         self.description_input = Ref[TextField]()
+        self.date_value = datetime.datetime.now()
 
+        user_accounts = self.account_controller.get_user_accounts(self.user_id)
         self.account_selection = Dropdown(
-            options=[
-                dropdown.Option("Account 1"),
-                dropdown.Option("Account 2"),
-                dropdown.Option("Account 3")
-            ],
+            options=[dropdown.Option(account["account_id"], account["account_name"]) for account in user_accounts],
             label="Select account",
             width="100%",
             bgcolor=colors.WHITE,
             color=colors.BLACK
         )
+
 
         self.main_col = Column(
             expand=True,
@@ -167,7 +195,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=700,
+            height=560,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10),
             content=Column(
@@ -188,7 +216,29 @@ class Expanse(UserControl):
                             ]
                         )
                     ),
+
                     self.grid_categories,
+
+                    Container(
+                        alignment=alignment.center,
+                        content=ElevatedButton(
+                            content=Text(
+                                "Add",
+                                size=14,
+                                weight="bold",
+                            ),
+                            bgcolor="#01C38D",
+                            color="white",
+                            style=ButtonStyle(
+                                shape={
+                                    "": RoundedRectangleBorder(radius=8)
+                                },
+                            ),
+                            height=58,
+                            width=300,
+                            on_click=self.handle_submit,
+                        )
+                    ),
                 ]
             )
         )

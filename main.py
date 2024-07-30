@@ -7,7 +7,7 @@ from app.models.category_model import CategoryModel
 from app.models.notification import NotificationModel
 from app.models.payment import PaymentModel
 from app.models.statistic import StatisticModel
-from app.models.transaction import TransactionModel
+from app.models.transaction_model import TransactionModel
 from app.models.user_model import UserModel
 from app.views.dashboard_view import dashboard_page
 from app.views.login_view import login_page
