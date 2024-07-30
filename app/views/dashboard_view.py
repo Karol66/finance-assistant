@@ -2,6 +2,7 @@ import flet
 from flet import *
 
 from app.controllers.category_controller import CategoryController
+from app.controllers.transaction_controller import TransactionController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
 import app.globals as g
 
@@ -12,6 +13,7 @@ class Expanse(UserControl):
         self.selected_link = None
         self.user_id = user_id
         self.category_controller = CategoryController()
+        self.transaction_controller = TransactionController()
 
     def click_animation(self, e):
         if e.control.bgcolor == "white10":
@@ -24,7 +26,7 @@ class Expanse(UserControl):
         self.selected_link = link_name
         self.update_links()
         self.grid_categories.controls.clear()
-        self.load_categories(link_name)
+        self.load_transactions(link_name)
         self.update_total_balance()
         self.update_chart(link_name)
         self.grid_categories.update()
@@ -39,84 +41,79 @@ class Expanse(UserControl):
                 link.border = border.only(bottom=border.BorderSide(2, "white"))
             link.update()
 
-    def load_categories(self, category_type):
+    def load_transactions(self, category_type):
+        transactions = self.transaction_controller.get_transactions_by_user_id(self.user_id)
         categories = self.category_controller.get_user_categories(self.user_id)
 
-        filtered_categories = []
-        for category in categories:
-            if category["category_type"] == category_type:
-                filtered_categories.append(category)
+        category_dict = {cat["category_id"]: cat for cat in categories}
 
-        for category in filtered_categories:
-            __ = Container(
-                width=100,
-                height=100,
-                bgcolor="#132D46",
-                border_radius=15,
-                alignment=alignment.center,
-                on_click=lambda e: self.click_animation(e),
-                padding=padding.all(13),
-            )
-            __.content = Row(
-                alignment="spaceBetween",
-                vertical_alignment="center",
-                spacing=10,
-                controls=[
-                    Row(
-                        alignment="start",
-                        vertical_alignment="center",
-                        spacing=20,
-                        controls=[
-                            Container(
-                                width=40,
-                                height=40,
-                                bgcolor=category['category_color'],
-                                border_radius=20,
-                                alignment=alignment.center,
-                                content=Icon(
-                                    f"{category['category_icon']}",
-                                    size=20,
-                                    color="white",
+        for transaction in transactions:
+            category = category_dict.get(transaction["category_id"])
+            if category and category["category_type"] == category_type:
+                __ = Container(
+                    width=100,
+                    height=100,
+                    bgcolor="#132D46",
+                    border_radius=15,
+                    alignment=alignment.center,
+                    on_click=lambda e: self.click_animation(e),
+                    padding=padding.all(13),
+                )
+                __.content = Row(
+                    alignment="spaceBetween",
+                    vertical_alignment="center",
+                    spacing=10,
+                    controls=[
+                        Row(
+                            alignment="start",
+                            vertical_alignment="center",
+                            spacing=20,
+                            controls=[
+                                Container(
+                                    width=40,
+                                    height=40,
+                                    bgcolor=category['category_color'],
+                                    border_radius=20,
+                                    alignment=alignment.center,
+                                    content=Icon(
+                                        f"{category['category_icon']}",
+                                        size=20,
+                                        color="white",
+                                    ),
                                 ),
-                            ),
-                            Text(
-                                f"{category['category_name']}",
-                                size=16,
-                                color="white54",
-                            ),
-                        ]
-                    ),
-                    Text(
-                        f"{category['planned_expenses']}$",
-                        size=16,
-                        weight="bold",
-                        color="white",
-                    ),
-                ],
-            )
-            self.grid_categories.controls.append(__)
+                                Text(
+                                    f"{category['category_name']}",
+                                    size=16,
+                                    color="white54",
+                                ),
+                            ]
+                        ),
+                        Text(
+                            f"{transaction['amount']}$",
+                            size=16,
+                            weight="bold",
+                            color="white",
+                        ),
+                    ],
+                )
+                self.grid_categories.controls.append(__)
 
     def update_total_balance(self):
-        categories = self.category_controller.get_user_categories(self.user_id)
+        transactions = self.transaction_controller.get_transactions_by_user_id(self.user_id)
         total_balance = 0.0
 
-        for category in categories:
-            planned_expenses = category["planned_expenses"]
+        for transaction in transactions:
+            amount = float(transaction["amount"])
 
-            if planned_expenses:
-                planned_expenses_value = float(planned_expenses)
+            if transaction["category_id"] in [cat["category_id"] for cat in self.category_controller.get_user_categories(self.user_id) if cat["category_type"] == "Income"]:
+                total_balance += amount
             else:
-                planned_expenses_value = 0.0
-
-            if category["category_type"] == "Income":
-                total_balance += planned_expenses_value
-            elif category["category_type"] == "Expenses":
-                total_balance -= planned_expenses_value
+                total_balance -= amount
 
         self.total_balance_amount.value = f"{total_balance:.2f}$"
 
     def update_chart(self, category_type):
-        chart_data = self.category_controller.get_chart_data(self.user_id, category_type)
+        chart_data = self.transaction_controller.get_chart_data(self.user_id, category_type)
         self.chart.sections.clear()
         total_value = sum(item["value"] for item in chart_data)
 
@@ -271,7 +268,7 @@ class Expanse(UserControl):
             )
         )
 
-        self.load_categories("Expenses")
+        self.load_transactions("Expenses")
 
         self.links = [
             Container(
