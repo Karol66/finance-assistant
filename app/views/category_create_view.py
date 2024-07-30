@@ -1,3 +1,4 @@
+import datetime
 import flet
 from flet import *
 from app.views.navigation_view import create_navigation_drawer
@@ -40,23 +41,22 @@ class Expanse(UserControl):
             ),
         )
 
-    # TODO uproscic
     def on_color_click(self, e):
         if self.selected_color_container == e.control:
-            # Odznaczenie obecnie zaznaczonego kontenera
+            # Unselect the currently selected container
             self.selected_color_container.content.controls = []
             self.selected_color_container.update()
             self.selected_color_container = None
             self.selected_color = None
         else:
             if self.selected_color_container:
-                # Usunięcie ikony zatwierdzenia z poprzednio wybranego kontenera
+                # Remove the check icon from the previously selected container
                 self.selected_color_container.content.controls = []
                 self.selected_color_container.update()
 
-            # Dodanie ikony zatwierdzenia do nowo wybranego kontenera
+            # Add the check icon to the newly selected container
             self.selected_color_container = e.control
-            self.selected_color = e.control.bgcolor  # Zapisanie wybranego koloru
+            self.selected_color = e.control.bgcolor  # Save the selected color
             if self.selected_color_container.content:
                 self.selected_color_container.content.controls.append(
                     Container(
@@ -70,38 +70,31 @@ class Expanse(UserControl):
                 )
                 self.selected_color_container.update()
 
-            # Automatyczna zmiana koloru tła ostatnio wybranej ikony, jeśli jest wybrana
+            # Automatically change the background color of the last selected icon, if any
             if self.last_selected_icon:
                 self.last_selected_icon.bgcolor = self.selected_color
                 self.last_selected_icon.update()
 
     def on_icon_click(self, e):
         if self.last_selected_icon:
-            # Przywrócenie oryginalnego koloru i usunięcie cienia z ostatnio wybranego kontenera
+            # Restore the original background color and remove the border from the last selected container
             self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
-            self.last_selected_icon.shadow = None
+            self.last_selected_icon.border = None
             self.last_selected_icon.update()
 
-        # Zapisanie referencji do nowo wybranego kontenera i jego oryginalnego koloru
+        # Save reference to the newly selected container and its original background color
         self.last_selected_icon = e.control
         self.last_selected_icon_original_color = e.control.bgcolor
 
-        # Zmiana koloru nowo wybranego kontenera, jeśli kolor jest wybrany
+        # Change the background color of the newly selected container, if a color is selected
         if self.selected_color:
             e.control.bgcolor = self.selected_color
 
-        # Dodanie cienia do nowo wybranego kontenera
-        e.control.shadow = BoxShadow(
-            spread_radius=2,
-            blur_radius=10,
-            color="white",
-            offset=Offset(0, 0)
-        )
+        # Add border to the newly selected container
+        e.control.border = border.all(4, colors.WHITE)
         e.control.update()
 
-        self.selected_icon = e.control.data  # Dodana nazwa ikony
-
-    #
+        self.selected_icon = e.control.data  # Store the selected icon name
 
     def add_category(self, e):
         category_name = self.category_name_input.current.value
@@ -112,7 +105,7 @@ class Expanse(UserControl):
 
         # Add the category using the service
         self.category_controller.create_category(self.user_id, category_name, category_type, planned_expenses,
-                                              category_color, category_icon)
+                                                 category_color, category_icon)
         print("Category added successfully")
 
     def build(self):
@@ -156,7 +149,8 @@ class Expanse(UserControl):
                                             Radio(value="Income", label="Income",
                                                   label_style=TextStyle(color=colors.WHITE)),
                                         ],
-                                        spacing=50,
+                                        alignment="center",
+                                        spacing=80,
                                     ),
                                 ),
                                 self.InputTextField("Planned expenses", False, self.planned_expenses_input, width="100%"),
@@ -252,7 +246,7 @@ class Expanse(UserControl):
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=self.on_icon_click,
-                data=i[0],  # Dodaje nazwę ikony jako dane do kontenera
+                data=i[0],  # Add the icon name as data to the container
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",

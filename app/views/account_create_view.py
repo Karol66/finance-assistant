@@ -81,7 +81,7 @@ class Expanse(UserControl):
         if self.last_selected_icon:
             # Przywrócenie oryginalnego koloru i usunięcie cienia z ostatnio wybranego kontenera
             self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
-            self.last_selected_icon.shadow = None
+            self.last_selected_icon.border = None
             self.last_selected_icon.update()
 
         # Zapisanie referencji do nowo wybranego kontenera i jego oryginalnego koloru
@@ -92,13 +92,8 @@ class Expanse(UserControl):
         if self.selected_color:
             e.control.bgcolor = self.selected_color
 
-        # Dodanie cienia do nowo wybranego kontenera
-        e.control.shadow = BoxShadow(
-            spread_radius=2,
-            blur_radius=10,
-            color="white",
-            offset=Offset(0, 0)
-        )
+        # Dodanie konturow do nowo wybranego kontenera
+        e.control.border = border.all(4, colors.WHITE)
         e.control.update()
 
         self.selected_icon = e.control.data  # Dodana nazwa ikony
@@ -244,6 +239,7 @@ class Expanse(UserControl):
                             ),
                         ]
                     ),
+
                     self.grid_transfers,
 
                     Container(
