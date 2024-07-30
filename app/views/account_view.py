@@ -1,78 +1,82 @@
 import flet
 from flet import *
+
+from app.controllers.account_controller import AccountController
 from app.views.navigation_view import navigate_to, create_navigation_drawer
+import app.globals as g
+
 
 class Expanse(UserControl):
     def __init__(self, user_id):
         super().__init__()
         self.selected_link = None
         self.user_id = user_id
+        self.account_controller = AccountController()
 
     def create_account_click(self, e):
         navigate_to(e.page, "Create account")
 
-    def load_accounts(self, account_type):
-        accounts = [
-            {"account_name": "Main", "balance": "10 zł", "account_color": "green", "account_icon": icons.ACCOUNT_BALANCE},
-            {"account_name": "Savings", "balance": "50 zł", "account_color": "blue", "account_icon": icons.SAVINGS},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-            {"account_name": "Expenses", "balance": "200 zł", "account_color": "red", "account_icon": icons.MONEY},
-        ]
+    def load_accounts(self):
+        accounts = self.account_controller.get_user_accounts(self.user_id)
 
         for account in accounts:
             __ = Container(
-                width=300,
-                height=50,
+                width=100,
+                height=100,
                 bgcolor="#132D46",
                 border_radius=15,
                 alignment=alignment.center,
-                padding=padding.all(5),
-                content=Row(
-                    alignment="spaceBetween",
-                    vertical_alignment="center",
-                    spacing=10,
-                    controls=[
-                        Row(
-                            alignment="start",
-                            vertical_alignment="center",
-                            spacing=20,
-                            controls=[
-                                Container(
-                                    width=40,
-                                    height=40,
-                                    bgcolor=account['account_color'],
-                                    border_radius=20,
-                                    alignment=alignment.center,
-                                    content=Icon(
-                                        f"{account['account_icon']}",
-                                        size=20,
-                                        color="white",
-                                    ),
-                                ),
-                                Text(
-                                    f"{account['account_name']}",
-                                    size=16,
+                padding=padding.all(13),
+            )
+            __.content = Row(
+                alignment="spaceBetween",
+                vertical_alignment="center",
+                spacing=10,
+                controls=[
+                    Row(
+                        alignment="start",
+                        vertical_alignment="center",
+                        spacing=20,
+                        controls=[
+                            Container(
+                                width=40,
+                                height=40,
+                                bgcolor=account['account_color'],
+                                border_radius=20,
+                                alignment=alignment.center,
+                                content=Icon(
+                                    f"{account['account_icon']}",
+                                    size=20,
                                     color="white",
                                 ),
-                            ]
-                        ),
-                        Text(
-                            f"{account['balance']}",
-                            size=14,
-                            weight="bold",
-                            color="white",
-                        ),
-                    ],
-                )
+                            ),
+                            Text(
+                                f"{account['account_name']}",
+                                size=16,
+                                color="white54",
+                            ),
+                        ]
+                    ),
+                    Text(
+                        f"{account['balance']}$",
+                        size=16,
+                        weight="bold",
+                        color="white",
+                    ),
+                ],
             )
             self.grid_accounts.controls.append(__)
+
+    def update_total_balance(self):
+        accounts = self.account_controller.get_user_accounts(self.user_id)
+        total_balance = 0.0
+
+        for account in accounts:
+            if account["include_in_total"] == 1:
+                amount = float(account["balance"])
+                total_balance += amount
+
+        self.total_balance_amount.value = f"{total_balance:.2f}$"
 
     def build(self):
         self.main_col = Column(
@@ -160,6 +164,15 @@ class Expanse(UserControl):
             child_aspect_ratio=5.0,
         )
 
+        self.total_balance_amount = Text(
+            "0.00$",
+            size=24,
+            weight="bold",
+            color="white"
+        )
+
+        self.update_total_balance()
+
         self.main_content_area = Container(
             width=350,
             height=640,
@@ -182,12 +195,7 @@ class Expanse(UserControl):
                                     size=16,
                                     color="white",
                                 ),
-                                Text(
-                                    "10 zł",
-                                    size=28,
-                                    color="white",
-                                    weight="bold",
-                                ),
+                                self.total_balance_amount
                             ],
                         ),
                     ),
@@ -197,7 +205,7 @@ class Expanse(UserControl):
             )
         )
 
-        self.load_accounts("Accounts")
+        self.load_accounts()
 
         self.main_col.controls.append(self.main_content_area)
 
@@ -223,8 +231,7 @@ def account_page(page: Page):
     page.vertical_alignment = "center"
     page.scroll = True
 
-
-    app = Expanse(user_id="example_user_id")
+    app = Expanse(user_id=g.logged_in_user["user_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(

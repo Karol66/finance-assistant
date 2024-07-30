@@ -30,7 +30,7 @@ class TransactionModel:
         ''', (amount, account_id, transaction_date, description, category_id, user_id))
         self.connection.commit()
 
-    def get_transactions_by_user_id(self, user_id):
+    def get_transactions(self, user_id):
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute('''
             SELECT t.* FROM transactions t

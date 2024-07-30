@@ -9,11 +9,11 @@ class TransactionService:
     def add_transaction(self, amount, account_id, transaction_date, description, category_id, user_id):
         return self.transaction_model.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)
 
-    def get_transactions_by_user_id(self, user_id):
-        return self.transaction_model.get_transactions_by_user_id(user_id)
+    def get_transactions(self, user_id):
+        return self.transaction_model.get_transactions(user_id)
 
     def get_chart_data(self, user_id, category_type):
-        transactions = self.get_transactions_by_user_id(user_id)
+        transactions = self.get_transactions(user_id)
         categories = CategoryController().get_user_categories(user_id)
 
         category_dict = {cat["category_id"]: cat for cat in categories}

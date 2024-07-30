@@ -1,8 +1,10 @@
 import time
 import flet
 from flet import *
-from app.views.navigation_view import create_navigation_drawer
+
 import locale
+
+from app.views.navigation_view import create_navigation_drawer
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
@@ -302,7 +304,6 @@ class Tracker(Container):
 def statistic_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
-    page.scroll = True
 
     graph_in: Container = GraphIn()
     graph_out: Container = GraphOut()

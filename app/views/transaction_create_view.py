@@ -54,6 +54,9 @@ class Expanse(UserControl):
         self.highlight_selected_category()
         self.grid_categories.update()
 
+    def create_category_click(self, e):
+        navigate_to(e.page, "Create category")
+
     def highlight_selected_category(self):
         for container in self.grid_categories.controls:
             if hasattr(container, 'data') and container.data == self.selected_category_id:
@@ -100,17 +103,17 @@ class Expanse(UserControl):
             )
             self.grid_categories.controls.append(item_container)
 
-        add_button = self.create_add_button()
+        add_button = self.create_more_button()
         self.grid_categories.controls.append(add_button)
 
-    def create_add_button(self):
+    def create_more_button(self):
         return Container(
             width=100,
             height=100,
             bgcolor="#494E59",
             border_radius=15,
             alignment=alignment.center,
-            on_click=self.category_click,
+            on_click=self.create_category_click,
             content=Column(
                 alignment="center",
                 horizontal_alignment="center",
@@ -159,7 +162,7 @@ class Expanse(UserControl):
         account_id = int(self.account_selection.value)
         transaction_date = self.date_value
         description = self.description_input.current.value
-        category_id = self.selected_category_id  # Use the selected category_id
+        category_id = self.selected_category_id
         user_id = self.user_id
 
         self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)

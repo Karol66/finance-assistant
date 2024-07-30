@@ -25,11 +25,11 @@ class Expanse(UserControl):
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
         self.update_links()
-        self.grid_categories.controls.clear()
+        self.grid_transactions.controls.clear()
         self.load_transactions(link_name)
         self.update_total_balance()
         self.update_chart(link_name)
-        self.grid_categories.update()
+        self.grid_transactions.update()
 
     def create_transaction_click(self, e):
         navigate_to(e.page, "Create transaction")
@@ -42,7 +42,7 @@ class Expanse(UserControl):
             link.update()
 
     def load_transactions(self, category_type):
-        transactions = self.transaction_controller.get_transactions_by_user_id(self.user_id)
+        transactions = self.transaction_controller.get_transactions(self.user_id)
         categories = self.category_controller.get_user_categories(self.user_id)
 
         category_dict = {cat["category_id"]: cat for cat in categories}
@@ -96,10 +96,10 @@ class Expanse(UserControl):
                         ),
                     ],
                 )
-                self.grid_categories.controls.append(__)
+                self.grid_transactions.controls.append(__)
 
     def update_total_balance(self):
-        transactions = self.transaction_controller.get_transactions_by_user_id(self.user_id)
+        transactions = self.transaction_controller.get_transactions(self.user_id)
         total_balance = 0.0
 
         for transaction in transactions:
@@ -225,7 +225,7 @@ class Expanse(UserControl):
             )
         )
 
-        self.grid_categories = GridView(
+        self.grid_transactions = GridView(
             expand=True,
             spacing=12,
             runs_count=1,
@@ -263,7 +263,7 @@ class Expanse(UserControl):
                             ),
                         ]
                     ),
-                    self.grid_categories,
+                    self.grid_transactions,
                 ]
             )
         )
