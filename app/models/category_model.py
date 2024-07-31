@@ -1,5 +1,6 @@
 from app.config.db_config import create_connection
 
+
 class CategoryModel:
     def __init__(self):
         self.connection = create_connection()
@@ -32,3 +33,22 @@ class CategoryModel:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute('SELECT * FROM categories WHERE user_id = %s', (user_id,))
         return cursor.fetchall()
+
+    def get_category_by_id(self, category_id):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM categories WHERE category_id = %s', (category_id,))
+        return cursor.fetchone()
+
+    def update_category(self, category_id, user_id, category_name, category_type, planned_expenses, category_color, category_icon):
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            UPDATE categories 
+            SET category_name = %s, category_type = %s, planned_expenses = %s, category_color = %s, category_icon = %s
+            WHERE category_id = %s AND user_id = %s
+        ''', (category_name, category_type, planned_expenses, category_color, category_icon, category_id, user_id))
+        self.connection.commit()
+
+    def delete_category(self, category_id, user_id):
+        cursor = self.connection.cursor()
+        cursor.execute('DELETE FROM categories WHERE category_id = %s AND user_id = %s', (category_id, user_id))
+        self.connection.commit()

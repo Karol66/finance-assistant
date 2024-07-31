@@ -31,6 +31,9 @@ def navigate_to(page, destination):
     elif destination == "Create category":
         from app.views.category_create_view import create_category_page
         create_category_page(page)
+    elif destination == "Manage category":
+        from app.views.category_management_view import manage_category_page
+        manage_category_page(page)
     elif destination == "Transaction":
         from app.views.transaction_view import transaction_page
         transaction_page(page)

@@ -12,6 +12,7 @@ class Expanse(UserControl):
         self.selected_link = None
         self.user_id = user_id
         self.category_controller = CategoryController()
+        self.selected_category_id = None
 
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
@@ -19,6 +20,12 @@ class Expanse(UserControl):
         self.grid_categories.controls.clear()
         self.load_categories(link_name)
         self.grid_categories.update()
+
+    def category_click(self, e, category_id):
+        # Pobierz dane kategorii i zapisz do zmiennej globalnej
+        category = self.category_controller.get_category_by_id(category_id)
+        g.selected_category = category
+        navigate_to(e.page, "Manage category")
 
     def create_category_click(self, e):
         navigate_to(e.page, "Create category")
@@ -45,6 +52,8 @@ class Expanse(UserControl):
                 bgcolor=category["category_color"],
                 border_radius=15,
                 alignment=alignment.center,
+                data=category["category_id"],
+                on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -80,7 +89,6 @@ class Expanse(UserControl):
                         size=30,
                         color="white",
                     ),
-                    # Text("Create", size=12, color="white", weight="bold"),
                 ]
             )
         )

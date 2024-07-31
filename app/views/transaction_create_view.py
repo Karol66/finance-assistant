@@ -18,7 +18,7 @@ class Expanse(UserControl):
         self.category_controller = CategoryController()
         self.transaction_controller = TransactionController()
         self.account_controller = AccountController()
-        self.selected_category_id = None  # To store selected category_id
+        self.selected_category_id = None
 
     def InputTextField(self, text: str, hide: bool, ref, width="100%"):
         return Container(
