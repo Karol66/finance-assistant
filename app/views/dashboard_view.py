@@ -34,6 +34,9 @@ class Expanse(UserControl):
     def create_transaction_click(self, e):
         navigate_to(e.page, "Create transaction")
 
+    def transaction_click(self, e):
+        navigate_to(e.page, "Transaction")
+
     def update_links(self):
         for link in self.links:
             link.border = border.only(bottom=border.BorderSide(2, "transparent"))
@@ -259,7 +262,8 @@ class Expanse(UserControl):
                                     size=10,
                                     weight="w400",
                                     color="white54",
-                                )
+                                ),
+                                on_click=self.transaction_click
                             ),
                         ]
                     ),

@@ -3,7 +3,7 @@ from flet import *
 from app.views.navigation_view import create_navigation_drawer
 
 
-def transactions_page(page: Page):
+def transaction_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
     page.scroll = True
@@ -21,7 +21,7 @@ def transactions_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Notifications', color="white"),
+            title=Text('Transactions', color="white"),
             bgcolor="#132D46",
         ),
     )
@@ -29,4 +29,4 @@ def transactions_page(page: Page):
 
 
 if __name__ == '__main__':
-    flet.app(target=transactions_page)
+    flet.app(target=transaction_page)

@@ -305,7 +305,7 @@ def create_category_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Create categories', color="white"),
+            title=Text('Create category', color="white"),
             bgcolor="#132D46",
         ),
     )

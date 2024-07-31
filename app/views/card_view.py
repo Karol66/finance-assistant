@@ -440,7 +440,7 @@ def card_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Settings', color="white"),
+            title=Text('Cards', color="white"),
             bgcolor="#132D46",
         ),
     )

@@ -322,7 +322,7 @@ def create_transaction_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Categories', color="white"),
+            title=Text('Create transaction', color="white"),
             bgcolor="#132D46",
         ),
     )
