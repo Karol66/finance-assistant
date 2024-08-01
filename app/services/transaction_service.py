@@ -10,7 +10,7 @@ class TransactionService:
         return self.transaction_model.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)
 
     def get_transactions(self, user_id):
-        return self.transaction_model.get_transactions(user_id)
+        return self.transaction_model.get_user_transactions(user_id)
 
     def get_chart_data(self, user_id, category_type):
         transactions = self.get_transactions(user_id)

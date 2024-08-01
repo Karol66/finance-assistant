@@ -5,15 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="beea26d1-6b17-4825-b523-72723ae33e60" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/views/category_management_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/category_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/category_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/globals.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/account_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/account_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/models/category_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/category_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/transaction_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/transaction_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/account_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/account_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/category_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/category_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/category_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/category_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/navigation_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/navigation_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/transaction_create_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/transaction_create_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/transaction_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/transaction_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -331,7 +329,8 @@
       <workItem from="1722282248540" duration="8637000" />
       <workItem from="1722346025490" duration="12741000" />
       <workItem from="1722432972667" duration="1740000" />
-      <workItem from="1722451425475" duration="6409000" />
+      <workItem from="1722451425475" duration="7210000" />
+      <workItem from="1722541479953" duration="509000" />
     </task>
     <servers />
   </component>
@@ -352,8 +351,8 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/finance_assistant$signup__1_.coverage" NAME="signup (1) Coverage Results" MODIFIED="1719574607218" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$registration.coverage" NAME="registration Coverage Results" MODIFIED="1720024770940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
-    <SUITE FILE_PATH="coverage/finance_assistant$main__1_.coverage" NAME="main (1) Coverage Results" MODIFIED="1721316573123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance_assistant$app.coverage" NAME="app Coverage Results" MODIFIED="1721054044396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
+    <SUITE FILE_PATH="coverage/finance_assistant$main__1_.coverage" NAME="main (1) Coverage Results" MODIFIED="1721316573123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance_assistant$menu.coverage" NAME="menu Coverage Results" MODIFIED="1719862954002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$navigation_view.coverage" NAME="navigation_view Coverage Results" MODIFIED="1721234378574" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
     <SUITE FILE_PATH="coverage/finance_assistant$statistic.coverage" NAME="statistic Coverage Results" MODIFIED="1722367972694" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
@@ -365,7 +364,7 @@
     <SUITE FILE_PATH="coverage/finance_assistant$categories.coverage" NAME="categories Coverage Results" MODIFIED="1720450727900" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/finance_assistant$db_config.coverage" NAME="db_config Coverage Results" MODIFIED="1720699889584" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/config" />
     <SUITE FILE_PATH="coverage/finance_assistant$registration_view.coverage" NAME="registration_view Coverage Results" MODIFIED="1720714194032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />
-    <SUITE FILE_PATH="coverage/finance_assistant$main.coverage" NAME="main Coverage Results" MODIFIED="1722457866917" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/finance_assistant$main.coverage" NAME="main Coverage Results" MODIFIED="1722541813995" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/finance_assistant$main__2_.coverage" NAME="main (2) Coverage Results" MODIFIED="1721054394846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/wallet" />
     <SUITE FILE_PATH="coverage/finance_assistant$theme.coverage" NAME="theme Coverage Results" MODIFIED="1720075823973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/AppData/Local/Programs/Python/Python311/Lib/site-packages/flet_core" />
     <SUITE FILE_PATH="coverage/finance_assistant$account_view.coverage" NAME="account_view Coverage Results" MODIFIED="1722118749595" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/views" />

@@ -31,7 +31,7 @@ class AccountModel:
         ''', (user_id, account_name, account_type, balance, account_color, account_icon, card_id, include_in_total))
         self.connection.commit()
 
-    def get_accounts_by_user_id(self, user_id):
+    def get_user_accounts(self, user_id):
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute('SELECT * FROM accounts WHERE user_id = %s', (user_id,))
         return cursor.fetchall()

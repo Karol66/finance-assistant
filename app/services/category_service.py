@@ -10,7 +10,7 @@ class CategoryService:
         self.category_model.add_category(user_id, category_name, category_type, planned_expanses, category_color, category_icon)
 
     def get_user_categories(self, user_id):
-        return self.category_model.get_categories_by_user_id(user_id)
+        return self.category_model.get_user_categories(user_id)
 
     def get_category_by_id(self, category_id):
         return self.category_model.get_category_by_id(category_id)

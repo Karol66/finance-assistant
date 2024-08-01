@@ -29,7 +29,7 @@ class CategoryModel:
         ''', (user_id, category_name, category_type, planned_expenses, category_color, category_icon))
         self.connection.commit()
 
-    def get_categories_by_user_id(self, user_id):
+    def get_user_categories(self, user_id):
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute('SELECT * FROM categories WHERE user_id = %s', (user_id,))
         return cursor.fetchall()
