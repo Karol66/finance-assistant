@@ -5,10 +5,9 @@ from app.views.navigation_view import create_navigation_drawer
 from app.controllers.category_controller import CategoryController
 import app.globals as g
 
-
 class Expanse(UserControl):
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, category_id):
         super().__init__()
         self.selected_link = None
         self.selected_color_container = None
@@ -18,8 +17,17 @@ class Expanse(UserControl):
         self.selected_icon = None
         self.category_controller = CategoryController()
         self.user_id = user_id
+        self.category_id = category_id
 
-    def InputTextField(self, text: str, hide: bool, ref, width="100%"):
+        # Pobierz dane kategorii ze zmiennych globalnych
+        self.category_data = g.selected_category  # Pobranie danych kategorii ze zmiennej globalnej
+        self.category_name = self.category_data.get("category_name", "")
+        self.category_type = self.category_data.get("category_type", "Expenses")
+        self.category_color = self.category_data.get("category_color", colors.GREY)
+        self.category_icon = self.category_data.get("category_icon", icons.MORE_HORIZ)
+        self.planned_expenses = self.category_data.get("planned_expenses", "")
+
+    def InputTextField(self, text: str, hide: bool, ref, width="100%", value=""):
         return Container(
             alignment=alignment.center,
             content=TextField(
@@ -38,25 +46,26 @@ class Expanse(UserControl):
                 ),
                 password=hide,
                 ref=ref,
+                value=value,  # Ustaw wartość początkową
             ),
         )
 
     def on_color_click(self, e):
         if self.selected_color_container == e.control:
-            # Unselect the currently selected container
+            # Odznacz aktualnie wybrany kontener
             self.selected_color_container.content.controls = []
             self.selected_color_container.update()
             self.selected_color_container = None
             self.selected_color = None
         else:
             if self.selected_color_container:
-                # Remove the check icon from the previously selected container
+                # Usuń ikonę z wcześniej wybranego kontenera
                 self.selected_color_container.content.controls = []
                 self.selected_color_container.update()
 
-            # Add the check icon to the newly selected container
+            # Dodaj ikonę do nowo wybranego kontenera
             self.selected_color_container = e.control
-            self.selected_color = e.control.bgcolor  # Save the selected color
+            self.selected_color = e.control.bgcolor  # Zapisz wybrany kolor
             if self.selected_color_container.content:
                 self.selected_color_container.content.controls.append(
                     Container(
@@ -70,43 +79,46 @@ class Expanse(UserControl):
                 )
                 self.selected_color_container.update()
 
-            # Automatically change the background color of the last selected icon, if any
+            # Automatycznie zmień kolor tła ostatnio wybranej ikony, jeśli istnieje
             if self.last_selected_icon:
                 self.last_selected_icon.bgcolor = self.selected_color
                 self.last_selected_icon.update()
 
     def on_icon_click(self, e):
         if self.last_selected_icon:
-            # Restore the original background color and remove the border from the last selected container
+            # Przywróć oryginalny kolor tła i usuń obramowanie z ostatnio wybranego kontenera
             self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
             self.last_selected_icon.border = None
             self.last_selected_icon.update()
 
-        # Save reference to the newly selected container and its original background color
+        # Zapisz odniesienie do nowo wybranego kontenera i jego oryginalnego koloru tła
         self.last_selected_icon = e.control
         self.last_selected_icon_original_color = e.control.bgcolor
 
-        # Change the background color of the newly selected container, if a color is selected
+        # Zmień kolor tła nowo wybranego kontenera, jeśli kolor jest wybrany
         if self.selected_color:
             e.control.bgcolor = self.selected_color
 
-        # Add border to the newly selected container
+        # Dodaj obramowanie do nowo wybranego kontenera
         e.control.border = border.all(4, colors.WHITE)
         e.control.update()
 
-        self.selected_icon = e.control.data  # Store the selected icon name
+        self.selected_icon = e.control.data  # Zapisz wybraną ikonę
 
-    def add_category(self, e):
+    def update_category(self, e):
         category_name = self.category_name_input.current.value
         planned_expenses = self.planned_expenses_input.current.value
         category_type = self.category_type_radio_group.current.value
         category_color = self.selected_color
         category_icon = self.selected_icon
 
-        # Add the category using the service
-        self.category_controller.create_category(self.user_id, category_name, category_type, planned_expenses,
+        self.category_controller.update_category(self.user_id, self.category_id, category_name, category_type, planned_expenses,
                                                  category_color, category_icon)
-        print("Category added successfully")
+        print("Category updated successfully")
+
+    def delete_category(self, e):
+        self.category_controller.delete_category(self.category_id, self.user_id)
+        print("Delete category method called.")
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -139,9 +151,16 @@ class Expanse(UserControl):
                         content=Column(
                             spacing=10,
                             controls=[
-                                self.InputTextField("Category name", False, self.category_name_input, width="100%"),
+                                self.InputTextField(
+                                    "Category name",
+                                    False,
+                                    self.category_name_input,
+                                    width="100%",
+                                    value=self.category_name
+                                ),
                                 RadioGroup(
                                     ref=self.category_type_radio_group,
+                                    value=self.category_type,  # Ustaw wartość początkową
                                     content=Row(
                                         controls=[
                                             Radio(value="Expenses", label="Expenses",
@@ -153,7 +172,13 @@ class Expanse(UserControl):
                                         spacing=80,
                                     ),
                                 ),
-                                self.InputTextField("Planned expenses", False, self.planned_expenses_input, width="100%"),
+                                self.InputTextField(
+                                    "Planned expenses",
+                                    False,
+                                    self.planned_expenses_input,
+                                    width="100%",
+                                    value=self.planned_expenses
+                                ),
                             ]
                         )
 
@@ -200,7 +225,7 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Add",
+                                "Update",
                                 size=14,
                                 weight="bold",
                             ),
@@ -213,7 +238,27 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
-                            on_click=self.add_category
+                            on_click=self.update_category
+                        )
+                    ),
+                    Container(
+                        alignment=alignment.center,
+                        content=ElevatedButton(
+                            content=Text(
+                                "Delete",
+                                size=14,
+                                weight="bold",
+                            ),
+                            bgcolor="#01C38D",
+                            color="white",
+                            style=ButtonStyle(
+                                shape={
+                                    "": RoundedRectangleBorder(radius=8)
+                                },
+                            ),
+                            height=58,
+                            width=300,
+                            on_click=self.delete_category
                         )
                     )
                 ]
@@ -239,14 +284,17 @@ class Expanse(UserControl):
         ]
 
         for i in icon_list:
+            # Sprawdź, czy ta ikona jest wybrana
+            icon_bgcolor = self.category_color if i[0] == self.category_icon else "#132D46"
+
             item_container = Container(
                 width=100,
                 height=100,
-                bgcolor="#132D46",
+                bgcolor=icon_bgcolor,
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=self.on_icon_click,
-                data=i[0],  # Add the icon name as data to the container
+                data=i[0],  # Dodaj nazwę ikony jako dane do kontenera
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -289,7 +337,7 @@ def manage_category_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
-    app = Expanse(user_id=g.logged_in_user["user_id"])
+    app = Expanse(user_id=g.logged_in_user["user_id"], category_id=g.selected_category["category_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(
