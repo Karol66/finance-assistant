@@ -27,6 +27,9 @@ class Expanse(UserControl):
         self.category_icon = self.category_data.get("category_icon", icons.MORE_HORIZ)
         self.planned_expenses = self.category_data.get("planned_expenses", "")
 
+        # Referencja do ikony załadowanej z bazy danych
+        self.loaded_icon_container = None  # Śledzenie załadowanej ikony
+
     def InputTextField(self, text: str, hide: bool, ref, width="100%", value=""):
         return Container(
             alignment=alignment.center,
@@ -79,23 +82,34 @@ class Expanse(UserControl):
                 )
                 self.selected_color_container.update()
 
-            # Automatycznie zmień kolor tła ostatnio wybranej ikony, jeśli istnieje
+            # Zastosuj logikę zmiany koloru tutaj
             if self.last_selected_icon:
                 self.last_selected_icon.bgcolor = self.selected_color
                 self.last_selected_icon.update()
+            else:
+                # Zmień kolor załadowanej ikony, jeśli nie wybrano żadnej ikony
+                if self.loaded_icon_container:
+                    self.loaded_icon_container.bgcolor = self.selected_color
+                    self.loaded_icon_container.update()
 
     def on_icon_click(self, e):
+        # Przywróć kolor tła załadowanej ikony z bazy danych
+        if self.loaded_icon_container and self.loaded_icon_container != e.control:
+            self.loaded_icon_container.bgcolor = "#132D46"
+            self.loaded_icon_container.border = None
+            self.loaded_icon_container.update()
+
         if self.last_selected_icon:
             # Przywróć oryginalny kolor tła i usuń obramowanie z ostatnio wybranego kontenera
-            self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
+            self.last_selected_icon.bgcolor = "#132D46"
             self.last_selected_icon.border = None
             self.last_selected_icon.update()
 
-        # Zapisz odniesienie do nowo wybranego kontenera i jego oryginalnego koloru tła
+        # Zapisz referencję do nowo wybranego kontenera i jego oryginalnego koloru tła
         self.last_selected_icon = e.control
         self.last_selected_icon_original_color = e.control.bgcolor
 
-        # Zmień kolor tła nowo wybranego kontenera, jeśli kolor jest wybrany
+        # Zmień kolor tła nowo wybranego kontenera, jeśli wybrano kolor
         if self.selected_color:
             e.control.bgcolor = self.selected_color
 
@@ -103,22 +117,24 @@ class Expanse(UserControl):
         e.control.border = border.all(4, colors.WHITE)
         e.control.update()
 
-        self.selected_icon = e.control.data  # Zapisz wybraną ikonę
+        # Zapisz wybraną ikonę
+        self.selected_icon = e.control.data
 
     def update_category(self, e):
         category_name = self.category_name_input.current.value
         planned_expenses = self.planned_expenses_input.current.value
         category_type = self.category_type_radio_group.current.value
         category_color = self.selected_color
-        category_icon = self.selected_icon
+        # Użyj wybranej ikony, jeśli istnieje, w przeciwnym razie użyj ikony z bazy danych
+        category_icon = self.selected_icon if self.selected_icon else self.category_icon
 
-        self.category_controller.update_category(self.user_id, self.category_id, category_name, category_type, planned_expenses,
+        self.category_controller.update_category(self.category_id, self.user_id, category_name, category_type, planned_expenses,
                                                  category_color, category_icon)
-        print("Category updated successfully")
+        print("Kategoria została zaktualizowana pomyślnie")
 
     def delete_category(self, e):
         self.category_controller.delete_category(self.category_id, self.user_id)
-        print("Delete category method called.")
+        print("Metoda usuwania kategorii została wywołana.")
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -140,7 +156,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=720,
+            height=800,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -152,7 +168,7 @@ class Expanse(UserControl):
                             spacing=10,
                             controls=[
                                 self.InputTextField(
-                                    "Category name",
+                                    "Nazwa kategorii",
                                     False,
                                     self.category_name_input,
                                     width="100%",
@@ -163,9 +179,9 @@ class Expanse(UserControl):
                                     value=self.category_type,  # Ustaw wartość początkową
                                     content=Row(
                                         controls=[
-                                            Radio(value="Expenses", label="Expenses",
+                                            Radio(value="Expenses", label="Wydatki",
                                                   label_style=TextStyle(color=colors.WHITE)),
-                                            Radio(value="Income", label="Income",
+                                            Radio(value="Income", label="Przychody",
                                                   label_style=TextStyle(color=colors.WHITE)),
                                         ],
                                         alignment="center",
@@ -173,7 +189,7 @@ class Expanse(UserControl):
                                     ),
                                 ),
                                 self.InputTextField(
-                                    "Planned expenses",
+                                    "Planowane wydatki",
                                     False,
                                     self.planned_expenses_input,
                                     width="100%",
@@ -225,7 +241,7 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Update",
+                                "Aktualizuj",
                                 size=14,
                                 weight="bold",
                             ),
@@ -245,7 +261,7 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Delete",
+                                "Usuń",
                                 size=14,
                                 weight="bold",
                             ),
@@ -286,6 +302,7 @@ class Expanse(UserControl):
         for i in icon_list:
             # Sprawdź, czy ta ikona jest wybrana
             icon_bgcolor = self.category_color if i[0] == self.category_icon else "#132D46"
+            icon_border = border.all(4, colors.WHITE) if i[0] == self.category_icon else None  # Dodaj obramowanie jeśli to ikona z bazy danych
 
             item_container = Container(
                 width=100,
@@ -295,6 +312,7 @@ class Expanse(UserControl):
                 alignment=alignment.center,
                 on_click=self.on_icon_click,
                 data=i[0],  # Dodaj nazwę ikony jako dane do kontenera
+                border=icon_border,  # Ustaw obramowanie dla załadowanej ikony
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -307,6 +325,11 @@ class Expanse(UserControl):
                     ]
                 )
             )
+
+            # Przechowaj referencję do ikony załadowanej z bazy danych
+            if i[0] == self.category_icon:
+                self.loaded_icon_container = item_container
+
             self.grid_transfers.controls.append(item_container)
 
         more_button = Container(
@@ -353,7 +376,7 @@ def manage_category_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Manage category', color="white"),
+            title=Text('Zarządzaj kategorią', color="white"),
             bgcolor="#132D46",
         ),
     )
