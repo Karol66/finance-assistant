@@ -5,7 +5,7 @@ from app.models.account_model import AccountModel
 from app.models.card_model import CardModel
 from app.models.category_model import CategoryModel
 from app.models.notification import NotificationModel
-from app.models.payment import PaymentModel
+from app.models.transfer import PaymentModel
 from app.models.statistic import StatisticModel
 from app.models.transaction_model import TransactionModel
 from app.models.user_model import UserModel

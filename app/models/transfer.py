@@ -7,8 +7,8 @@ class PaymentModel:
     def create_table(self):
         cursor = self.connection.cursor()
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS payments (
-                payment_id INT AUTO_INCREMENT PRIMARY KEY,
+            CREATE TABLE IF NOT EXISTS transfers (
+                transfer_id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT,
                 amount FLOAT NOT NULL,
                 payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
