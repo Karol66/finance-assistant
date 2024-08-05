@@ -130,11 +130,11 @@ class Expanse(UserControl):
 
         self.category_controller.update_category(self.category_id, self.user_id, category_name, category_type, planned_expenses,
                                                  category_color, category_icon)
-        print("Kategoria została zaktualizowana pomyślnie")
+        print("Category updated successfully")
 
     def delete_category(self, e):
         self.category_controller.delete_category(self.category_id, self.user_id)
-        print("Metoda usuwania kategorii została wywołana.")
+        print("Category deleted successfully")
 
     def build(self):
         self.category_name_input = Ref[TextField]()
@@ -168,7 +168,7 @@ class Expanse(UserControl):
                             spacing=10,
                             controls=[
                                 self.InputTextField(
-                                    "Nazwa kategorii",
+                                    "Category name",
                                     False,
                                     self.category_name_input,
                                     width="100%",
@@ -179,9 +179,9 @@ class Expanse(UserControl):
                                     value=self.category_type,  # Ustaw wartość początkową
                                     content=Row(
                                         controls=[
-                                            Radio(value="Expenses", label="Wydatki",
+                                            Radio(value="Expenses", label="Expenses",
                                                   label_style=TextStyle(color=colors.WHITE)),
-                                            Radio(value="Income", label="Przychody",
+                                            Radio(value="Income", label="Income",
                                                   label_style=TextStyle(color=colors.WHITE)),
                                         ],
                                         alignment="center",
@@ -189,7 +189,7 @@ class Expanse(UserControl):
                                     ),
                                 ),
                                 self.InputTextField(
-                                    "Planowane wydatki",
+                                    "Planned expenses",
                                     False,
                                     self.planned_expenses_input,
                                     width="100%",
@@ -241,11 +241,11 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Aktualizuj",
+                                "Update",
                                 size=14,
                                 weight="bold",
                             ),
-                            bgcolor="#01C38D",
+                            bgcolor="yellow",
                             color="white",
                             style=ButtonStyle(
                                 shape={
@@ -261,11 +261,11 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Usuń",
+                                "Delete",
                                 size=14,
                                 weight="bold",
                             ),
-                            bgcolor="#01C38D",
+                            bgcolor="red",
                             color="white",
                             style=ButtonStyle(
                                 shape={
@@ -376,7 +376,7 @@ def manage_category_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Zarządzaj kategorią', color="white"),
+            title=Text('Manage category', color="white"),
             bgcolor="#132D46",
         ),
     )
