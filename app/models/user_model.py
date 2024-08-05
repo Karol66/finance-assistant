@@ -55,3 +55,12 @@ class UserModel:
             if user['password'] == hashed_password:
                 return user # Zwraca obiekt użytkownika potrzebne do wyswietlania danych w nawigacji
         return None
+
+    def update_user(self, user_id, email, username, password):
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            UPDATE categories 
+            SET email = %s, username = %s, password = %s,
+            WHERE  user_id = %s
+        ''', (email, username, password, user_id))
+        self.connection.commit()

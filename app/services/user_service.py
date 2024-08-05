@@ -27,3 +27,6 @@ class UserService:
             return {"status": "success", "message": "Login successful", "user": user}
         else:
             return {"status": "error", "message": "Invalid email/username or password"}
+
+    def update_user(self, user_id, email, username, password):
+        self.user_model.update_user(user_id, email, username, password)

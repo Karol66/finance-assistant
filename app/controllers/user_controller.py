@@ -10,3 +10,5 @@ class UserController:
     def login_user(self, identifier, password):
         return self.user_service.login_user(identifier, password)
 
+    def update_category(self, user_id, email, username, password):
+        self.user_service.update_user(user_id, email, username, password)
