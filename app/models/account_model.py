@@ -38,9 +38,10 @@ class AccountModel:
         return cursor.fetchall()
 
     def get_account_by_id(self, account_id):
-        cursor = self.connection.cursor()
+        cursor = self.connection.cursor(dictionary=True)
         cursor.execute('SELECT * FROM accounts WHERE account_id = %s', (account_id,))
         return cursor.fetchone()
+
     def update_account(self, account_id, user_id, account_name, account_type, balance, account_color, account_icon, card_id, include_in_total):
         cursor = self.connection.cursor()
         cursor.execute('''

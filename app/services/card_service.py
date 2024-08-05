@@ -10,3 +10,12 @@ class CardService:
 
     def get_user_cards(self, user_id):
         return self.card_model.get_user_cards(user_id)
+
+    def get_card_by_id(self, category_id):
+        return self.card_model.get_card_by_id(category_id)
+
+    def update_card(self, card_id, user_id, card_name, card_type, balance):
+        self.card_model.update_card(card_id, user_id, card_name, card_type, balance)
+
+    def delete_card(self, card_id, user_id):
+        self.card_model.delete_card(card_id, user_id)

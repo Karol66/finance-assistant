@@ -9,3 +9,12 @@ class CardController:
 
     def get_user_cards(self, user_id):
         return self.card_service.get_user_cards(user_id)
+
+    def get_card_by_id(self, category_id):
+        return self.card_service.get_card_by_id(category_id)
+
+    def update_card(self, card_id, user_id, card_name, card_type, balance):
+        self.card_service.update_card(card_id, user_id, card_name, card_type, balance)
+
+    def delete_card(self, card_id, user_id):
+        self.card_service.delete_card(card_id, user_id)
