@@ -12,6 +12,15 @@ class TransactionService:
     def get_transactions(self, user_id):
         return self.transaction_model.get_user_transactions(user_id)
 
+    def get_transaction_by_id(self, transaction_id):
+        return self.transaction_model.get_transaction_by_id(transaction_id)
+
+    def update_transaction(self, transaction_id, user_id, amount, account_id, transaction_date, description, category_id):
+        self.transaction_model.update_transaction(transaction_id, user_id, amount, account_id, transaction_date, description, category_id)
+
+    def delete_transaction(self, transaction_id, user_id):
+        self.transaction_model.delete_transaction(transaction_id, user_id)
+
     def get_chart_data(self, user_id, category_type):
         transactions = self.get_transactions(user_id)
         categories = CategoryController().get_user_categories(user_id)

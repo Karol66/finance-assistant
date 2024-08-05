@@ -15,6 +15,7 @@ class TransactionModel:
                 description VARCHAR(255),
                 category_id INT NOT NULL,
                 user_id INT NOT NULL,
+                is_deleted BOOLEAN DEFAULT FALSE, 
                 FOREIGN KEY (account_id) REFERENCES accounts(account_id),
                 FOREIGN KEY (category_id) REFERENCES categories(category_id),
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -38,3 +39,26 @@ class TransactionModel:
             WHERE t.user_id = %s
         ''', (user_id,))
         return cursor.fetchall()
+
+    def get_transaction_by_id(self, transaction_id):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM transactions WHERE transaction_id = %s AND is_deleted = FALSE', (transaction_id,))
+        return cursor.fetchone()
+
+    def update_transaction(self, transaction_id, user_id, amount, account_id, transaction_date, description, category_id):
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            UPDATE transactions 
+            SET amount = %s, account_id = %s, transaction_date = %s, description = %s, category_id = %s
+            WHERE transaction_id = %s AND user_id = %s AND is_deleted = FALSE
+        ''', (user_id, amount, account_id, transaction_date, description, category_id, transaction_id, user_id))
+        self.connection.commit()
+
+    def delete_transaction(self, transaction_id, user_id):
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            UPDATE transactions 
+            SET is_deleted = TRUE
+            WHERE transaction_id = %s AND user_id = %s
+        ''', (transaction_id, user_id))
+        self.connection.commit()
