@@ -13,6 +13,11 @@ class Expanse(UserControl):
         self.user_id = user_id
         self.account_controller = AccountController()
 
+    def account_click(self, e, account_id):
+        account = self.account_controller.get_account_by_id(account_id)
+        g.selected_account = account
+        navigate_to(e.page, "Manage account")
+
     def create_account_click(self, e):
         navigate_to(e.page, "Create account")
 
@@ -27,6 +32,8 @@ class Expanse(UserControl):
                 border_radius=15,
                 alignment=alignment.center,
                 padding=padding.all(13),
+                data=account["account_id"],
+                on_click=lambda e, account_id=account["account_id"]: self.account_click(e, account_id),
             )
             __.content = Row(
                 alignment="spaceBetween",
