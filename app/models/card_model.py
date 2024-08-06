@@ -43,7 +43,7 @@ class CardModel:
             UPDATE cards 
             SET card_name = %s, card_type = %s, balance = %s 
             WHERE card_id = %s AND user_id = %s AND is_deleted = FALSE
-        ''' (card_name, card_type, balance, card_id, user_id))
+        ''', (card_name, card_type, balance, card_id, user_id))
         self.connection.commit()
 
     def delete_card(self, card_id, user_id):
@@ -52,5 +52,5 @@ class CardModel:
             UPDATE cards
             SET is_deleted = TRUE 
             WHERE card_id = %s AND user_id = %s
-        '''(card_id, user_id))
+        ''', (card_id, user_id))
         self.connection.commit()
