@@ -42,7 +42,7 @@ class TransactionModel:
 
     def get_transaction_by_id(self, transaction_id):
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM transactions WHERE transaction_id = %s AND is_deleted = FALSE', (transaction_id,))
+        cursor.execute('SELECT * FROM transactions WHERE transaction_id = %s', (transaction_id,))
         return cursor.fetchone()
 
     def update_transaction(self, transaction_id, user_id, amount, account_id, transaction_date, description, category_id):

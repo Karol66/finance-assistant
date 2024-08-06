@@ -22,6 +22,9 @@ def navigate_to(page, destination):
     elif destination == "Create account":
         from app.views.account_create_view import create_account_page
         create_account_page(page)
+    elif destination == "Manage account":
+        from app.views.account_management_view import manage_account_page
+        manage_account_page(page)
     elif destination == "Statistic":
         from app.views.statistic import statistic_page
         statistic_page(page)
@@ -40,6 +43,18 @@ def navigate_to(page, destination):
     elif destination == "Create transaction":
         from app.views.transaction_create_view import create_transaction_page
         create_transaction_page(page)
+    elif destination == "Manage transaction":
+        from app.views.transaction_management_view import manage_transaction_page
+        manage_transaction_page(page)
+    elif destination == "Cards":
+        from app.views.card_view import card_page
+        card_page(page)
+    # elif destination == "Create card":
+    #     from app.views.transaction_create_view import create_card_page
+    #     create_card_page(page)
+    # elif destination == "Manage card":
+    #     from app.views.card_management_view import manage_card_page
+    #     manage_card_page(page)
     elif destination == "Regular payments":
         from app.views.payments import payments_page
         payments_page(page)
@@ -215,6 +230,12 @@ def create_navigation_drawer(page):
                 icon=icons.SETTINGS,
                 label="Settings",
                 destination="Settings",
+                page=page
+            ),
+            CustomNavigationDrawerDestination(
+                icon=icons.CARD_GIFTCARD,
+                label="Cards",
+                destination="Cards",
                 page=page
             ),
             Divider(height=10, color="white"),

@@ -3,7 +3,7 @@ from flet import *
 
 from app.controllers.category_controller import CategoryController
 from app.controllers.transaction_controller import TransactionController
-from app.views.navigation_view import create_navigation_drawer
+from app.views.navigation_view import create_navigation_drawer, navigate_to
 import app.globals as g
 
 
@@ -15,12 +15,10 @@ class Expanse(UserControl):
         self.category_controller = CategoryController()
         self.transaction_controller = TransactionController()
 
-    def click_animation(self, e):
-        if e.control.bgcolor == "white10":
-            e.control.bgcolor = "white30"
-        else:
-            e.control.bgcolor = "white10"
-        e.control.update()
+    def category_click(self, e, transaction_id):
+        transaction = self.transaction_controller.get_transaction_by_id(transaction_id)
+        g.selected_transaction = transaction
+        navigate_to(e.page, "Manage transaction")
 
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
@@ -51,8 +49,9 @@ class Expanse(UserControl):
                     bgcolor="#132D46",
                     border_radius=15,
                     alignment=alignment.center,
-                    on_click=lambda e: self.click_animation(e),
                     padding=padding.all(13),
+                    data=category["category_id"],
+                    on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
                 )
                 __.content = Row(
                     alignment="spaceBetween",
@@ -180,6 +179,7 @@ class Expanse(UserControl):
         self.main_col.controls.append(self.main_content_area)
 
         return self.main_col
+
 
 def transaction_page(page: Page):
     page.horizontal_alignment = "center"
