@@ -1,380 +1,223 @@
 import flet
-import asyncio
 from flet import *
-from app.controllers.card_controller import CardController
-import clipboard
+
+from app.controllers.card_controller import CardController  # Updated import
+from app.views.navigation_view import navigate_to, create_navigation_drawer
 import app.globals as g
 
-from app.views.navigation_view import create_navigation_drawer
-
-
-class WalletApp(UserControl):
+class Expanse(UserControl):
     def __init__(self, user_id):
         super().__init__()
+        self.selected_link = None
         self.user_id = user_id
-        self.account_controller = CardController()
-        self.snack = SnackBar(Text("Number copied!"))
-        self.HeightCount = 25
-        self.ColorCount = 0
-        self.CardCount = 0
-        self.DataDict = {}
+        self.card_controller = CardController()  # Initialize CardController
+        self.ColorCount = 0  # Initialize ColorCount for card colors
 
-    def build(self):
-        self.CardList = Column(
-            alignment="start",
-            spacing=25,
-        )
+    def card_click(self, e, card_id):
+        card = self.card_controller.get_card_by_id(card_id)
+        g.selected_card = card  # Update the global selected card
+        navigate_to(e.page, "Manage card")  # Assuming there's a "Manage card" page
 
-        self.ImportButton = IconButton(
-            icon=icons.DOWNLOAD,
-            icon_color=colors.WHITE,
-            icon_size=16,
-            on_click=lambda e: asyncio.run(self.load_accounts()),
-        )
+    def create_card_click(self, e):
+        navigate_to(e.page, "Create card")  # Navigate to card creation page
 
-        self.InsertButton = IconButton(
-            icon=icons.ADD,
-            icon_color=colors.WHITE,
-            icon_size=16,
-            on_click=lambda e: self.open_entry_form(),
-            disabled=True,
-        )
+    def load_cards(self):  # Renamed method
+        cards = self.card_controller.get_user_cards(self.user_id)  # Fetch cards
 
-        self.WalletContainer = Container(
-            alignment=alignment.center_right,
-            padding=padding.only(right=200),
-            content=Card(
-                elevation=15,
+        for card in cards:
+            # Debugging output to check card details
+            print(f"Loaded card: {card}")
+
+            # Customize the card layout
+            card_container = Card(
                 content=Container(
-                    content=Column(
-                        scroll="auto",
-                        alignment="start",
-                        spacing=25,
-                        controls=[
-                            self.snack,
-                            Row(
-                                alignment="spaceBetween",
-                                controls=[
-                                    Text(
-                                        "Wallet",
-                                        color="white",
-                                        size=20,
-                                        weight="bold",
-                                    ),
-                                    Container(
-                                        content=Row(
-                                            spacing=0,
-                                            tight=True,
-                                            alignment="end",
-                                            controls=[
-                                                self.InsertButton,
-                                                self.ImportButton,
-                                            ],
-                                        )
-                                    ),
-                                ],
-                            ),
-                            Container(
-                                content=Column(
+                    content=(
+                        Column(
+                            controls=[
+                                Row(
+                                    alignment="spaceBetween",
                                     controls=[
-                                        self.CardList,
+                                        Column(
+                                            spacing=1,
+                                            controls=[
+                                                Container(
+                                                    alignment=alignment.bottom_left,
+                                                    content=Text(
+                                                        "BANK NAME",
+                                                        color="white",
+                                                        size=9,
+                                                        weight="w500",
+                                                    ),
+                                                ),
+                                                Container(
+                                                    alignment=alignment.top_left,
+                                                    content=Text(
+                                                        card['card_name'],
+                                                        color="#e2e8f0",
+                                                        size=20,
+                                                        weight="w700",
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                        Icon(
+                                            name=icons.SETTINGS_OUTLINED,
+                                            size=16,
+                                            color=colors.WHITE
+                                        ),
                                     ],
                                 ),
-                            ),
-                        ],
-                    ),
-                    width=360,
-                    height=580,
-                    padding=padding.all(20),
-                    alignment=alignment.top_center,
-                    border_radius=border_radius.all(15),
-                    gradient=LinearGradient(
-                        begin=alignment.bottom_left,
-                        end=alignment.top_right,
-                        colors=[
-                            ColorList.WALLITE["from"], ColorList.WALLITE["to"]
-                        ],
-                    ),
-                ),
-            ),
-        )
-
-        return Container(
-            content=(
-                Column(
-                    alignment="center",
-                    controls=[
-                        self.EntryForm(),
-                        self.WalletContainer,
-                    ],
-                )
-            ),
-            width=900,
-            height=800,
-            margin=margin.all(-10),
-            gradient=self.GradientGenerator(ColorList.BACKGROUND["from"], ColorList.BACKGROUND["to"]),
-            alignment=alignment.center,
-        )
-
-    def open_entry_form(self):
-        self.dialog = self.EntryForm
-        self.EntryForm.open = True
-        self.update()
-
-    def EntryForm(self):
-        self.BankName = TextField(
-            label="Card Name",
-            border="underline",
-            text_size=12,
-        )
-
-        self.CardNumber = TextField(
-            label="Card Number",
-            border="underline",
-            text_size=12,
-        )
-
-        self.CardCVV = TextField(
-            label="Card CVV",
-            border="underline",
-            text_size=12,
-        )
-
-        self.EntryForm = AlertDialog(
-            title=Text(
-                "Enter Your Bank Name\nCard Number",
-                text_align="center",
-                size=12,
-            ),
-            content=Column(
-                [
-                    self.BankName,
-                    self.CardNumber,
-                    self.CardCVV,
-                ],
-                spacing=15,
-                height=280,
-            ),
-            actions=[
-                TextButton("Insert", on_click=lambda e: self.check_entry_form()),
-                TextButton("Cancel", on_click=lambda e: self.cancel_entry_form()),
-            ],
-            actions_alignment="center",
-            on_dismiss=lambda e: self.cancel_entry_form(),
-        )
-
-        return self.EntryForm
-
-    def cancel_entry_form(self):
-        self.BankName.value, self.CardNumber.value, self.CardCVV.value = (
-            None,
-            None,
-            None,
-        )
-
-        self.CardNumber.error_text, self.BankName.error_text, self.CardCVV.error_text = (
-            None,
-            None,
-            None,
-        )
-
-        self.EntryForm.open = False
-        self.update()
-
-    def check_entry_form(self):
-        if len(self.CardNumber.value) == 0:
-            self.CardNumber.error_text = "Please enter your card number!"
-            self.update()
-        else:
-            self.CardNumber.error_text = None
-            self.update()
-
-        if len(self.BankName.value) == 0:
-            self.BankName.error_text = "Please enter your bank name!"
-            self.update()
-        else:
-            self.BankName.error_text = None
-            self.update()
-
-        if len(self.CardCVV.value) == 0:
-            self.CardCVV.error_text = "Please enter your card CVV!"
-            self.update()
-        else:
-            self.CardCVV.error_text = None
-            self.update()
-
-        if (
-                len(self.CardNumber.value) &
-                len(self.BankName.value) &
-                len(self.CardCVV.value) != 0
-        ):
-            asyncio.run(self.insert_data_into_database())
-            self.card_generator(
-                self.BankName.value, self.CardNumber.value, self.CardCVV.value
-            )
-
-    async def insert_data_into_database(self):
-        self.account_controller.create_account(
-            self.user_id, self.BankName.value, "Card", 0.0
-        )
-
-    async def load_accounts(self):
-        accounts = self.account_controller.get_user_accounts(self.user_id)
-        for account in accounts:
-            self.card_generator(account['account_name'], account['account_type'], str(account['balance']))
-
-        self.ImportButton.disabled = True
-        self.InsertButton.disabled = False
-        self.update()
-
-    def card_generator(self, bank, number, cvv):
-        self.img = Image(
-            src="./app/assets/icon.png",
-            width=80,
-            height=80,
-            fit="contain",
-        )
-
-        self.bank = bank
-        self.number = number
-        self.cvv = cvv
-
-        self.DataDict[self.CardCount] = {"number": f"{self.number}", "cvv": f"{self.cvv}"}
-
-        self.CardTest = Card(
-            elevation=20,
-            content=Container(
-                content=(
-                    Column(
-                        controls=[
-                            Row(
-                                alignment="spaceBetween",
-                                controls=[
-                                    Column(
-                                        spacing=1,
-                                        controls=[
-                                            Container(
-                                                alignment=alignment.bottom_left,
-                                                content=Text(
-                                                    "BANK NAME",
-                                                    color="white",
-                                                    size=9,
-                                                    weight="w500",
-                                                ),
-                                            ),
-                                            Container(
-                                                alignment=alignment.top_left,
-                                                content=Text(
-                                                    self.bank,
-                                                    color="#e2e8f0",
-                                                    size=20,
-                                                    weight="w700",
-                                                ),
-                                            ),
-                                        ],
+                                Container(
+                                    padding=padding.only(
+                                        top=10,
+                                        bottom=20,
                                     ),
-                                    Icon(
-                                        name=icons.SETTINGS_OUTLINED,
-                                        size=16,
-                                        color=colors.WHITE
-                                    ),
-                                ],
-                            ),
-                            Container(
-                                padding=padding.only(
-                                    top=10,
-                                    bottom=20,
                                 ),
-                            ),
-                            Row(
-                                alignment="spaceBetween",
-                                controls=[
-                                    Column(
-                                        spacing=1,
-                                        controls=[
-                                            Container(
-                                                alignment=alignment.bottom_left,
-                                                content=Text(
-                                                    "CARD NUMBER",
-                                                    color="white",
-                                                    size=9,
-                                                    weight="w500",
+                                Row(
+                                    alignment="spaceBetween",
+                                    controls=[
+                                        Column(
+                                            spacing=1,
+                                            controls=[
+                                                Container(
+                                                    alignment=alignment.bottom_left,
+                                                    content=Text(
+                                                        "CARD NUMBER",
+                                                        color="white",
+                                                        size=9,
+                                                        weight="w500",
+                                                    ),
                                                 ),
-                                            ),
-                                            Container(
-                                                alignment=alignment.top_left,
-                                                content=Text(
-                                                    f"**** **** **** {self.number[-4:]}",
-                                                    color="#e2e8f0",
-                                                    size=15,
-                                                    weight="w700",
+                                                Container(
+                                                    alignment=alignment.top_left,
+                                                    content=Text(
+                                                        f"**** **** **** {card['card_number'][-4:]}",
+                                                        # Display last 4 digits
+                                                        color="#e2e8f0",
+                                                        size=15,
+                                                        weight="w700",
+                                                    ),
                                                 ),
-                                                data={self.DataDict[self.CardCount]["number"]},
-                                                on_click=lambda e: self.get_value(e),
-                                            ),
-                                            Container(
-                                                bgcolor="pink",
-                                                padding=padding.only(
-                                                    bottom=5,
+                                                Container(
+                                                    bgcolor="#191E29",  # Ensure consistent background
+                                                    padding=padding.only(
+                                                        bottom=5,
+                                                    ),
                                                 ),
-                                            ),
-                                            Container(
-                                                alignment=alignment.bottom_left,
-                                                content=Text(
-                                                    "CVV NUMBER",
-                                                    color="white",
-                                                    size=9,
-                                                    weight="w500",
+                                                Container(
+                                                    alignment=alignment.bottom_left,
+                                                    content=Text(
+                                                        "CVV NUMBER",
+                                                        color="white",
+                                                        size=9,
+                                                        weight="w500",
+                                                    ),
                                                 ),
-                                            ),
-                                            Container(
-                                                alignment=alignment.top_left,
-                                                content=Text(
-                                                    f"**{self.cvv[-1:]}",
-                                                    color="#e2e8f0",
-                                                    size=13,
-                                                    weight="w700",
+                                                Container(
+                                                    alignment=alignment.top_left,
+                                                    content=Text(
+                                                        f"**{card['cvv'][-1:]}",  # Display last digit of CVV
+                                                        color="#e2e8f0",
+                                                        size=13,
+                                                        weight="w700",
+                                                    ),
                                                 ),
-                                                data=self.DataDict[self.CardCount]["cvv"],
-                                                on_click=lambda e: self.get_value(e),
-                                            ),
-                                        ],
-                                    ),
-                                    Column(
-                                        horizontal_alignment="end",
-                                        controls=[self.img],
-                                    ),
-                                ],
-                            ),
-                        ]
-                    )
-                ),
-                padding=padding.all(12),
-                margin=margin.all(-5),
-                width=310,
-                height=185,
-                border_radius=border_radius.all(18),
-                gradient=self.GradientGenerator(
-                    ColorList.CARDCOLORS["from"][self.ColorCount % len(ColorList.CARDCOLORS["from"])],
-                    ColorList.CARDCOLORS["to"][self.ColorCount % len(ColorList.CARDCOLORS["to"])],
-                ),
+                                            ],
+                                        ),
+                                        Column(
+                                            horizontal_alignment="end",
+                                            controls=[
+                                                Image(
+                                                    src="./app/assets/icon.png",  # Path to your icon
+                                                    width=80,
+                                                    height=80,
+                                                    fit="contain",
+                                                )
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ]
+                        )
+                    ),
+                    padding=padding.all(12),
+                    margin=margin.all(-5),
+                    width=310,
+                    height=185,
+                    border_radius=border_radius.all(18),
+                    gradient=self.gradient_generator(
+                        ColorList.CARDCOLORS["from"][self.ColorCount % len(ColorList.CARDCOLORS["from"])],
+                        ColorList.CARDCOLORS["to"][self.ColorCount % len(ColorList.CARDCOLORS["to"])],
+                    ),
+
+                )
+            )
+            self.grid_cards.controls.append(card_container)  # Update to grid_cards
+            self.ColorCount += 1  # Increment color count for the next card
+
+
+    def build(self):
+        self.main_col = Column(
+            expand=True,
+            alignment="center",
+            horizontal_alignment="center",
+        )
+
+        self.grid_cards = GridView(  # Update to grid_cards
+            expand=True,
+            spacing=12,
+            runs_count=1,
+            max_extent=500,
+            child_aspect_ratio=1.75,
+        )
+
+        self.main_content_area = Container(
+            width=350,
+            height=615,
+            bgcolor="#191E29",
+            padding=padding.only(top=10, left=10, right=10),
+            content=Column(
+                spacing=10,
+                expand=True,
+                alignment="start",
+                horizontal_alignment="center",
+                controls=[
+                    Container(
+                        content=Column(
+                            alignment="center",
+                            horizontal_alignment="center",
+                            spacing=0,
+                            controls=[
+
+                            ],
+                        ),
+                    ),
+                    self.grid_cards,  # Update to grid_cards
+                ]
             )
         )
 
-        self.CardCount += 1
-        self.ColorCount += 1
-        self.HeightCount += 50
+        self.load_cards()  # Call load_cards
 
-        self.CardList.controls.append(self.CardTest)
-        self.cancel_entry_form()
-        self.update()
+        self.main_col.controls.append(self.main_content_area)
 
-    def get_value(self, e):
-        clipboard.copy(e.control.data)
-        self.snack.open = True
-        self.update()
+        self.main_col.controls.append(Container(
+            width=60,
+            height=60,
+            bgcolor="yellow",
+            border_radius=30,
+            alignment=alignment.center,
+            content=Icon(
+                icons.ADD,
+                size=40,
+                color="black",
+            ),
+            on_click=self.create_card_click  # Ensure this navigates correctly
+        ))
 
-    def GradientGenerator(self, start, end):
+        return self.main_col
+
+    def gradient_generator(self, start, end):
         return LinearGradient(
             begin=alignment.bottom_left,
             end=alignment.top_right,
@@ -383,7 +226,6 @@ class WalletApp(UserControl):
                 end,
             ],
         )
-
 
 class ColorList:
     BACKGROUND = {
@@ -419,13 +261,12 @@ class ColorList:
         ],
     }
 
-
 def card_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
     page.scroll = True
 
-    app = WalletApp(user_id=g.logged_in_user["user_id"])
+    app = Expanse(user_id=g.logged_in_user["user_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(
@@ -445,4 +286,5 @@ def card_page(page: Page):
             bgcolor="#132D46",
         ),
     )
+
     page.update()

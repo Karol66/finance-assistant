@@ -121,7 +121,7 @@ class Expanse(UserControl):
                                 ),
                             ),
                             Text(
-                                "Historia przelewów",
+                                "Transfer history",
                                 size=16,
                                 color="white",
                             ),
@@ -152,7 +152,7 @@ class Expanse(UserControl):
                                 ),
                             ),
                             Text(
-                                "Nowy przelew",
+                                "New transfer",
                                 size=16,
                                 color="white",
                             ),
@@ -198,7 +198,7 @@ class Expanse(UserControl):
                             spacing=0,
                             controls=[
                                 Text(
-                                    "Suma:",
+                                    "Sum:",
                                     size=16,
                                     color="white",
                                 ),
@@ -260,7 +260,3 @@ def account_page(page: Page):
     )
 
     page.update()
-
-
-if __name__ == "__main__":
-    flet.app(target=account_page)

@@ -36,13 +36,13 @@ class TransactionModel:
         cursor.execute('''
             SELECT t.* FROM transactions t
             JOIN accounts a ON t.account_id = a.account_id
-            WHERE t.user_id = %s
+            WHERE t.user_id = %s AND t.is_deleted = FALSE
         ''', (user_id,))
         return cursor.fetchall()
 
     def get_transaction_by_id(self, transaction_id):
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM transactions WHERE transaction_id = %s', (transaction_id,))
+        cursor.execute('SELECT * FROM transactions WHERE transaction_id = %s AND is_deleted = FALSE', (transaction_id,))
         return cursor.fetchone()
 
     def update_transaction(self, transaction_id, user_id, amount, account_id, transaction_date, description, category_id):
