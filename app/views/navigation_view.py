@@ -49,12 +49,12 @@ def navigate_to(page, destination):
     elif destination == "Cards":
         from app.views.card_view import card_page
         card_page(page)
-    # elif destination == "Create card":
-    #     from app.views.transaction_create_view import create_card_page
-    #     create_card_page(page)
-    # elif destination == "Manage card":
-    #     from app.views.card_management_view import manage_card_page
-    #     manage_card_page(page)
+    elif destination == "Create card":
+        from app.views.card_create_view import create_card_page
+        create_card_page(page)
+    elif destination == "Manage card":
+        from app.views.card_management_view import manage_card_page
+        manage_card_page(page)
     elif destination == "Regular payments":
         from app.views.payments import payments_page
         payments_page(page)

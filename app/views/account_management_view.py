@@ -298,6 +298,7 @@ class Expanse(UserControl):
                             on_click=self.update_account
                         )
                     ),
+
                     Container(
                         alignment=alignment.center,
                         content=ElevatedButton(

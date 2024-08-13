@@ -16,18 +16,15 @@ class Expanse(UserControl):
     def card_click(self, e, card_id):
         card = self.card_controller.get_card_by_id(card_id)
         g.selected_card = card  # Update the global selected card
-        navigate_to(e.page, "Manage card")  # Assuming there's a "Manage card" page
+        navigate_to(e.page, "Manage card")  #
 
     def create_card_click(self, e):
-        navigate_to(e.page, "Create card")  # Navigate to card creation page
+        navigate_to(e.page, "Create card")
 
     def load_cards(self):  # Renamed method
         cards = self.card_controller.get_user_cards(self.user_id)  # Fetch cards
 
         for card in cards:
-            # Debugging output to check card details
-            print(f"Loaded card: {card}")
-
             # Customize the card layout
             card_container = Card(
                 content=Container(
@@ -149,7 +146,7 @@ class Expanse(UserControl):
                         ColorList.CARDCOLORS["from"][self.ColorCount % len(ColorList.CARDCOLORS["from"])],
                         ColorList.CARDCOLORS["to"][self.ColorCount % len(ColorList.CARDCOLORS["to"])],
                     ),
-
+                    on_click=lambda e, card_id=card["card_id"]: self.card_click(e, card_id),
                 )
             )
             self.grid_cards.controls.append(card_container)  # Update to grid_cards
