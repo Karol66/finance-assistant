@@ -8,7 +8,7 @@ import app.globals as g
 
 class Expanse(UserControl):
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, account_id):
         super().__init__()
         self.selected_link = None
         self.selected_color_container = None
@@ -19,8 +19,20 @@ class Expanse(UserControl):
         self.account_controller = AccountController()
         self.card_controller = CardController()
         self.user_id = user_id
+        self.account_id = account_id
 
-    def InputTextField(self, text: str, hide: bool, ref, width="100%"):
+        self.account_data = g.selected_account
+        self.account_name = self.account_data.get("account_name", "")
+        self.account_type = self.account_data.get("account_type", "")
+        self.balance = self.account_data.get("balance", "")
+        self.account_color = self.account_data.get("account_color", colors.GREY)
+        self.account_icon = self.account_data.get("account_icon", icons.MORE_HORIZ)
+        self.card_id = self.account_data.get("card_id", "0")
+        self.include_in_total = self.account_data.get("include_in_total", "1")
+
+        self.loaded_icon_container = None
+
+    def InputTextField(self, text: str, hide: bool, ref, width="100%", value=""):
         return Container(
             alignment=alignment.center,
             content=TextField(
@@ -39,26 +51,27 @@ class Expanse(UserControl):
                 ),
                 password=hide,
                 ref=ref,
+                value=value,
             ),
         )
 
     # TODO uproscic
     def on_color_click(self, e):
         if self.selected_color_container == e.control:
-            # Odznaczenie obecnie zaznaczonego kontenera
+            # Odznacz aktualnie wybrany kontener
             self.selected_color_container.content.controls = []
             self.selected_color_container.update()
             self.selected_color_container = None
             self.selected_color = None
         else:
             if self.selected_color_container:
-                # Usunięcie ikony zatwierdzenia z poprzednio wybranego kontenera
+                # Usuń ikonę z wcześniej wybranego kontenera
                 self.selected_color_container.content.controls = []
                 self.selected_color_container.update()
 
-            # Dodanie ikony zatwierdzenia do nowo wybranego kontenera
+            # Dodaj ikonę do nowo wybranego kontenera
             self.selected_color_container = e.control
-            self.selected_color = e.control.bgcolor  # Zapisanie wybranego koloru
+            self.selected_color = e.control.bgcolor  # Zapisz wybrany kolor
             if self.selected_color_container.content:
                 self.selected_color_container.content.controls.append(
                     Container(
@@ -72,15 +85,26 @@ class Expanse(UserControl):
                 )
                 self.selected_color_container.update()
 
-            # Automatyczna zmiana koloru tła ostatnio wybranej ikony, jeśli jest wybrana
+            # Zastosuj logikę zmiany koloru tutaj
             if self.last_selected_icon:
                 self.last_selected_icon.bgcolor = self.selected_color
                 self.last_selected_icon.update()
+            else:
+                # Zmień kolor załadowanej ikony, jeśli nie wybrano żadnej ikony
+                if self.loaded_icon_container:
+                    self.loaded_icon_container.bgcolor = self.selected_color
+                    self.loaded_icon_container.update()
 
     def on_icon_click(self, e):
+        # Przywróć kolor tła załadowanej ikony z bazy danych
+        if self.loaded_icon_container and self.loaded_icon_container != e.control:
+            self.loaded_icon_container.bgcolor = "#132D46"
+            self.loaded_icon_container.border = None
+            self.loaded_icon_container.update()
+
         if self.last_selected_icon:
-            # Przywrócenie oryginalnego koloru i usunięcie cienia z ostatnio wybranego kontenera
-            self.last_selected_icon.bgcolor = self.last_selected_icon_original_color
+            # Przywróć oryginalny kolor tła i usuń obramowanie z ostatnio wybranego kontenera
+            self.last_selected_icon.bgcolor = "#132D46"
             self.last_selected_icon.border = None
             self.last_selected_icon.update()
 
@@ -88,34 +112,38 @@ class Expanse(UserControl):
         self.last_selected_icon = e.control
         self.last_selected_icon_original_color = e.control.bgcolor
 
-        # Zmiana koloru nowo wybranego kontenera, jeśli kolor jest wybrany
+        # Zmień kolor tła nowo wybranego kontenera, jeśli wybrano kolor
         if self.selected_color:
             e.control.bgcolor = self.selected_color
 
-        # Dodanie konturow do nowo wybranego kontenera
+        # Dodaj obramowanie do nowo wybranego kontenera
         e.control.border = border.all(4, colors.WHITE)
         e.control.update()
 
-        self.selected_icon = e.control.data  # Dodana nazwa ikony
+        # Zapisz wybraną ikonę
+        self.selected_icon = e.control.data
 
-    def add_account(self, e):
+    def update_account(self, e):
+
         account_name = self.account_name_input.current.value
-        balance = self.amount_input.current.value
-        account_color = self.selected_color
-        account_icon = self.selected_icon
-        card_id = self.card_selection.value
         account_type = self.account_type_selection.value
-        if self.include_in_total_switch.current.value:
-            include_in_total = 0
-        else:
-            include_in_total = 1
+        balance = self.balance_input.current.value
+        account_color = self.selected_color
+        # Użyj wybranej ikony, jeśli istnieje, w przeciwnym razie użyj ikony z bazy danych
+        account_icon = self.selected_icon if self.selected_icon else self.account_icon
+        card_id = self.card_selection.value
+        include_in_total = self.include_in_total_switch.current.value
 
-        self.account_controller.create_account(self.user_id, account_name, account_type, balance, account_color,
-                                               account_icon, card_id, include_in_total)
-        print("Account added successfully")
+        self.account_controller.update_account(self.account_id, self.user_id, account_name, account_type, balance,
+                                               account_color, account_icon, card_id, include_in_total)
+        print("Account updated successfully")
+
+    def delete_account(self, e):
+        self.account_controller.delete_account(self.account_id, self.user_id)
+        print("Account deleted successfully")
 
     def build(self):
-        self.amount_input = Ref[TextField]()
+        self.balance_input = Ref[TextField]()
         self.account_name_input = Ref[TextField]()
         self.include_in_total_switch = Ref[Switch]()
 
@@ -140,7 +168,8 @@ class Expanse(UserControl):
             label="Select account type",
             width="100%",
             bgcolor=colors.WHITE,
-            color=colors.BLACK
+            color=colors.BLACK,
+            value=self.account_type,
         )
 
         user_cards = self.card_controller.get_user_cards(self.user_id)
@@ -149,7 +178,8 @@ class Expanse(UserControl):
             label="Select card",
             width="100%",
             bgcolor=colors.WHITE,
-            color=colors.BLACK
+            color=colors.BLACK,
+            value=self.card_id,
         )
 
         self.main_col = Column(
@@ -167,7 +197,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=870,
+            height=930,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -178,13 +208,19 @@ class Expanse(UserControl):
                         content=Column(
                             spacing=10,
                             controls=[
-                                self.InputTextField("Amount", False, self.amount_input, width="100%"),
-                                self.InputTextField("Account name", False, self.account_name_input, width="100%"),
+                                self.InputTextField("Balance", False, self.balance_input, width="100%",
+                                                    value=self.balance),
+                                self.InputTextField("Account name", False, self.account_name_input, width="100%",
+                                                    value=self.account_name),
                                 self.currency_selection,
                                 # opakowne żeby był jednakowy odstep w polach w formularzu
                                 Container(
-                                    margin=margin.only(top=10, bottom=10),
+                                    margin=margin.only(top=10),
                                     content=self.account_type_selection,
+                                ),
+                                Container(
+                                    margin=margin.only(top=10, bottom=10),
+                                    content=self.card_selection,
                                 ),
                                 Container(
                                     alignment=alignment.center_left,
@@ -194,7 +230,7 @@ class Expanse(UserControl):
                                                 "Do not include in the total account",
                                                 color="white",
                                             ),
-                                            Switch(ref=self.include_in_total_switch),
+                                            Switch(ref=self.include_in_total_switch, value=self.include_in_total),
 
                                         ]
                                     ),
@@ -246,11 +282,11 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Add",
+                                "Update",
                                 size=14,
                                 weight="bold",
                             ),
-                            bgcolor="#01C38D",
+                            bgcolor="yellow",
                             color="white",
                             style=ButtonStyle(
                                 shape={
@@ -259,7 +295,27 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
-                            on_click=self.add_account
+                            on_click=self.update_account
+                        )
+                    ),
+                    Container(
+                        alignment=alignment.center,
+                        content=ElevatedButton(
+                            content=Text(
+                                "Delete",
+                                size=14,
+                                weight="bold",
+                            ),
+                            bgcolor="red",
+                            color="white",
+                            style=ButtonStyle(
+                                shape={
+                                    "": RoundedRectangleBorder(radius=8)
+                                },
+                            ),
+                            height=58,
+                            width=300,
+                            on_click=self.delete_account
                         )
                     )
                 ]
@@ -286,14 +342,18 @@ class Expanse(UserControl):
         ]
 
         for i in icon_list:
+            icon_bgcolor = self.account_color if i[0] == self.account_icon else "#132D46"
+            icon_border = border.all(4, colors.WHITE) if i[0] == self.account_icon else None
+
             item_container = Container(
                 width=100,
                 height=100,
-                bgcolor="#132D46",
+                bgcolor=icon_bgcolor,
                 border_radius=15,
                 alignment=alignment.center,
                 on_click=self.on_icon_click,
                 data=i[0],  # Dodaje nazwę ikony jako dane do kontenera
+                border=icon_border,
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",
@@ -306,6 +366,11 @@ class Expanse(UserControl):
                     ]
                 )
             )
+
+            # Przechowaj referencję do ikony załadowanej z bazy danych
+            if i[0] == self.account_icon:
+                self.loaded_icon_container = item_container
+
             self.grid_transfers.controls.append(item_container)
 
         self.main_col.controls.append(self.main_content_area)
@@ -318,7 +383,7 @@ def manage_account_page(page: Page):
     page.vertical_alignment = "center"
     page.scroll = True
 
-    app = Expanse(user_id=g.logged_in_user["user_id"])
+    app = Expanse(user_id=g.logged_in_user["user_id"], account_id=g.selected_account["account_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(

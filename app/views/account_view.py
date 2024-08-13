@@ -12,6 +12,7 @@ class Expanse(UserControl):
         self.selected_link = None
         self.user_id = user_id
         self.account_controller = AccountController()
+        self.selected_account_id = None
 
     def account_click(self, e, account_id):
         account = self.account_controller.get_account_by_id(account_id)

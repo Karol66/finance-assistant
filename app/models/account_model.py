@@ -46,9 +46,9 @@ class AccountModel:
         cursor = self.connection.cursor()
         cursor.execute('''
             UPDATE accounts
-            SET account_name = %s, account_type = %s, balence = %s, account_color = %s, account_icon = %s, card_id = %s, include_in_total = %s 
+            SET account_name = %s, account_type = %s, balance = %s, account_color = %s, account_icon = %s, card_id = %s, include_in_total = %s 
             WHERE account_id = %s AND user_id = %s AND is_deleted = FALSE
-        ''', (account_name, account_type, account_color, account_icon, card_id, include_in_total, account_id, user_id))
+        ''', (account_name, account_type, balance, account_color, account_icon, card_id, include_in_total, account_id, user_id))
         self.connection.commit()
 
     def delete_account(self, account_id, user_id):

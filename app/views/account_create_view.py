@@ -100,7 +100,7 @@ class Expanse(UserControl):
 
     def add_account(self, e):
         account_name = self.account_name_input.current.value
-        balance = self.amount_input.current.value
+        balance = self.balance_input.current.value
         account_color = self.selected_color
         account_icon = self.selected_icon
         card_id = self.card_selection.value
@@ -115,7 +115,7 @@ class Expanse(UserControl):
         print("Account added successfully")
 
     def build(self):
-        self.amount_input = Ref[TextField]()
+        self.balance_input = Ref[TextField]()
         self.account_name_input = Ref[TextField]()
         self.include_in_total_switch = Ref[Switch]()
 
@@ -167,7 +167,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=870,
+            height=930,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(
@@ -178,13 +178,17 @@ class Expanse(UserControl):
                         content=Column(
                             spacing=10,
                             controls=[
-                                self.InputTextField("Amount", False, self.amount_input, width="100%"),
+                                self.InputTextField("Balance", False, self.balance_input, width="100%"),
                                 self.InputTextField("Account name", False, self.account_name_input, width="100%"),
                                 self.currency_selection,
                                 # opakowne żeby był jednakowy odstep w polach w formularzu
                                 Container(
-                                    margin=margin.only(top=10, bottom=10),
+                                    margin=margin.only(top=10),
                                     content=self.account_type_selection,
+                                ),
+                                Container(
+                                    margin=margin.only(top=10, bottom=10),
+                                    content=self.card_selection,
                                 ),
                                 Container(
                                     alignment=alignment.center_left,
