@@ -197,7 +197,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=400,
-            height=930,
+            height=1010,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10, bottom=10),
             content=Column(

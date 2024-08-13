@@ -130,34 +130,50 @@ class Expanse(UserControl):
     def create_datepicker(self):
         def handle_change(e):
             self.date_value = e.control.value
-            self.page.add(Text(f"Date changed: {e.control.value.strftime('%Y-%m-%d')}"))
+            self.date_text.value = self.date_value.strftime('%Y-%m-%d')
+            self.date_picker_button.update()
 
         def handle_dismissal(e):
             self.page.add(Text(f"DatePicker dismissed"))
 
-        return Container(
-            width=400,
-            content=ElevatedButton(
-                "Pick date",
-                icon=icons.CALENDAR_MONTH,
-                on_click=lambda e: self.page.open(
-                    DatePicker(
-                        first_date=datetime.datetime(year=2023, month=1, day=1),
-                        last_date=datetime.datetime(year=2024, month=12, day=31),
-                        on_change=handle_change,
-                        on_dismiss=handle_dismissal,
+        self.date_text = Text("Pick date", size=14)
+
+        self.date_picker_button = ElevatedButton(
+            content=Row(
+                controls=[
+                    self.date_text,  # Tekst daty
+                    Container(
+                        content=Icon(icons.CALENDAR_MONTH, size=20),
+                        margin=margin.only(right=5)
                     )
-                ),
-                style=ButtonStyle(
-                    bgcolor="#f0f3f6",
-                    color="black",
-                    shape=RoundedRectangleBorder(radius=5),
-                    padding=padding.symmetric(vertical=20, horizontal=10)
-                ),
-            )
+                ],
+                alignment="spaceBetween",
+                expand=True,
+            ),
+            style=ButtonStyle(
+                bgcolor="#f0f3f6",
+                color="black",
+                shape=RoundedRectangleBorder(radius=5),
+                padding=padding.symmetric(vertical=20, horizontal=10),
+            ),
+            on_click=lambda e: self.page.open(
+                DatePicker(
+                    first_date=datetime.datetime(year=2023, month=1, day=1),
+                    last_date=datetime.datetime(year=2024, month=12, day=31),
+                    on_change=handle_change,
+                    on_dismiss=handle_dismissal,
+                )
+            ),
+            width=400,
+            height=58,
         )
 
-    def handle_submit(self, e):
+        return Container(
+            width=400,
+            content=self.date_picker_button
+        )
+
+    def add_transaction(self, e):
         amount = float(self.amount_input.current.value)
         account_id = int(self.account_selection.value)
         transaction_date = self.date_value
@@ -165,7 +181,8 @@ class Expanse(UserControl):
         category_id = self.selected_category_id
         user_id = self.user_id
 
-        self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)
+        self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id,
+                                                    user_id)
         self.page.add(Text("Transaction added successfully!"))
 
     def build(self):
@@ -181,7 +198,6 @@ class Expanse(UserControl):
             bgcolor=colors.WHITE,
             color=colors.BLACK
         )
-
 
         self.main_col = Column(
             expand=True,
@@ -239,7 +255,7 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
-                            on_click=self.handle_submit,
+                            on_click=self.add_transaction,
                         )
                     ),
                 ]
@@ -301,7 +317,8 @@ class Expanse(UserControl):
 
         return self.main_col
 
-def manage_transaction_page(page: Page):
+
+def create_transaction_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
     page.scroll = True
@@ -322,7 +339,7 @@ def manage_transaction_page(page: Page):
                     ),
                 ],
             ),
-            title=Text('Manage transaction', color="white"),
+            title=Text('Create transaction', color="white"),
             bgcolor="#132D46",
         ),
     )

@@ -58,6 +58,7 @@ class Expanse(UserControl):
                     vertical_alignment="center",
                     spacing=10,
                     controls=[
+
                         Row(
                             alignment="start",
                             vertical_alignment="center",
@@ -115,20 +116,6 @@ class Expanse(UserControl):
             content=Column(
                 spacing=20,
                 controls=[
-                    Row(
-                        alignment="spaceBetween",
-                        vertical_alignment="end",
-                        controls=[
-                            Container(
-                                content=Text(
-                                    "Pending Payments",
-                                    size=14,
-                                    weight="bold",
-                                    color="white",
-                                )
-                            ),
-                        ]
-                    ),
                     self.grid_transactions,
                 ]
             )
@@ -207,7 +194,3 @@ def transaction_page(page: Page):
         ),
     )
     page.update()
-
-
-if __name__ == '__main__':
-    flet.app(target=transaction_page)
