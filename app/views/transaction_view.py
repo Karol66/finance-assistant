@@ -15,7 +15,7 @@ class Expanse(UserControl):
         self.category_controller = CategoryController()
         self.transaction_controller = TransactionController()
 
-    def category_click(self, e, transaction_id):
+    def manage_transaction_click(self, e, transaction_id):
         transaction = self.transaction_controller.get_transaction_by_id(transaction_id)
         g.selected_transaction = transaction
         navigate_to(e.page, "Manage transaction")
@@ -51,7 +51,7 @@ class Expanse(UserControl):
                     alignment=alignment.center,
                     padding=padding.all(13),
                     data=category["category_id"],
-                    on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
+                    on_click=lambda e, transaction_id=transaction["transaction_id"]: self.manage_transaction_click(e, transaction_id),
                 )
                 __.content = Row(
                     alignment="spaceBetween",
@@ -110,7 +110,7 @@ class Expanse(UserControl):
 
         self.main_content_area = Container(
             width=350,
-            height=700 * 0.50,
+            height=800,
             bgcolor="#191E29",
             padding=padding.only(top=10, left=10, right=10),
             content=Column(

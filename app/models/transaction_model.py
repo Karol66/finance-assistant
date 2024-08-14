@@ -23,12 +23,12 @@ class TransactionModel:
         ''')
         self.connection.commit()
 
-    def add_transaction(self, amount, account_id, transaction_date, description, category_id, user_id):
+    def add_transaction(self, user_id, amount, account_id, transaction_date, description, category_id):
         cursor = self.connection.cursor()
         cursor.execute('''
-            INSERT INTO transactions (amount, account_id, transaction_date, description, category_id, user_id)
+            INSERT INTO transactions (user_id, amount, account_id, transaction_date, description, category_id)
             VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (amount, account_id, transaction_date, description, category_id, user_id))
+        ''', (user_id, amount, account_id, transaction_date, description, category_id))
         self.connection.commit()
 
     def get_user_transactions(self, user_id):
@@ -51,7 +51,7 @@ class TransactionModel:
             UPDATE transactions 
             SET amount = %s, account_id = %s, transaction_date = %s, description = %s, category_id = %s
             WHERE transaction_id = %s AND user_id = %s AND is_deleted = FALSE
-        ''', (user_id, amount, account_id, transaction_date, description, category_id, transaction_id, user_id))
+        ''', (amount, account_id, transaction_date, description, category_id, transaction_id, user_id))
         self.connection.commit()
 
     def delete_transaction(self, transaction_id, user_id):

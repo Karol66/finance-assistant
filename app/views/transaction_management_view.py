@@ -11,7 +11,7 @@ import app.globals as g
 
 class Expanse(UserControl):
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, transaction_id):
         super().__init__()
         self.selected_link = None
         self.user_id = user_id
@@ -19,8 +19,16 @@ class Expanse(UserControl):
         self.transaction_controller = TransactionController()
         self.account_controller = AccountController()
         self.selected_category_id = None
+        self.transaction_id = transaction_id
 
-    def InputTextField(self, text: str, hide: bool, ref, width="100%"):
+        self.transaction_data = g.selected_transaction
+        self.amount = self.transaction_data.get("amount", "")
+        self.account_id = self.transaction_data.get("account_id", "")
+        self.transaction_date = self.transaction_data.get("transaction_date", "")
+        self.description = self.transaction_data.get("description", "")
+        self.category_id = self.transaction_data.get("category_id", "")
+
+    def InputTextField(self, text: str, hide: bool, ref, width="100%", value=""):
         return Container(
             alignment=alignment.center,
             content=TextField(
@@ -39,6 +47,7 @@ class Expanse(UserControl):
                 ),
                 password=hide,
                 ref=ref,
+                value=value,
             ),
         )
 
@@ -80,11 +89,18 @@ class Expanse(UserControl):
                 filtered_categories.append(category)
 
         for category in filtered_categories:
+            if category["category_id"] == self.category_id:
+                category_border = border.all(4, colors.WHITE)
+                self.selected_category_id = category["category_id"]
+            else:
+                category_border = None
+
             item_container = Container(
                 width=100,
                 height=100,
                 bgcolor=category["category_color"],
                 border_radius=15,
+                border=category_border,
                 alignment=alignment.center,
                 data=category["category_id"],
                 on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
@@ -130,18 +146,20 @@ class Expanse(UserControl):
     def create_datepicker(self):
         def handle_change(e):
             self.date_value = e.control.value
+            # Only display the date in YYYY-MM-DD format
             self.date_text.value = self.date_value.strftime('%Y-%m-%d')
             self.date_picker_button.update()
 
         def handle_dismissal(e):
             self.page.add(Text(f"DatePicker dismissed"))
 
-        self.date_text = Text("Pick date", size=14)
+        # Initially display the date in YYYY-MM-DD format
+        self.date_text = Text(self.transaction_date.strftime('%Y-%m-%d'), size=14)
 
         self.date_picker_button = ElevatedButton(
             content=Row(
                 controls=[
-                    self.date_text,  # Tekst daty
+                    self.date_text,  # Display only the date part
                     Container(
                         content=Icon(icons.CALENDAR_MONTH, size=20),
                         margin=margin.only(right=5)
@@ -165,7 +183,7 @@ class Expanse(UserControl):
                 )
             ),
             width=400,
-            height=58,
+            height=50,
         )
 
         return Container(
@@ -173,17 +191,19 @@ class Expanse(UserControl):
             content=self.date_picker_button
         )
 
-    def add_transaction(self, e):
-        amount = float(self.amount_input.current.value)
-        account_id = int(self.account_selection.value)
+    def update_transaction(self, e):
+        amount = self.amount_input.current.value
+        account_id = self.account_selection.value
         transaction_date = self.date_value
         description = self.description_input.current.value
         category_id = self.selected_category_id
-        user_id = self.user_id
 
-        self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id,
-                                                    user_id)
-        self.page.add(Text("Transaction added successfully!"))
+        self.transaction_controller.update_transaction(self.transaction_id, self.user_id, amount, account_id, transaction_date, description, category_id)
+        print("Transaction updated successfully!")
+
+    def delete_transaction(self, e):
+        self.transaction_controller.delete_transaction(self.transaction_id, self.user_id)
+        print("Transaction deleted successfully!")
 
     def build(self):
         self.amount_input = Ref[TextField]()
@@ -196,7 +216,8 @@ class Expanse(UserControl):
             label="Select account",
             width="100%",
             bgcolor=colors.WHITE,
-            color=colors.BLACK
+            color=colors.BLACK,
+            value=self.account_id,
         )
 
         self.main_col = Column(
@@ -225,13 +246,13 @@ class Expanse(UserControl):
                         content=Column(
                             spacing=10,
                             controls=[
-                                self.InputTextField("Amount", False, self.amount_input, width="100%"),
+                                self.InputTextField("Amount", False, self.amount_input, width="100%", value=self.amount),
                                 self.account_selection,
                                 Container(
                                     margin=margin.only(top=10, bottom=10),
                                     content=self.create_datepicker()
                                 ),
-                                self.InputTextField("Description", False, self.description_input, width="100%"),
+                                self.InputTextField("Description", False, self.description_input, width="100%", value=self.description),
                             ]
                         )
                     ),
@@ -242,11 +263,11 @@ class Expanse(UserControl):
                         alignment=alignment.center,
                         content=ElevatedButton(
                             content=Text(
-                                "Add",
+                                "Update",
                                 size=14,
                                 weight="bold",
                             ),
-                            bgcolor="#01C38D",
+                            bgcolor="yellow",
                             color="white",
                             style=ButtonStyle(
                                 shape={
@@ -255,9 +276,31 @@ class Expanse(UserControl):
                             ),
                             height=58,
                             width=300,
-                            on_click=self.add_transaction,
+                            on_click=self.update_transaction
                         )
                     ),
+
+                    Container(
+                        alignment=alignment.center,
+                        content=ElevatedButton(
+                            content=Text(
+                                "Delete",
+                                size=14,
+                                weight="bold",
+                            ),
+                            bgcolor="red",
+                            color="white",
+                            style=ButtonStyle(
+                                shape={
+                                    "": RoundedRectangleBorder(radius=8)
+                                },
+                            ),
+                            height=58,
+                            width=300,
+                            on_click=self.delete_transaction
+                        )
+                    )
+
                 ]
             )
         )
@@ -318,12 +361,12 @@ class Expanse(UserControl):
         return self.main_col
 
 
-def create_transaction_page(page: Page):
+def manage_transaction_page(page: Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
     page.scroll = True
 
-    app = Expanse(user_id=g.logged_in_user["user_id"])
+    app = Expanse(user_id=g.logged_in_user["user_id"], transaction_id=g.selected_transaction["transaction_id"])
 
     drawer = create_navigation_drawer(page)
     page.add(

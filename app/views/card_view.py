@@ -13,7 +13,7 @@ class Expanse(UserControl):
         self.card_controller = CardController()  # Initialize CardController
         self.ColorCount = 0  # Initialize ColorCount for card colors
 
-    def card_click(self, e, card_id):
+    def manage_card_click(self, e, card_id):
         card = self.card_controller.get_card_by_id(card_id)
         g.selected_card = card  # Update the global selected card
         navigate_to(e.page, "Manage card")  #
@@ -146,7 +146,7 @@ class Expanse(UserControl):
                         ColorList.CARDCOLORS["from"][self.ColorCount % len(ColorList.CARDCOLORS["from"])],
                         ColorList.CARDCOLORS["to"][self.ColorCount % len(ColorList.CARDCOLORS["to"])],
                     ),
-                    on_click=lambda e, card_id=card["card_id"]: self.card_click(e, card_id),
+                    on_click=lambda e, card_id=card["card_id"]: self.manage_card_click(e, card_id),
                 )
             )
             self.grid_cards.controls.append(card_container)  # Update to grid_cards

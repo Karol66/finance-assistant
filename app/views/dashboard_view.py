@@ -15,13 +15,6 @@ class Expanse(UserControl):
         self.category_controller = CategoryController()
         self.transaction_controller = TransactionController()
 
-    def click_animation(self, e):
-        if e.control.bgcolor == "white10":
-            e.control.bgcolor = "white30"
-        else:
-            e.control.bgcolor = "white10"
-        e.control.update()
-
     def on_link_click(self, e, link_name):
         self.selected_link = link_name
         self.update_links()
@@ -31,11 +24,16 @@ class Expanse(UserControl):
         self.update_chart(link_name)
         self.grid_transactions.update()
 
+    def transaction_click(self, e):
+        navigate_to(e.page, "Transaction")
+
     def create_transaction_click(self, e):
         navigate_to(e.page, "Create transaction")
 
-    def transaction_click(self, e):
-        navigate_to(e.page, "Transaction")
+    def manage_transaction_click(self, e, transaction_id):
+        transaction = self.transaction_controller.get_transaction_by_id(transaction_id)
+        g.selected_transaction = transaction
+        navigate_to(e.page, "Manage transaction")
 
     def update_links(self):
         for link in self.links:
@@ -59,7 +57,7 @@ class Expanse(UserControl):
                     bgcolor="#132D46",
                     border_radius=15,
                     alignment=alignment.center,
-                    on_click=lambda e: self.click_animation(e),
+                    on_click=lambda e, transaction_id=transaction["transaction_id"]: self.manage_transaction_click(e, transaction_id),
                     padding=padding.all(13),
                 )
                 __.content = Row(

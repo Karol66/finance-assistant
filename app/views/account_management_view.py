@@ -124,7 +124,6 @@ class Expanse(UserControl):
         self.selected_icon = e.control.data
 
     def update_account(self, e):
-
         account_name = self.account_name_input.current.value
         account_type = self.account_type_selection.value
         balance = self.balance_input.current.value

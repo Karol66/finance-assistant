@@ -21,7 +21,7 @@ class Expanse(UserControl):
         self.load_categories(link_name)
         self.grid_categories.update()
 
-    def category_click(self, e, category_id):
+    def manage_category_click(self, e, category_id):
         # Pobierz dane kategorii i zapisz do zmiennej globalnej
         category = self.category_controller.get_category_by_id(category_id)
         g.selected_category = category
@@ -53,7 +53,7 @@ class Expanse(UserControl):
                 border_radius=15,
                 alignment=alignment.center,
                 data=category["category_id"],
-                on_click=lambda e, category_id=category["category_id"]: self.category_click(e, category_id),
+                on_click=lambda e, category_id=category["category_id"]: self.manage_category_click(e, category_id),
                 content=Column(
                     alignment="center",
                     horizontal_alignment="center",

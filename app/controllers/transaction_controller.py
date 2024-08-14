@@ -4,8 +4,8 @@ class TransactionController:
     def __init__(self):
         self.transaction_service = TransactionService()
 
-    def add_transaction(self, amount, account_id, transaction_date, description, category_id, user_id):
-        return self.transaction_service.add_transaction(amount, account_id, transaction_date, description, category_id, user_id)
+    def add_transaction(self, user_id, amount, account_id, transaction_date, description, category_id, ):
+        return self.transaction_service.add_transaction(user_id, amount, account_id, transaction_date, description, category_id)
 
     def get_transactions(self, user_id):
         return self.transaction_service.get_transactions(user_id)

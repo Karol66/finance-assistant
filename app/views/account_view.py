@@ -14,7 +14,7 @@ class Expanse(UserControl):
         self.account_controller = AccountController()
         self.selected_account_id = None
 
-    def account_click(self, e, account_id):
+    def mange_account_click(self, e, account_id):
         account = self.account_controller.get_account_by_id(account_id)
         g.selected_account = account
         navigate_to(e.page, "Manage account")
@@ -34,7 +34,7 @@ class Expanse(UserControl):
                 alignment=alignment.center,
                 padding=padding.all(13),
                 data=account["account_id"],
-                on_click=lambda e, account_id=account["account_id"]: self.account_click(e, account_id),
+                on_click=lambda e, account_id=account["account_id"]: self.mange_account_click(e, account_id),
             )
             __.content = Row(
                 alignment="spaceBetween",

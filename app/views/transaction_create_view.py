@@ -165,7 +165,7 @@ class Expanse(UserControl):
                 )
             ),
             width=400,  # Szerokość przycisku
-            height=58,  # Wysokość przycisku, dostosowana do innych pól
+            height=50,  # Wysokość przycisku, dostosowana do innych pól
         )
 
         return Container(
@@ -174,16 +174,14 @@ class Expanse(UserControl):
         )
 
     def add_transaction(self, e):
-        amount = float(self.amount_input.current.value)
-        account_id = int(self.account_selection.value)
+        amount = self.amount_input.current.value
+        account_id = self.account_selection.value
         transaction_date = self.date_value
         description = self.description_input.current.value
         category_id = self.selected_category_id
-        user_id = self.user_id
 
-        self.transaction_controller.add_transaction(amount, account_id, transaction_date, description, category_id,
-                                                    user_id)
-        self.page.add(Text("Transaction added successfully!"))
+        self.transaction_controller.add_transaction(self.user_id, amount, account_id, transaction_date, description, category_id)
+        print("Transaction added successfully!")
 
     def build(self):
         self.amount_input = Ref[TextField]()
