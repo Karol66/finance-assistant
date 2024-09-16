@@ -72,14 +72,6 @@ def navigate_to(page, destination):
     else:
         page.add(Text(f"Unknown destination: {destination}"))
 
-    drawer.selected_index = get_selected_index(destination)
-    page.update()
-
-def get_selected_index(destination):
-    labels = ["Dashboard", "Account", "Statistic", "Categories", "Regular payments", "Notifications", "Settings", "Logout"]
-    if destination in labels:
-        return labels.index(destination)
-    return 0
 
 class CustomNavigationDrawerDestination(UserControl):
     def __init__(self, icon, label, destination, page, on_click=None):
