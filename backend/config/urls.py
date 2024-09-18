@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('apps.users.urls')),  # Dodaj odniesienie do ścieżek URL aplikacji "users"
+    path('users/', include('apps.users.urls')),
+    path('categories/', include('apps.categories.urls')),
 ]
