@@ -6,7 +6,7 @@ class Transfer(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)  # Powiązanie z kontem
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)  # Powiązanie z kategorią
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transfer_date = models.DateTimeField(auto_now_add=True)
+    transfer_date = models.DateTimeField()
     description = models.TextField()
     is_deleted = models.BooleanField(default=False)  # Soft-delete
 
