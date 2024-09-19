@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista kont</title>
+</head>
+<body>
+    <h1>Lista kont</h1>
+    <a href="{% url 'account_create' %}">Dodaj nowe konto</a>
+    <ul>
+        {% for account in accounts %}
+            <li>{{ account.account_name }} - {{ account.account_type }} ({{ account.balance }} {{ account.currency }}) - Kolor: {{ account.account_color }} - Ikona: {{ account.account_icon }}
+                <a href="{% url 'account_update' account.id %}">Edytuj</a>
+                <form method="POST" action="{% url 'account_delete' account.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Usuń</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

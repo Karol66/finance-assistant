@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ form.instance.pk|yesno:"Edytuj konto,Dodaj nowe konto" }}</title>
+</head>
+<body>
+    <h1>{{ form.instance.pk|yesno:"Edytuj konto,Dodaj nowe konto" }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Zapisz</button>
+    </form>
+    <a href="{% url 'account_list' %}">Powrót do listy kont</a>
+</body>
+</html>

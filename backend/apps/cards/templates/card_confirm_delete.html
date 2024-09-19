@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Usuń kartę</title>
+</head>
+<body>
+    <h1>Czy na pewno chcesz usunąć kartę "{{ card.card_number }}"?</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Usuń</button>
+    </form>
+    <a href="{% url 'card_list' %}">Anuluj</a>
+</body>
+</html>
