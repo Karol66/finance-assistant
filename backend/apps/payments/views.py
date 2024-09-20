@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Payment
 from .forms import PaymentForm
 from django.contrib.auth.decorators import login_required
+from apps.statistics.models import Statistics
 
 @login_required
 def payment_list(request):
@@ -22,11 +23,19 @@ def payment_create(request):
             account.save()
 
             payment.save()
+
+            # Automatyczne tworzenie statystyk po dokonaniu płatności
+            # Dodanie statystyki dla wydatku
+            Statistics.objects.create(
+                account=account,
+                statistic_type='monthly_expense',  # Typ statystyki: wydatki
+                value=payment.amount
+            )
+
             return redirect('payment_list')  # Przekierowanie po dodaniu płatności
     else:
         form = PaymentForm()
     return render(request, 'payment_form.html', {'form': form})
-
 
 @login_required
 def payment_update(request, pk):

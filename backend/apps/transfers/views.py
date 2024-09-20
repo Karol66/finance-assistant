@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Transfer
-from .forms import TransferForm
+from .forms import TransferForm, AccountTransferForm
 from django.contrib.auth.decorators import login_required
+from apps.statistics.models import Statistics
+from apps.accounts.models import Account
+
 
 @login_required
 def transfer_create(request):
@@ -10,15 +13,78 @@ def transfer_create(request):
         if form.is_valid():
             transfer = form.save(commit=False)
             account = transfer.account
-            # Aktualizacja salda konta (odejmowanie kwoty przelewu)
-            account.balance -= transfer.amount
-            account.save()
 
+            # Rozróżnienie przychodu i wydatku na podstawie kategorii
+            if transfer.category.category_type == 'income':
+                # Jeśli kategoria to przychód, dodajemy kwotę do salda konta
+                account.balance += transfer.amount
+                statistic_type = 'monthly_income'
+            else:
+                # Jeśli kategoria to wydatek, odejmujemy kwotę z salda konta
+                account.balance -= transfer.amount
+                statistic_type = 'monthly_expense'
+
+            account.save()
             transfer.save()
-            return redirect('transfer_list')  # Przekierowanie po dodaniu przelewu
+
+            # Dodanie statystyk po dokonaniu przelewu
+            Statistics.objects.create(
+                account=account,
+                statistic_type=statistic_type,
+                value=transfer.amount
+            )
+
+            return redirect('transfer_list')
     else:
         form = TransferForm()
     return render(request, 'transfer_form.html', {'form': form})
+
+@login_required
+def account_transfer(request):
+    if request.method == 'POST':
+        form = AccountTransferForm(request.POST)
+        if form.is_valid():
+            transfer = form.save(commit=False)
+            source_account = transfer.account
+
+            # Wyszukiwanie konta odbiorcy na podstawie numeru konta
+            recipient_account_number = form.cleaned_data.get('recipient_account_number')
+            try:
+                recipient_account = Account.objects.get(account_number=recipient_account_number, is_deleted=False)
+            except Account.DoesNotExist:
+                form.add_error('recipient_account_number', 'Nie znaleziono konta o podanym numerze')
+                return render(request, 'account_transfer_form.html', {'form': form})
+
+            # Zmniejszamy saldo konta źródłowego
+            source_account.balance -= transfer.amount
+            source_account.save()
+
+            # Zwiększamy saldo konta docelowego
+            recipient_account.balance += transfer.amount
+            recipient_account.save()
+
+            # Zapisanie przelewu z kontem odbiorcy
+            transfer.recipient_account = recipient_account
+            transfer.save()
+
+            # Statystyki dla konta źródłowego
+            Statistics.objects.create(
+                account=source_account,
+                statistic_type='monthly_expense',
+                value=transfer.amount
+            )
+
+            # Statystyki dla konta odbiorcy
+            Statistics.objects.create(
+                account=recipient_account,
+                statistic_type='monthly_income',
+                value=transfer.amount
+            )
+
+            return redirect('transfer_list')  # Przekierowanie po dodaniu przelewu
+    else:
+        form = AccountTransferForm()
+    return render(request, 'account_transfer_form.html', {'form': form})
 
 @login_required
 def transfer_update(request, pk):

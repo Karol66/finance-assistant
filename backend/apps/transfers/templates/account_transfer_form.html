@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Przelew z konta na konto</title>
+</head>
+<body>
+    <h1>Przelew z konta na konto</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Zatwierdź przelew</button>
+    </form>
+    <a href="{% url 'transfer_list' %}">Powrót do listy przelewów</a>
+</body>
+</html>

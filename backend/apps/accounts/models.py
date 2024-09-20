@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings  # Dla modelu User
 
+
 class Account(models.Model):
     ACCOUNT_TYPES = [
         ('checking', 'Checking'),
@@ -18,10 +19,10 @@ class Account(models.Model):
     include_in_total = models.BooleanField(default=True)  # Czy uwzględnić w bilansie
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    account_number = models.CharField(max_length=26, unique=True)
 
     def __str__(self):
         return f"{self.account_name} ({self.account_type})"
-
 
     class Meta:
         db_table = 'accounts'

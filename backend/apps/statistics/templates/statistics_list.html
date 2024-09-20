@@ -1,0 +1,24 @@
+<h1>Twoje dane statystyczne</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Typ statystyki</th>
+            <th>Wartość</th>
+            <th>Data utworzenia</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in statistics %}
+            <tr>
+                <td>{{ stat.get_statistic_type_display }}</td>
+                <td>{{ stat.value }}</td>
+                <td>{{ stat.created_at }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Brak danych statystycznych</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
