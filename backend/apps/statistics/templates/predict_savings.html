@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prognozowane oszczędności</title>
+</head>
+<body>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Przewiduj oszczędności</button>
+    </form>
+
+    <h1>Prognozowane oszczędności</h1>
+    <p>Miesiąc: {{ selected_month }}</p>
+    <p>Przychody: {{ przychody }}</p>
+    <p>Wydatki: {{ wydatki }}</p>
+    <p>Prognozowane oszczędności: {{ prognozowane_oszczednosci }}</p>
+</body>
+</html>
