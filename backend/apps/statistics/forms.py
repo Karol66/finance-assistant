@@ -1,5 +1,6 @@
 from django import forms
 from .models import Statistics
+from datetime import datetime
 
 class StatisticsForm(forms.ModelForm):
     class Meta:
@@ -12,8 +13,8 @@ class StatisticsForm(forms.ModelForm):
         }
 
 class MonthSelectionForm(forms.Form):
-    month = forms.DateField(
-        widget=forms.SelectDateWidget(empty_label=("Rok", "Miesiąc", "Dzień")),
-        label="Wybierz miesiąc",
-        input_formats=['%Y-%m-%d']
-    )
+    MONTH_CHOICES = [(i, datetime(2024, i, 1).strftime('%B')) for i in range(1, 13)]
+    YEAR_CHOICES = [(y, y) for y in range(2020, 2025)]  # Zakres lat, które chcesz wyświetlać
+
+    month = forms.ChoiceField(choices=MONTH_CHOICES, label="Wybierz miesiąc")
+    year = forms.ChoiceField(choices=YEAR_CHOICES, label="Wybierz rok")

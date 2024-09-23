@@ -1,19 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Prognozowane oszczędności</title>
-</head>
-<body>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Przewiduj oszczędności</button>
-    </form>
+<h1>Prognozowane oszczędności</h1>
 
-    <h1>Prognozowane oszczędności</h1>
-    <p>Miesiąc: {{ selected_month }}</p>
-    <p>Przychody: {{ przychody }}</p>
-    <p>Wydatki: {{ wydatki }}</p>
-    <p>Prognozowane oszczędności: {{ prognozowane_oszczednosci }}</p>
-</body>
-</html>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Przewiduj oszczędności</button>
+</form>
+
+<p><strong>Miesiąc:</strong> {{ selected_month }}</p>
+<p><strong>Przychody:</strong> {{ przychody }}</p>
+<p><strong>Wydatki:</strong> {{ wydatki }}</p>
+<p><strong>Prognozowane oszczędności:</strong> {{ prognozowane_oszczednosci }}</p>
+
+<h2>Prognoza na kolejne miesiące:</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Miesiąc</th>
+            <th>Przychody</th>
+            <th>Wydatki</th>
+            <th>Prognozowane oszczędności</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for month in future_months %}
+        <tr>
+            <td>{{ month.YearMonth }}</td>
+            <td>{{ month.Przychody }}</td>
+            <td>{{ month.Wydatki }}</td>
+            <td>{{ month.Prognozowane_Oszczędności }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -7,32 +7,52 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-# Generowanie danych dla 2000 miesięcy (dla przykładu)
-np.random.seed(42)  # Dla powtarzalności wyników
+# Wczytanie danych z pliku CSV
+df = pd.read_csv('aug_personal_transactions_with_UserId.csv')
 
-record_number = 2000
+# Przekształcenie kwoty na typ liczbowy
+df['Amount'] = df['Amount'].replace('[\$,]', '', regex=True).astype(float)
 
-months = np.arange(1, record_number + 1)
-przychody = np.random.normal(5000, 500, record_number)
-wydatki = np.random.normal(3500, 400, record_number)
-oszczednosci = przychody - wydatki + np.random.normal(100, 50, record_number)
+# Przypisanie wartości 'debit' (wydatki) jako ujemne, a 'credit' (przychody) jako dodatnie
+df['Transaction Type'] = df['Transaction Type'].map({'debit': -1, 'credit': 1})
 
-data = {
-    'Miesiąc': months,
-    'Przychody': przychody,
-    'Wydatki': wydatki,
-    'Oszczędności': oszczednosci
-}
+# Konwersja daty na format daty i wyciągnięcie roku oraz miesiąca
+df['Date'] = pd.to_datetime(df['Date'])
+df['YearMonth'] = df['Date'].dt.to_period('M')  # Utworzenie kolumny z miesiącem i rokiem
 
-df = pd.DataFrame(data)
+# Obliczmy osobno sumę przychodów i wydatków dla każdego miesiąca
 
-# Zmienne niezależne: Przychody i Wydatki
-X = df[['Przychody', 'Wydatki']]
+# Filtrujemy transakcje typu 'credit' jako przychody
+przychody = df[df['Transaction Type'] == 1].groupby('YearMonth')['Amount'].sum().reset_index()
+
+# Filtrujemy transakcje typu 'debit' jako wydatki
+wydatki = df[df['Transaction Type'] == -1].groupby('YearMonth')['Amount'].sum().reset_index()
+
+# Łączymy przychody i wydatki w jeden dataframe na podstawie 'YearMonth'
+monthly_data = pd.merge(przychody, wydatki, on='YearMonth', how='outer', suffixes=('_Przychody', '_Wydatki'))
+
+# Zmieniamy nazwy kolumn
+monthly_data.rename(columns={'Amount_Przychody': 'Przychody', 'Amount_Wydatki': 'Wydatki'}, inplace=True)
+
+# Uzupełniamy ewentualne wartości NaN zerami (jeśli w danym miesiącu były tylko przychody lub tylko wydatki)
+monthly_data.fillna(0, inplace=True)
+
+# Obliczamy oszczędności jako różnicę między przychodami a wydatkami
+monthly_data['Oszczędności'] = monthly_data['Przychody'] - monthly_data['Wydatki']
+
+# Wyświetlenie danych miesięcznych
+print(monthly_data)
+
+
+print("------------------------------")
+
+# Zmienne niezależne: Przychody i Wydatki z historycznych danych
+X = monthly_data[['Przychody', 'Wydatki']]
 
 # Zmienna zależna: Oszczędności
-y = df['Oszczędności']
+y = monthly_data['Oszczędności']
 
-# Podział danych na treningowe i testowe
+# Podział danych na zbiór treningowy i testowy
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 # Standaryzacja danych
@@ -62,17 +82,6 @@ plt.scatter(y_test, y_pred)
 plt.xlabel("Rzeczywiste oszczędności")
 plt.ylabel("Prognozowane oszczędności")
 plt.title("Rzeczywiste vs Prognozowane oszczędności (Regresja Liniowa)")
-plt.show()
-
-# Oblicz residuale
-residuals = y_test - y_pred
-
-# Wykres residuali
-plt.scatter(y_pred, residuals)
-plt.axhline(0, color='red', linestyle='--')
-plt.xlabel('Prognozowane wartości')
-plt.ylabel('Residuals')
-plt.title('Wykres residuali (Regresja Liniowa)')
 plt.show()
 
 # Zapis modelu do pliku
