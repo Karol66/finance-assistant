@@ -139,12 +139,16 @@ def przewidywanie_oszczednosci_view(request):
                 dane_uzytkownika = np.array([[przychody_6m[-1], wydatki_6m[-1]]])
                 dane_uzytkownika_scaled = scaler.transform(dane_uzytkownika)
 
-                # Prognozujemy oszczędności na podstawie tych danych
+                # Prognozujemy oszczędności na podstawie tych danych (oszczędności to tylko różnica, nie wpływa na przychody ani wydatki)
                 prognozowane_oszczednosci = model.predict(dane_uzytkownika_scaled)[0]
 
-                # Zakładamy, że oszczędności wpłyną na przyszłe przychody i wydatki
-                new_przychody = przychody_6m[-1] + prognozowane_oszczednosci * 0.1
-                new_wydatki = wydatki_6m[-1] + prognozowane_oszczednosci * -0.1
+                # Zamiast zmieniać przychody lub wydatki na podstawie oszczędności, prognozujemy je samodzielnie
+                # Dodajemy realistyczny, umiarkowany wzrost przychodów i wydatków bazując na historycznych danych
+                new_przychody = przychody_6m[-1] + np.random.normal(0, 50)  # Możesz dostosować rozkład zmian przychodów
+                new_wydatki = wydatki_6m[-1] + np.random.normal(0, 50)  # Możesz dostosować rozkład zmian wydatków
+
+                # Zapobiegamy ujemnym wydatkom
+                new_wydatki = max(0, new_wydatki)
 
                 # Aktualizujemy historię
                 history_przychody.append(new_przychody)
