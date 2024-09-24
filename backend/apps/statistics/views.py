@@ -63,30 +63,30 @@ def przewidywanie_oszczednosci_view(request):
             # Obliczamy datę dla 6 poprzednich miesięcy
             start_date = selected_date - DateOffset(months=6)
 
-            # Pobieranie danych z ostatnich 6 miesięcy do prognozy
-            przychody_suma = Statistics.objects.filter(
+            # Pobieranie indywidualnych danych z ostatnich 6 miesięcy
+            przychody_ostatnie_6m = Statistics.objects.filter(
                 account__user=request.user,
                 statistic_type='monthly_income',
                 created_at__gte=start_date,
                 created_at__lte=selected_date
-            ).aggregate(total_income=models.Sum('value'))['total_income']
+            ).order_by('created_at').values_list('value', flat=True)
 
-            wydatki_suma = Statistics.objects.filter(
+            wydatki_ostatnie_6m = Statistics.objects.filter(
                 account__user=request.user,
                 statistic_type='monthly_expense',
                 created_at__gte=start_date,
                 created_at__lte=selected_date
-            ).aggregate(total_expense=models.Sum('value'))['total_expense']
+            ).order_by('created_at').values_list('value', flat=True)
 
-            # Konwersja przychodów i wydatków na float
-            if przychody_suma is not None:
-                przychody_suma = float(przychody_suma)
-            if wydatki_suma is not None:
-                wydatki_suma = float(wydatki_suma)
+            # Konwersja na listy floatów, aby mieć pełne dane
+            przychody_ostatnie_6m = list(map(float, przychody_ostatnie_6m))
+            wydatki_ostatnie_6m = list(map(float, wydatki_ostatnie_6m))
 
-            # Obliczanie średnich z 6 miesięcy do prognozowania
-            przychody_srednie = przychody_suma / 6 if przychody_suma is not None else 0
-            wydatki_srednie = wydatki_suma / 6 if wydatki_suma is not None else 0
+            # Sprawdzamy, czy mamy wystarczające dane dla ostatnich 6 miesięcy
+            if len(przychody_ostatnie_6m) < 6 or len(wydatki_ostatnie_6m) < 6:
+                return render(request, 'predict_savings.html', {
+                    'message': 'Brak pełnych danych dla ostatnich 6 miesięcy.'
+                })
 
             # Pobieranie danych dla wybranego miesiąca (do wyświetlenia)
             przychody_miesiac = Statistics.objects.filter(
@@ -104,50 +104,55 @@ def przewidywanie_oszczednosci_view(request):
             ).aggregate(total_expense=models.Sum('value'))['total_expense']
 
             # Konwersja przychodów i wydatków na float
-            if przychody_miesiac is not None:
-                przychody_miesiac = float(przychody_miesiac)
-            if wydatki_miesiac is not None:
-                wydatki_miesiac = float(wydatki_miesiac)
+            przychody_miesiac = float(przychody_miesiac) if przychody_miesiac else 0
+            wydatki_miesiac = float(wydatki_miesiac) if wydatki_miesiac else 0
 
             # Obliczanie oszczędności dla wybranego miesiąca
             prognozowane_oszczednosci_miesiac = przewiduj_oszczednosci(przychody_miesiac, wydatki_miesiac)
 
             # DEBUG: Wyświetlenie danych w konsoli
             print(f"Przychody wybranego miesiąca: {przychody_miesiac}, Wydatki wybranego miesiąca: {wydatki_miesiac}")
-            print(f"Średnie przychody z 6 miesięcy: {przychody_srednie}, Średnie wydatki z 6 miesięcy: {wydatki_srednie}")
+            print(f"Ostatnie 6 miesięcy - Przychody: {przychody_ostatnie_6m}, Wydatki: {wydatki_ostatnie_6m}")
 
             # Sprawdzamy, czy mamy dane dla wybranych miesięcy
-            if przychody_suma is None or wydatki_suma is None:
+            if not przychody_ostatnie_6m or not wydatki_ostatnie_6m:
                 return render(request, 'predict_savings.html', {
                     'message': 'Brak danych dla wybranego miesiąca.'
                 })
-
-            # Przewidujemy oszczędności na podstawie średnich z 6 miesięcy (do przyszłych miesięcy)
-            prognozowane_oszczednosci_srednie = przewiduj_oszczednosci(przychody_srednie, wydatki_srednie)
 
             # Generowanie przyszłych miesięcy (iteracyjna predykcja)
             future_months = pd.DataFrame({
                 'YearMonth': pd.date_range(f"{selected_year}-{selected_month}-01", periods=12, freq='M').to_period('M')
             })
 
-            # Ustawiamy pierwsze wartości przychodów i wydatków na podstawie średnich z poprzednich miesięcy
-            future_przychody = przychody_srednie
-            future_wydatki = wydatki_srednie
+            # Ustawiamy początkowe wartości przychodów i wydatków na podstawie ostatnich 6 miesięcy
+            history_przychody = przychody_ostatnie_6m[-6:]
+            history_wydatki = wydatki_ostatnie_6m[-6:]
 
-            # Iteracyjne przewidywanie dla przyszłych miesięcy
+            # Iteracyjne przewidywanie na podstawie danych z 6 miesięcy
             for i in range(len(future_months)):
-                # Przewidywanie przyszłych przychodów i wydatków na podstawie ostatnich wartości
-                dane_uzytkownika = np.array([[future_przychody, future_wydatki]])
+                # Obliczamy przychody i wydatki na podstawie dokładnych danych z ostatnich 6 miesięcy
+                przychody_6m = history_przychody[-6:]
+                wydatki_6m = history_wydatki[-6:]
+
+                # Tworzymy macierz danych do skalowania
+                dane_uzytkownika = np.array([[przychody_6m[-1], wydatki_6m[-1]]])
                 dane_uzytkownika_scaled = scaler.transform(dane_uzytkownika)
+
+                # Prognozujemy oszczędności na podstawie tych danych
                 prognozowane_oszczednosci = model.predict(dane_uzytkownika_scaled)[0]
 
-                # Aktualizujemy przychody i wydatki, aby zasymulować zmiany w czasie
-                future_przychody += np.random.normal(0, 150)  # Większe losowe zmiany w przychodach
-                future_wydatki += np.random.normal(0, 150)  # Większe losowe zmiany w wydatkach
+                # Zakładamy, że oszczędności wpłyną na przyszłe przychody i wydatki
+                new_przychody = przychody_6m[-1] + prognozowane_oszczednosci * 0.1
+                new_wydatki = wydatki_6m[-1] + prognozowane_oszczednosci * -0.1
+
+                # Aktualizujemy historię
+                history_przychody.append(new_przychody)
+                history_wydatki.append(new_wydatki)
 
                 # Dodaj prognozowane wartości do DataFrame
-                future_months.loc[i, 'Przychody'] = future_przychody
-                future_months.loc[i, 'Wydatki'] = future_wydatki
+                future_months.loc[i, 'Przychody'] = new_przychody
+                future_months.loc[i, 'Wydatki'] = new_wydatki
                 future_months.loc[i, 'Prognozowane_Oszczędności'] = prognozowane_oszczednosci
 
             # DEBUG: Wyświetlenie prognozowanych oszczędności
