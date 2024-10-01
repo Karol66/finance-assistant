@@ -3,11 +3,12 @@ import 'package:frontend/view/accounts_view.dart';
 import 'package:frontend/view/cards_view.dart';
 import 'package:frontend/view/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
+import 'package:frontend/view/goals_view.dart';
 import 'package:frontend/view/notifications_view.dart';
 import 'package:frontend/view/regular_payments_view.dart';
 import 'package:frontend/view/settings_view.dart';
 import 'package:frontend/view/statistic_view.dart';
-
+import 'package:frontend/view/transfers_view.dart';
 
 class DrawerNavigationController extends StatefulWidget {
   const DrawerNavigationController({super.key});
@@ -21,15 +22,17 @@ class _DrawerNavigationControllerState
     extends State<DrawerNavigationController> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
+  static final List<Widget> _widgetOptions = <Widget>[
     DashboardView(),
     AccountView(),
+    TransfersView(),
+    GoalsView(),
     StatisticView(),
     CategoriesView(),
     CardsView(),
     RegularPaymentsView(),
     NotificationsView(),
-    SettingsView()
+    SettingsView(),
   ];
 
   void _onItemTapped(int index) {
@@ -78,34 +81,44 @@ class _DrawerNavigationControllerState
               onTap: () => _onItemTapped(1),
             ),
             ListTile(
+              leading: const Icon(Icons.sync),
+              title: const Text('Transfers'),
+              onTap: () => _onItemTapped(2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.emoji_events ),
+              title: const Text('Goals'),
+              onTap: () => _onItemTapped(3),
+            ),
+            ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistic'),
-              onTap: () => _onItemTapped(2),
+              onTap: () => _onItemTapped(4),
             ),
             ListTile(
               leading: const Icon(Icons.grid_view),
               title: const Text('Categories'),
-              onTap: () => _onItemTapped(3),
+              onTap: () => _onItemTapped(5),
             ),
             ListTile(
               leading: const Icon(Icons.credit_card),
               title: const Text('Cards'),
-              onTap: () => _onItemTapped(4),
+              onTap: () => _onItemTapped(6),
             ),
             ListTile(
               leading: const Icon(Icons.attach_money),
               title: const Text('Regular payments'),
-              onTap: () => _onItemTapped(5),
+              onTap: () => _onItemTapped(7),
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Notifications'),
-              onTap: () => _onItemTapped(6),
+              onTap: () => _onItemTapped(8),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
-              onTap: () => _onItemTapped(7),
+              onTap: () => _onItemTapped(9),
             ),
           ],
         ),

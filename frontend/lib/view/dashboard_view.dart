@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -58,31 +59,89 @@ class _DashboardViewState extends State<DashboardView> {
     return isExpanses ? expensesList : incomeList;
   }
 
+  // Obliczanie sumy wydatków lub dochodów
+  double getTotalAmount() {
+    List<Map<String, dynamic>> currentList = getCurrentList();
+    return currentList.fold(0.0, (sum, item) => sum + double.parse(item['price']));
+  }
+
+  // Obliczanie danych dla wykresu kołowego na podstawie wybranej kategorii
+  List<PieChartSectionData> getPieChartData() {
+    List<Map<String, dynamic>> currentList = getCurrentList();
+
+    return currentList.map((transaction) {
+      double value = double.parse(transaction["price"]);
+      return PieChartSectionData(
+        color: transaction["category_color"],
+        value: value,
+        title: '',
+        radius: 30, // Zmiana szerokości fragmentów wykresu na 30
+        titlePositionPercentageOffset: 0.55,
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFF132D46),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Szary element na górze
+            // Szary element na górze z wykresem kołowym
             Container(
-              height: media.width * 1.1, // Pozostawiamy bez zmian
+              width: media.width,
+              height: 350, // Większa wysokość dla wykresu
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: const Color(0xFF191E29),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(25),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      PieChart(
+                        PieChartData(
+                          sectionsSpace: 12, // Zachowanie odstępu między sekcjami
+                          centerSpaceRadius: 110,
+                          sections: getPieChartData(),
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${isExpanses ? '-' : '+'} \$${getTotalAmount().toStringAsFixed(2)}",
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: isExpanses ? Colors.red : Colors.green,
+                            ),
+                          ),
+                          Text(
+                            isExpanses ? "Total Expenses" : "Total Income",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            // Przełączniki Expenses i Income w formie linków jak we Flet (pełna szerokość)
             Row(
               children: [
-                // Przełącznik Expenses
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
@@ -91,7 +150,7 @@ class _DashboardViewState extends State<DashboardView> {
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10), // Zostawiamy rozmiar
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
@@ -104,15 +163,14 @@ class _DashboardViewState extends State<DashboardView> {
                       child: Text(
                         "Expenses",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18, // Zostawiamy rozmiar czcionki
+                          color: isExpanses ? Colors.white : Colors.grey,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
                 ),
-                // Przełącznik Income
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
@@ -121,7 +179,7 @@ class _DashboardViewState extends State<DashboardView> {
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10), // Zostawiamy rozmiar
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
@@ -134,8 +192,8 @@ class _DashboardViewState extends State<DashboardView> {
                       child: Text(
                         "Income",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18, // Zostawiamy rozmiar czcionki
+                          color: !isExpanses ? Colors.white : Colors.grey,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -162,10 +220,10 @@ class _DashboardViewState extends State<DashboardView> {
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 8),
-                    padding: const EdgeInsets.all(14), // Zwiększony padding (pośredni)
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[700],
-                      borderRadius: BorderRadius.circular(12), // Pośrednie zaokrąglenie
+                      color: const Color(0xFF191E29),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -174,8 +232,8 @@ class _DashboardViewState extends State<DashboardView> {
                           children: [
                             // Ikona kategorii
                             Container(
-                              width: 35, // Pośredni rozmiar ikony
-                              height: 35, // Pośredni rozmiar ikony
+                              width: 40,
+                              height: 40,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: transaction['category_color'],
@@ -184,28 +242,28 @@ class _DashboardViewState extends State<DashboardView> {
                                 child: Icon(
                                   transaction['icon'],
                                   color: Colors.white,
-                                  size: 18, // Pośredni rozmiar ikony
+                                  size: 20,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 20),
                             // Nazwa kategorii
                             Text(
                               transaction["name"],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15, // Pośredni rozmiar tekstu
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 16,
                               ),
                             ),
                           ],
                         ),
-                        // Cena transakcji
+                        // Cena transakcji z plusem lub minusem i odpowiednim kolorem
                         Text(
-                          "\$${transaction["price"]}",
+                          "${isExpanses ? '-' : '+'} \$${transaction["price"]}",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isExpanses ? Colors.red : Colors.green,
                             fontWeight: FontWeight.bold,
-                            fontSize: 15, // Pośredni rozmiar tekstu
+                            fontSize: 16,
                           ),
                         ),
                       ],

@@ -5,7 +5,7 @@ from apps.categories.models import Category
 
 class Transfer(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)  # Powiązanie z kontem
-    recipient_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="recipient_account", null=True, blank=True)  # Konto docelowe, opcjonalne
+    # recipient_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="recipient_account", null=True, blank=True)  # Konto docelowe, opcjonalne
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)  # Powiązanie z kategorią
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transfer_date = models.DateTimeField()
