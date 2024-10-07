@@ -12,7 +12,8 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
   final TextEditingController _currencyController = TextEditingController();
-  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
 
   // Wybrany typ konta
   String? _accountType; // Domyślny typ konta
@@ -46,15 +47,21 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
 
   // Lista dostępnych ikon
   final List<IconData> _iconOptions = [
-    Icons.savings,
-    Icons.account_balance_wallet,
-    Icons.credit_card,
-    Icons.trending_up,
     Icons.directions_car,
     Icons.phone,
     Icons.bolt,
     Icons.flight,
+    Icons.network_wifi,
     Icons.home,
+    Icons.food_bank,
+    Icons.school,
+    Icons.health_and_safety,
+    Icons.theater_comedy,
+    Icons.shopping_bag,
+    Icons.sports,
+    Icons.work,
+    Icons.forest,
+    Icons.travel_explore,
   ];
 
   // Funkcja obsługująca wybór koloru
@@ -100,6 +107,30 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget moreButton() {
+    return GestureDetector(
+      onTap: () {
+        print("More button pressed");
+        // Możesz tutaj dodać logikę do wyświetlania większej liczby ikon
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: const Color(0xFF494E59), // Szary kolor
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.more_horiz, // Ikona więcej (trzy kropki poziomo)
+            size: 30,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -198,27 +229,32 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 physics: const NeverScrollableScrollPhysics(),
-                children: _iconOptions.map((iconData) {
-                  return GestureDetector(
-                    onTap: () => _onIconSelected(iconData),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _selectedIcon == iconData
-                            ? (_selectedColor ?? const Color(0xFF191E29))
-                            : const Color(0xFF191E29),
-                        borderRadius: BorderRadius.circular(15),
-                        border: _selectedIcon == iconData
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
+                children: [
+                  ..._iconOptions.map((iconData) {
+                    return GestureDetector(
+                      onTap: () => _onIconSelected(iconData),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _selectedIcon == iconData
+                              ? (_selectedColor ?? const Color(0xFF191E29))
+                              : const Color(0xFF191E29),
+                          borderRadius: BorderRadius.circular(15),
+                          border: _selectedIcon == iconData
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                        ),
+                        child: Icon(
+                          iconData,
+                          size: 40,
+                          color: Colors.white,
+                        ),
                       ),
-                      child: Icon(
-                        iconData,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+
+                  // Przycisk więcej
+                  moreButton(),
+                ],
               ),
               const SizedBox(height: 20),
 

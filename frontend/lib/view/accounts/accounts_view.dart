@@ -72,6 +72,24 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
+    void transferHistoryClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AccountsCreateView(),
+      ),
+    );
+  }
+
+    void newTransferClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AccountsCreateView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -122,12 +140,12 @@ class _AccountViewState extends State<AccountView> {
                       _buildButton(
                         icon: Icons.history,
                         label: "Transfer history",
-                        onTap: () => print("Transfer history clicked"),
+                        onTap: transferHistoryClick,
                       ),
                       _buildButton(
                         icon: Icons.sync,
                         label: "New transfer",
-                        onTap: () => print("New transfer clicked"),
+                        onTap: newTransferClick,
                       ),
                     ],
                   ),
