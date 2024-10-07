@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/categories/categories_create_view.dart';
 
 class CategoryController {
   List<Map<String, dynamic>> getUserCategories(String userId) {
@@ -23,7 +24,8 @@ class CategoryController {
 
   Map<String, dynamic>? getCategoryById(int categoryId) {
     // Zastąp tym co faktycznie pobiera dane kategorii
-    return getUserCategories('user_id').firstWhere((category) => category["category_id"] == categoryId);
+    return getUserCategories('user_id')
+        .firstWhere((category) => category["category_id"] == categoryId);
   }
 }
 
@@ -63,8 +65,13 @@ class _CategoriesViewState extends State<CategoriesView> {
   }
 
   void createCategoryClick() {
-    // Obsłuż tworzenie nowej kategorii
-    print("Tworzenie nowej kategorii");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const CategoriesCreateView(), 
+      ),
+    );
   }
 
   void loadCategories(String categoryType) {
@@ -79,7 +86,8 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF132D46), // Zmienione tylko tło całego widoku
+      backgroundColor:
+          const Color(0xFF132D46), // Zmienione tylko tło całego widoku
       body: Column(
         children: [
           // Przełączniki Expenses i Income
@@ -124,7 +132,8 @@ class _CategoriesViewState extends State<CategoriesView> {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: !isExpenses ? Colors.white : Colors.transparent,
+                          color:
+                              !isExpenses ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -152,7 +161,8 @@ class _CategoriesViewState extends State<CategoriesView> {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
-              itemCount: categories.length + 1, // Dodajemy 1 na przycisk dodawania
+              itemCount:
+                  categories.length + 1, // Dodajemy 1 na przycisk dodawania
               itemBuilder: (context, index) {
                 if (index == categories.length) {
                   return createAddButton();
@@ -182,7 +192,10 @@ class _CategoriesViewState extends State<CategoriesView> {
             const SizedBox(height: 5),
             Text(
               category["category_name"],
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -195,7 +208,8 @@ class _CategoriesViewState extends State<CategoriesView> {
       onTap: createCategoryClick,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF01C38D), // Zielony kolor dla przycisku dodawania
+          color:
+              const Color(0xFF01C38D), // Zielony kolor dla przycisku dodawania
           borderRadius: BorderRadius.circular(15),
         ),
         child: const Icon(Icons.add, size: 30, color: Colors.white),

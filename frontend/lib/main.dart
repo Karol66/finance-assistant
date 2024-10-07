@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/common/color_extansion.dart';
-import 'package:frontend/view/login_view.dart';
+import 'package:frontend/view/users/login_view.dart';
 import 'package:frontend/view/navigation/drawer_navigation_view.dart';
 
 void main() {

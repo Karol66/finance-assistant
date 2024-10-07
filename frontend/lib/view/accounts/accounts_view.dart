@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/accounts/accounts_create_view.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({Key? key}) : super(key: key);
@@ -54,7 +55,20 @@ class _AccountViewState extends State<AccountView> {
   void _updateTotalBalance() {
     totalBalance = accounts.fold(
       0.0,
-      (sum, account) => sum + (account["include_in_total"] == 1 ? double.parse(account["balance"]) : 0.0),
+      (sum, account) =>
+          sum +
+          (account["include_in_total"] == 1
+              ? double.parse(account["balance"])
+              : 0.0),
+    );
+  }
+
+  void createAccountClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AccountsCreateView(),
+      ),
     );
   }
 
@@ -121,7 +135,6 @@ class _AccountViewState extends State<AccountView> {
               ),
             ),
             const SizedBox(height: 20),
-            // Lista kont przeniesiona poniżej ciemnego kontenera
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -129,8 +142,12 @@ class _AccountViewState extends State<AccountView> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: accounts.length,
+                    itemCount: accounts.length + 1, // Zwiększ itemCount o 1
                     itemBuilder: (context, index) {
+                      if (index == accounts.length) {
+                        // Ostatni element - przycisk "Create New Account"
+                        return _buildCreateNewAccountButton();
+                      }
                       final account = accounts[index];
                       return _buildAccountItem(account);
                     },
@@ -144,8 +161,40 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
+  Widget _buildCreateNewAccountButton() {
+    return GestureDetector(
+      onTap: createAccountClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, size: 32, color: Colors.white),
+            const SizedBox(width: 10),
+            const Text(
+              "Create New Account",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Widget dla przycisku
-  Widget _buildButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildButton(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -183,7 +232,9 @@ class _AccountViewState extends State<AccountView> {
   Widget _buildAccountItem(Map<String, dynamic> account) {
     double balance = double.parse(account['balance']);
     bool isNegative = balance < 0;
-    String balanceText = isNegative ? "- \$${balance.abs().toStringAsFixed(2)}" : "+ \$${balance.toStringAsFixed(2)}";
+    String balanceText = isNegative
+        ? "- \$${balance.abs().toStringAsFixed(2)}"
+        : "+ \$${balance.toStringAsFixed(2)}";
 
     return GestureDetector(
       onTap: () {
@@ -193,7 +244,8 @@ class _AccountViewState extends State<AccountView> {
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF191E29), // Zmieniony kolor na ten sam co ciemny kontener
+          color: const Color(
+              0xFF191E29), // Zmieniony kolor na ten sam co ciemny kontener
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(
@@ -208,7 +260,8 @@ class _AccountViewState extends State<AccountView> {
                     color: account['account_color'],
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(account['account_icon'], size: 20, color: Colors.white),
+                  child: Icon(account['account_icon'],
+                      size: 20, color: Colors.white),
                 ),
                 const SizedBox(width: 20),
                 Text(

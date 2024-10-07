@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/view/accounts_view.dart';
-import 'package:frontend/view/cards_view.dart';
-import 'package:frontend/view/categories_view.dart';
+import 'package:frontend/view/accounts/accounts_view.dart';
+import 'package:frontend/view/cards/cards_view.dart';
+import 'package:frontend/view/categories/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
-import 'package:frontend/view/goals_view.dart';
-import 'package:frontend/view/notifications_view.dart';
-import 'package:frontend/view/regular_payments_view.dart';
-import 'package:frontend/view/settings_view.dart';
+import 'package:frontend/view/goals/goals_view.dart';
+import 'package:frontend/view/notifications/notifications_view.dart';
+import 'package:frontend/view/payments/payments_view.dart';
+import 'package:frontend/view/users/settings_view.dart';
 import 'package:frontend/view/statistic_view.dart';
-import 'package:frontend/view/transfers_view.dart';
+import 'package:frontend/view/transfers/transfers_view.dart';
 
 class DrawerNavigationController extends StatefulWidget {
   const DrawerNavigationController({super.key});
@@ -35,10 +35,23 @@ class _DrawerNavigationControllerState
     SettingsView(),
   ];
 
+  static final List<String> _viewTitles = <String>[
+    'Dashboard',
+    'Accounts',
+    'Transfers',
+    'Goals',
+    'Statistic',
+    'Categories',
+    'Cards',
+    'Regular Payments',
+    'Notifications',
+    'Settings',
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      Navigator.pop(context); // Zamknij szufladę po wyborze
+      Navigator.pop(context); 
     });
   }
 
@@ -46,7 +59,7 @@ class _DrawerNavigationControllerState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Moja Aplikacja'),
+        title: Text(_viewTitles[_selectedIndex]),
         backgroundColor: const Color.fromARGB(255, 0, 141, 73),
       ),
       drawer: Drawer(
@@ -86,7 +99,7 @@ class _DrawerNavigationControllerState
               onTap: () => _onItemTapped(2),
             ),
             ListTile(
-              leading: const Icon(Icons.emoji_events ),
+              leading: const Icon(Icons.emoji_events),
               title: const Text('Goals'),
               onTap: () => _onItemTapped(3),
             ),

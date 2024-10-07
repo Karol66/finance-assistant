@@ -62,7 +62,8 @@ class _DashboardViewState extends State<DashboardView> {
   // Obliczanie sumy wydatków lub dochodów
   double getTotalAmount() {
     List<Map<String, dynamic>> currentList = getCurrentList();
-    return currentList.fold(0.0, (sum, item) => sum + double.parse(item['price']));
+    return currentList.fold(
+        0.0, (sum, item) => sum + double.parse(item['price']));
   }
 
   // Obliczanie danych dla wykresu kołowego na podstawie wybranej kategorii
@@ -109,7 +110,8 @@ class _DashboardViewState extends State<DashboardView> {
                     children: [
                       PieChart(
                         PieChartData(
-                          sectionsSpace: 12, // Zachowanie odstępu między sekcjami
+                          sectionsSpace:
+                              12, // Zachowanie odstępu między sekcjami
                           centerSpaceRadius: 110,
                           sections: getPieChartData(),
                         ),
@@ -154,7 +156,8 @@ class _DashboardViewState extends State<DashboardView> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: isExpanses ? Colors.white : Colors.transparent,
+                            color:
+                                isExpanses ? Colors.white : Colors.transparent,
                             width: 2.0,
                           ),
                         ),
@@ -183,7 +186,8 @@ class _DashboardViewState extends State<DashboardView> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: !isExpanses ? Colors.white : Colors.transparent,
+                            color:
+                                !isExpanses ? Colors.white : Colors.transparent,
                             width: 2.0,
                           ),
                         ),

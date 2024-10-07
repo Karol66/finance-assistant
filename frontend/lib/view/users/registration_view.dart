@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/view/login_view.dart';
+import 'package:frontend/view/users/login_view.dart';
 
 class RegistrationWidget extends StatefulWidget {
   final String title;

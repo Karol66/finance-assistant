@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:frontend/view/dashboard_view.dart';
-import 'package:frontend/view/registration_view.dart';
+import 'package:frontend/view/navigation/drawer_navigation_view.dart';
+import 'package:frontend/view/users/registration_view.dart';
 
 class UserWidget extends StatefulWidget {
   final String title;
@@ -52,7 +52,7 @@ class _UserWidgetState extends State<UserWidget> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const DashboardView(),
+          builder: (context) => const DrawerNavigationController(),
         ),
       );
     }
@@ -120,8 +120,7 @@ class _UserWidgetState extends State<UserWidget> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  inputTextField(
-                      'Email or Username', false, identifierController),
+                  inputTextField('Email or Username', false, identifierController),
                   const SizedBox(height: 10),
                   inputTextField('Password', true, passwordController),
                   const SizedBox(height: 10),
