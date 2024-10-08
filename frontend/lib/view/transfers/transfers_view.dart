@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/transfers/transfers_create_view.dart';
 
 class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
@@ -18,26 +19,43 @@ class _TransfersViewState extends State<TransfersView> {
       "description": "Grocery Shopping",
       "account_id": 1,
       "category_id": 1,
-      "type": "Expenses", // Typ transakcji
+      "type": "Expenses",
     },
     {
       "id": 2,
+      "amount": 150.75,
+      "transfer_date": "2023-10-01 12:30:00",
+      "description": "Grocery Shopping",
+      "account_id": 1,
+      "category_id": 1,
+      "type": "Expenses",
+    },
+    {
+      "id": 3,
       "amount": 500.00,
       "transfer_date": "2023-09-28 10:15:00",
       "description": "Salary",
       "account_id": 2,
       "category_id": 2,
-      "type": "Income", // Typ transakcji
+      "type": "Income",
     },
   ];
+
+  void createTransferClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TransfersCreateView(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF132D46), // Ciemne tło aplikacji
+      backgroundColor: const Color(0xFF132D46),
       body: Column(
         children: [
-          // Przełączniki Expenses i Income
           Row(
             children: [
               Expanded(
@@ -81,7 +99,8 @@ class _TransfersViewState extends State<TransfersView> {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: !isExpenses ? Colors.white : Colors.transparent,
+                          color:
+                              !isExpenses ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -104,16 +123,19 @@ class _TransfersViewState extends State<TransfersView> {
             child: ListView.builder(
               padding: const EdgeInsets.all(10),
               itemCount: transfers
-                  .where((transfer) =>
-                      transfer['type'] ==
-                      (isExpenses ? 'Expenses' : 'Income'))
-                  .length,
+                      .where((transfer) =>
+                          transfer['type'] ==
+                          (isExpenses ? 'Expenses' : 'Income'))
+                      .length + 1,
               itemBuilder: (context, index) {
                 final filteredTransfers = transfers
                     .where((transfer) =>
                         transfer['type'] ==
                         (isExpenses ? 'Expenses' : 'Income'))
                     .toList();
+                if (index == filteredTransfers.length) {
+                  return _buildCreateNewTransferButton();
+                }
                 final transfer = filteredTransfers[index];
                 return _buildTransferItem(transfer);
               },
@@ -124,7 +146,35 @@ class _TransfersViewState extends State<TransfersView> {
     );
   }
 
-  // Widget dla pojedynczego transferu
+  Widget _buildCreateNewTransferButton() {
+    return GestureDetector(
+      onTap: createTransferClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Transfer",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTransferItem(Map<String, dynamic> transfer) {
     final isExpense = transfer['type'] == 'Expenses';
     final amountText = isExpense
@@ -132,7 +182,7 @@ class _TransfersViewState extends State<TransfersView> {
         : '+\$${transfer['amount'].toStringAsFixed(2)}';
 
     return Card(
-      color: const Color(0xFF191E29), // Dark card color
+      color: const Color(0xFF191E29), 
       margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -142,7 +192,7 @@ class _TransfersViewState extends State<TransfersView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Data transferu
+
             Text(
               "Date: ${transfer['transfer_date']}",
               style: const TextStyle(
@@ -151,7 +201,7 @@ class _TransfersViewState extends State<TransfersView> {
               ),
             ),
             const SizedBox(height: 8),
-            // Kwota
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -163,7 +213,7 @@ class _TransfersViewState extends State<TransfersView> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // Opis transferu
+
                 Text(
                   transfer['description'],
                   style: const TextStyle(
@@ -174,7 +224,7 @@ class _TransfersViewState extends State<TransfersView> {
               ],
             ),
             const SizedBox(height: 10),
-            // ID konta i kategorii
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -7,7 +7,7 @@ import 'package:frontend/view/goals/goals_view.dart';
 import 'package:frontend/view/notifications/notifications_view.dart';
 import 'package:frontend/view/payments/payments_view.dart';
 import 'package:frontend/view/users/settings_view.dart';
-import 'package:frontend/view/statistic_view.dart';
+import 'package:frontend/view/statistic/statistic_view.dart';
 import 'package:frontend/view/transfers/transfers_view.dart';
 
 class DrawerNavigationController extends StatefulWidget {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/cards/cards_create_view.dart';
 
 class CardsView extends StatefulWidget {
   const CardsView({Key? key}) : super(key: key);
@@ -31,10 +32,19 @@ class _CardsViewState extends State<CardsView> {
     },
   ];
 
+  void createCardClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CardsCreateView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF132D46), // Ciemne tło aplikacji
+      backgroundColor: const Color(0xFF132D46), 
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -42,12 +52,15 @@ class _CardsViewState extends State<CardsView> {
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
-                  // Karty użytkownika
+
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: cards.length,
+                    itemCount: cards.length + 1,
                     itemBuilder: (context, index) {
+                      if (index == cards.length) {
+                        return _buildCreateNewCardButton();
+                      }
                       final card = cards[index];
                       return _buildCardItem(card);
                     },
@@ -61,7 +74,35 @@ class _CardsViewState extends State<CardsView> {
     );
   }
 
-  // Widget dla pojedynczej karty
+  Widget _buildCreateNewCardButton() {
+    return GestureDetector(
+      onTap: createCardClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, size: 32, color: Colors.white),
+            const SizedBox(width: 10),
+            const Text(
+              "Create New Card",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCardItem(Map<String, dynamic> card) {
     return GestureDetector(
       onTap: () {
@@ -71,7 +112,8 @@ class _CardsViewState extends State<CardsView> {
         margin: const EdgeInsets.symmetric(vertical: 10),
         padding: const EdgeInsets.all(20),
         width: MediaQuery.of(context).size.width * 0.9,
-        height: 200, // Zwiększona wysokość kart, aby więcej przestrzeni było na napisy
+        height:
+            200, 
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [card['gradient_from'], card['gradient_to']],
@@ -81,10 +123,10 @@ class _CardsViewState extends State<CardsView> {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end, // Napisy znajdują się bliżej dolnej części
+          mainAxisAlignment:
+              MainAxisAlignment.end, 
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Górna część karty: Nazwa banku i typ karty (przyciśnięte niżej)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -106,25 +148,24 @@ class _CardsViewState extends State<CardsView> {
                 ),
               ],
             ),
-            const SizedBox(height: 20), // Zwiększony odstęp dla lepszego rozmieszczenia
+            const SizedBox(
+                height: 20), 
 
-            // Ikona chipu i numer karty (przyciśnięte do dolnej części)
             Row(
               children: [
-                // Chip karty
                 Container(
                   width: 50,
                   height: 50,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/chip.png'), // Zastąp ścieżką do ikony chipu
+                      image: AssetImage(
+                          'assets/chip.png'), 
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 const SizedBox(width: 20),
 
-                // Numer karty w formacie 4x4
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -138,7 +179,6 @@ class _CardsViewState extends State<CardsView> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    // CVV zamiast ostatnich czterech cyfr
                     Text(
                       "CVV: ${card['cvv']}",
                       style: const TextStyle(
@@ -150,9 +190,8 @@ class _CardsViewState extends State<CardsView> {
                 ),
               ],
             ),
-            const SizedBox(height: 15), // Dodany odstęp przed dolną częścią
+            const SizedBox(height: 15), 
 
-            // Dolna część karty: Data ważności i imię posiadacza karty
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

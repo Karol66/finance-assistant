@@ -1,8 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:frontend/view/goals/goals_create_view.dart';
 
-class GoalsView extends StatelessWidget {
+class GoalsView extends StatefulWidget {
   const GoalsView({super.key});
+
+  @override
+  _GoalsViewState createState() => _GoalsViewState();
+}
+
+class _GoalsViewState extends State<GoalsView> {
+  List<Map<String, dynamic>> goals = [
+    {
+      "icon": Icons.directions_car,
+      "label": "Auto & Transport",
+      "amountSpent": 25.99,
+      "budget": 400.00,
+      "remaining": 250.01,
+      "progressColor": Colors.green,
+    },
+    {
+      "icon": Icons.movie,
+      "label": "Entertainment",
+      "amountSpent": 50.99,
+      "budget": 600.00,
+      "remaining": 300.01,
+      "progressColor": Colors.red,
+    },
+    {
+      "icon": Icons.security,
+      "label": "Security",
+      "amountSpent": 5.99,
+      "budget": 600.00,
+      "remaining": 250.00,
+      "progressColor": Colors.purple,
+    },
+  ];
+
+  void createGoalClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const GoalsCreateView(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +54,7 @@ class GoalsView extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Górny kontener z wykresem
+
             Container(
               width: media.width,
               decoration: const BoxDecoration(
@@ -25,10 +67,10 @@ class GoalsView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               child: Column(
                 children: [
-                  // Wykres kołowy wewnątrz ciemnego kontenera
+
                   Container(
-                    width: 300, // Increased width
-                    height: 300, // Increased height
+                    width: 300,
+                    height: 300,
                     decoration: BoxDecoration(
                       color: const Color(0xFF191E29),
                       borderRadius: BorderRadius.circular(15),
@@ -39,8 +81,8 @@ class GoalsView extends StatelessWidget {
                         children: [
                           PieChart(
                             PieChartData(
-                              sectionsSpace: 12, // Increased space between sections
-                              centerSpaceRadius: 110, // Bigger space in the center
+                              sectionsSpace: 12,
+                              centerSpaceRadius: 110,
                               sections: showingSections(),
                             ),
                           ),
@@ -74,36 +116,26 @@ class GoalsView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Lista celów budżetowych
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  _buildGoalItem(
-                    icon: Icons.directions_car,
-                    label: "Auto & Transport",
-                    amountSpent: 25.99,
-                    budget: 400.00,
-                    remaining: 250.01,
-                    progressColor: Colors.green,
-                  ),
-                  _buildGoalItem(
-                    icon: Icons.movie,
-                    label: "Entertainment",
-                    amountSpent: 50.99,
-                    budget: 600.00,
-                    remaining: 300.01,
-                    progressColor: Colors.red,
-                  ),
-                  _buildGoalItem(
-                    icon: Icons.security,
-                    label: "Security",
-                    amountSpent: 5.99,
-                    budget: 600.00,
-                    remaining: 250.00,
-                    progressColor: Colors.purple,
-                  ),
-                ],
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: goals.length + 1, 
+                itemBuilder: (context, index) {
+                  if (index == goals.length) {
+                    return _buildCreateNewGoalButton();
+                  }
+                  final goal = goals[index];
+                  return _buildGoalItem(
+                    icon: goal['icon'],
+                    label: goal['label'],
+                    amountSpent: goal['amountSpent'],
+                    budget: goal['budget'],
+                    remaining: goal['remaining'],
+                    progressColor: goal['progressColor'],
+                  );
+                },
               ),
             ),
           ],
@@ -112,29 +144,56 @@ class GoalsView extends StatelessWidget {
     );
   }
 
-  // Funkcja zwracająca sekcje wykresu
   List<PieChartSectionData> showingSections() {
-    // Dane celów budżetowych
-    final goalData = [
-      {'color': Colors.green, 'value': 25.99, 'budget': 400.00},
-      {'color': Colors.red, 'value': 50.99, 'budget': 600.00},
-      {'color': Colors.purple, 'value': 5.99, 'budget': 600.00},
-    ];
+    final goalData = goals.map((goal) {
+      return {
+        'color': goal['progressColor'],
+        'value': goal['amountSpent'],
+        'budget': goal['budget'],
+      };
+    }).toList();
 
-    // Tworzenie sekcji na podstawie danych
     return goalData.map((goal) {
       final percentage = (goal['value'] as double) / (goal['budget'] as double) * 100;
       return PieChartSectionData(
         color: goal['color'] as Color,
         value: percentage,
         title: '',
-        radius: 30, // Smaller radius for each section
+        radius: 30,
         titlePositionPercentageOffset: 0.55,
       );
     }).toList();
   }
 
-  // Widget dla pojedynczego celu budżetowego
+  Widget _buildCreateNewGoalButton() {
+    return GestureDetector(
+      onTap: createGoalClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Goal",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildGoalItem({
     required IconData icon,
     required String label,

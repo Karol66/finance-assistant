@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/notifications/notifications_create_view.dart';
 
 class NotificationsView extends StatefulWidget {
   const NotificationsView({super.key});
@@ -8,7 +9,6 @@ class NotificationsView extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsView> {
-  // Przykładowe dane dla przypomnień/powiadomień
   List<Map<String, dynamic>> notifications = [
     {
       "id": 1,
@@ -40,6 +40,15 @@ class _NotificationsViewState extends State<NotificationsView> {
     },
   ];
 
+  void createNotificationClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NotificationsCreateView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -50,7 +59,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Górna część z dniami tygodnia
+
             Container(
               width: media.width,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -64,19 +73,37 @@ class _NotificationsViewState extends State<NotificationsView> {
               child: _buildCalendarView(),
             ),
             const SizedBox(height: 20),
-            _buildNotificationsList(), // Lista powiadomień/przypomnień
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: notifications.length + 1, 
+                itemBuilder: (context, index) {
+                  if (index == notifications.length) {
+                    return _buildCreateNewNotificationButton();
+                  }
+                  final notification = notifications[index];
+                  return _buildNotificationItem(
+                    icon: notification['icon'],
+                    message: notification['message'],
+                    sendAt: notification['send_at'],
+                    color: notification['color'],
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Widok kalendarza (prosty kalendarz z datami dni tygodnia)
   Widget _buildCalendarView() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal, 
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(7, (index) {
           DateTime today = DateTime.now();
           DateTime date = today.add(Duration(days: index));
@@ -86,14 +113,17 @@ class _NotificationsViewState extends State<NotificationsView> {
               Text(
                 _getWeekday(date),
                 style: const TextStyle(
-                  fontSize: 16, // Minimalnie zwiększona wielkość nazw dni tygodnia
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white54,
                 ),
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 38, 
+                height: 38, 
+                margin: const EdgeInsets.symmetric(horizontal: 4), 
+                alignment: Alignment.center, 
                 decoration: BoxDecoration(
                   color: date.day == today.day
                       ? Colors.orange
@@ -103,7 +133,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                 child: Text(
                   "${date.day}",
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16, 
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -116,47 +146,63 @@ class _NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  // Pomocnicza funkcja do konwersji daty na nazwę dnia tygodnia
   String _getWeekday(DateTime date) {
     const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return weekdays[date.weekday - 1];
   }
 
-  // Widok listy powiadomień
-  Widget _buildNotificationsList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          final notification = notifications[index];
-          return _buildNotificationItem(notification);
-        },
+  Widget _buildCreateNewNotificationButton() {
+    return GestureDetector(
+      onTap: createNotificationClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Notification",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // Widok pojedynczego powiadomienia
-  Widget _buildNotificationItem(Map<String, dynamic> notification) {
+  Widget _buildNotificationItem({
+    required IconData icon,
+    required String message,
+    required DateTime sendAt,
+    required Color color,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF191E29), // Kolor tła dla powiadomienia
+        color: const Color(0xFF191E29),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
           Container(
-            width: 40, // Rozmiar ikony powiadomienia
+            width: 40,
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: notification['color'], // Kolor ikony
+              color: color,
             ),
-            child: Icon(notification['icon'], color: Colors.white, size: 20),
+            child: Icon(icon, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -164,7 +210,7 @@ class _NotificationsViewState extends State<NotificationsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  notification['message'],
+                  message,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -173,7 +219,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "${notification['send_at'].day}/${notification['send_at'].month}/${notification['send_at'].year} ${notification['send_at'].hour}:${notification['send_at'].minute.toString().padLeft(2, '0')}",
+                  "${sendAt.day}/${sendAt.month}/${sendAt.year} ${sendAt.hour}:${sendAt.minute.toString().padLeft(2, '0')}",
                   style: const TextStyle(
                     color: Colors.white54,
                   ),

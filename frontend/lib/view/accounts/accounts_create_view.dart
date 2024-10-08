@@ -8,23 +8,18 @@ class AccountsCreateView extends StatefulWidget {
 }
 
 class _AccountsCreateViewState extends State<AccountsCreateView> {
-  // Kontrolery dla pól tekstowych
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
   final TextEditingController _currencyController = TextEditingController();
   final TextEditingController _accountNumberController =
       TextEditingController();
 
-  // Wybrany typ konta
-  String? _accountType; // Domyślny typ konta
+  String? _accountType; 
 
-  // Wybór koloru
   Color? _selectedColor;
 
-  // Wybór ikony
   IconData? _selectedIcon;
 
-  // Lista dostępnych typów kont
   final List<String> _accountTypes = [
     'Savings',
     'Checking',
@@ -32,7 +27,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     'Investment',
   ];
 
-  // Lista dostępnych kolorów
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -45,7 +39,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     Colors.grey,
   ];
 
-  // Lista dostępnych ikon
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -64,26 +57,22 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     Icons.travel_explore,
   ];
 
-  // Funkcja obsługująca wybór koloru
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
     });
   }
 
-  // Funkcja obsługująca wybór ikony
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
 
-      // Jeśli nie wybrano jeszcze koloru, ustaw domyślny kolor #191E29
       if (_selectedColor == null) {
-        _selectedColor = const Color(0xFF191E29); // Domyślny kolor
+        _selectedColor = const Color(0xFF191E29); 
       }
     });
   }
 
-  // Funkcja nawigująca na inne strony (przykładowa)
   void _goToNextPage() {
     Navigator.push(
       context,
@@ -116,18 +105,17 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     return GestureDetector(
       onTap: () {
         print("More button pressed");
-        // Możesz tutaj dodać logikę do wyświetlania większej liczby ikon
       },
       child: Container(
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: const Color(0xFF494E59), // Szary kolor
+          color: const Color(0xFF494E59), 
           borderRadius: BorderRadius.circular(15),
         ),
         child: const Center(
           child: Icon(
-            Icons.more_horiz, // Ikona więcej (trzy kropki poziomo)
+            Icons.more_horiz, 
             size: 30,
             color: Colors.white,
           ),
@@ -146,7 +134,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Powrót do poprzedniej strony
+            Navigator.pop(context); 
           },
         ),
       ),
@@ -155,11 +143,9 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Pole "Account Name"
               inputTextField('Account Name', false, _accountNameController),
               const SizedBox(height: 20),
 
-              // Typ konta (dropdown)
               DropdownButtonFormField<String>(
                 value: _accountType,
                 items: _accountTypes.map((type) {
@@ -185,19 +171,15 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               ),
               const SizedBox(height: 20),
 
-              // Pole "Balance"
               inputTextField('Balance', false, _balanceController),
               const SizedBox(height: 20),
 
-              // Pole "Currency"
               inputTextField('Currency', false, _currencyController),
               const SizedBox(height: 20),
 
-              // Pole "Account Number"
               inputTextField('Account Number', false, _accountNumberController),
               const SizedBox(height: 20),
 
-              // Wybór koloru
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -222,7 +204,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               ),
               const SizedBox(height: 20),
 
-              // Siatka ikon
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -252,33 +233,31 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
                     );
                   }).toList(),
 
-                  // Przycisk więcej
                   moreButton(),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Przycisk "Add"
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToNextPage, // Przejście na inną stronę
+                  onPressed: _goToNextPage, 
                   style: ElevatedButton.styleFrom(
                     fixedSize:
-                        const Size.fromHeight(58), // Stała wysokość przycisku
+                        const Size.fromHeight(58), 
                     backgroundColor:
-                        const Color(0xFF01C38D), // Kolor tła przycisku
+                        const Color(0xFF01C38D), 
                     shape: RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(8), // Zaokrąglenie krawędzi
+                          BorderRadius.circular(8), 
                     ),
                   ),
                   child: const Text(
-                    'Add', // Tekst przycisku
+                    'Add', 
                     style: TextStyle(
-                      fontSize: 16, // Rozmiar czcionki
-                      fontWeight: FontWeight.bold, // Pogrubienie czcionki
-                      color: Colors.white, // Kolor tekstu
+                      fontSize: 16, 
+                      fontWeight: FontWeight.bold, 
+                      color: Colors.white, 
                     ),
                   ),
                 ),
