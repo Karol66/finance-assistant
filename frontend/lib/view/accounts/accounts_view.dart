@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/view/accounts/accounts_create_view.dart';
+import 'package:frontend/view/transfers/transfers_create_view.dart';
+import 'package:frontend/view/transfers/transfers_view.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({Key? key}) : super(key: key);
@@ -76,7 +78,7 @@ class _AccountViewState extends State<AccountView> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AccountsCreateView(),
+        builder: (context) => const TransfersView(),
       ),
     );
   }
@@ -85,7 +87,7 @@ class _AccountViewState extends State<AccountView> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AccountsCreateView(),
+        builder: (context) => const TransfersCreateView(),
       ),
     );
   }
