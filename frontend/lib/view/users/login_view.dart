@@ -90,6 +90,7 @@ class _UserWidgetState extends State<UserWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0B6B3A),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -97,7 +98,7 @@ class _UserWidgetState extends State<UserWidget> {
             const SizedBox(height: 20),
             Center(
               child: Image.asset(
-                'assets/img/test.png',
+                'assets/img/test2.png',
                 height: 150,
                 fit: BoxFit.contain,
               ),
@@ -110,17 +111,20 @@ class _UserWidgetState extends State<UserWidget> {
                   Text(
                     widget.title,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
                   Text(
                     widget.subTitle,
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  inputTextField('Email or Username', false, identifierController),
+                  inputTextField(
+                      'Email or Username', false, identifierController),
                   const SizedBox(height: 10),
                   inputTextField('Password', true, passwordController),
                   const SizedBox(height: 10),
@@ -131,13 +135,21 @@ class _UserWidgetState extends State<UserWidget> {
                         children: [
                           Checkbox(
                             value: isRemembered,
+                            activeColor: Colors.orange,
+                            checkColor: Colors.white,
                             onChanged: (bool? newValue) {
                               setState(() {
                                 isRemembered = newValue ?? false;
                               });
                             },
                           ),
-                          const Text("Remember me"),
+                          const Text(
+                            "Remember me",
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                       TextButton(
@@ -145,7 +157,9 @@ class _UserWidgetState extends State<UserWidget> {
                         child: Text(
                           widget.forgotPassword,
                           style: const TextStyle(
-                              color: Colors.green, fontWeight: FontWeight.bold),
+                              fontSize: 15,
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -157,7 +171,7 @@ class _UserWidgetState extends State<UserWidget> {
                       onPressed: login,
                       style: ElevatedButton.styleFrom(
                         fixedSize: const Size.fromHeight(58),
-                        backgroundColor: Colors.black,
+                        backgroundColor: const Color(0xFF191E29),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -174,19 +188,25 @@ class _UserWidgetState extends State<UserWidget> {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      Expanded(child: Divider(color: Colors.black)),
+                      Expanded(child: Divider(color: Colors.white)),
                       const SizedBox(width: 10),
-                      const Text('or',
-                          style: TextStyle(fontWeight: FontWeight.w400)),
+                      const Text(
+                        'or',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
                       const SizedBox(width: 10),
-                      Expanded(child: Divider(color: Colors.black)),
+                      Expanded(child: Divider(color: Colors.white)),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      socialButton(FontAwesomeIcons.facebookF, Color(0xFF3b5998)),
+                      socialButton(
+                          FontAwesomeIcons.facebookF, const Color(0xFF3b5998)),
                       socialButton(FontAwesomeIcons.google, Colors.red),
                       socialButton(FontAwesomeIcons.apple, Colors.black),
                     ],
@@ -195,21 +215,28 @@ class _UserWidgetState extends State<UserWidget> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?",
-                          style: TextStyle(fontSize: 12)),
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RegistrationView(), 
+                              builder: (context) => const RegistrationView(),
                             ),
                           );
                         },
                         child: Text(
                           widget.link,
                           style: const TextStyle(
-                              color: Colors.green, fontWeight: FontWeight.bold),
+                              fontSize: 15,
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

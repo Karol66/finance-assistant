@@ -60,80 +60,83 @@ class _DrawerNavigationControllerState
     return Scaffold(
       appBar: AppBar(
         title: Text(_viewTitles[_selectedIndex]),
-        backgroundColor: const Color.fromARGB(255, 0, 141, 73),
+        backgroundColor: const Color(0xFF0B6B3A), 
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: const Text("Test"),
-              accountEmail: const Text("Test@Test"),
-              currentAccountPicture: CircleAvatar(
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/img/test.png',
-                    fit: BoxFit.cover,
-                    width: 90,
-                    height: 90,
+        child: Container(
+          color: const Color(0xFF191E29), 
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              UserAccountsDrawerHeader(
+                accountName: const Text("Test"),
+                accountEmail: const Text("Test@Test"),
+                currentAccountPicture: CircleAvatar(
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/img/test.png',
+                      fit: BoxFit.cover,
+                      width: 90,
+                      height: 90,
+                    ),
                   ),
                 ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B6B3A), 
+                ),
               ),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 0, 141, 73),
+              ListTile(
+                leading: const Icon(Icons.dashboard, color: Color(0xFFFFFFFF)), 
+                title: const Text('Dashboard', style: TextStyle(color: Color(0xFFFFFFFF))), 
+                onTap: () => _onItemTapped(0),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              onTap: () => _onItemTapped(0),
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Accounts'),
-              onTap: () => _onItemTapped(1),
-            ),
-            ListTile(
-              leading: const Icon(Icons.sync),
-              title: const Text('Transfers'),
-              onTap: () => _onItemTapped(2),
-            ),
-            ListTile(
-              leading: const Icon(Icons.emoji_events),
-              title: const Text('Goals'),
-              onTap: () => _onItemTapped(3),
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart),
-              title: const Text('Statistic'),
-              onTap: () => _onItemTapped(4),
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_view),
-              title: const Text('Categories'),
-              onTap: () => _onItemTapped(5),
-            ),
-            ListTile(
-              leading: const Icon(Icons.credit_card),
-              title: const Text('Cards'),
-              onTap: () => _onItemTapped(6),
-            ),
-            ListTile(
-              leading: const Icon(Icons.attach_money),
-              title: const Text('Regular payments'),
-              onTap: () => _onItemTapped(7),
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
-              onTap: () => _onItemTapped(8),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => _onItemTapped(9),
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet, color: Color(0xFFFFFFFF)),
+                title: const Text('Accounts', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(1),
+              ),
+              ListTile(
+                leading: const Icon(Icons.sync, color: Color(0xFFFFFFFF)),
+                title: const Text('Transfers', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(2),
+              ),
+              ListTile(
+                leading: const Icon(Icons.emoji_events, color: Color(0xFFFFFFFF)),
+                title: const Text('Goals', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(3),
+              ),
+              ListTile(
+                leading: const Icon(Icons.bar_chart, color: Color(0xFFFFFFFF)),
+                title: const Text('Statistic', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(4),
+              ),
+              ListTile(
+                leading: const Icon(Icons.grid_view, color: Color(0xFFFFFFFF)),
+                title: const Text('Categories', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(5),
+              ),
+              ListTile(
+                leading: const Icon(Icons.credit_card, color: Color(0xFFFFFFFF)),
+                title: const Text('Cards', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(6),
+              ),
+              ListTile(
+                leading: const Icon(Icons.attach_money, color: Color(0xFFFFFFFF)),
+                title: const Text('Regular payments', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(7),
+              ),
+              ListTile(
+                leading: const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
+                title: const Text('Notifications', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(8),
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings, color: Color(0xFFFFFFFF)),
+                title: const Text('Settings', style: TextStyle(color: Color(0xFFFFFFFF))),
+                onTap: () => _onItemTapped(9),
+              ),
+            ],
+          ),
         ),
       ),
       body: Center(

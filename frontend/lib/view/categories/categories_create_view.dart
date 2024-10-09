@@ -8,20 +8,14 @@ class CategoriesCreateView extends StatefulWidget {
 }
 
 class _CategoriesCreateViewState extends State<CategoriesCreateView> {
-  // Kontrolery dla pól tekstowych
   final TextEditingController _categoryNameController = TextEditingController();
-  final TextEditingController _plannedExpensesController = TextEditingController();
+  final TextEditingController _plannedExpensesController =
+      TextEditingController();
 
-  // Wybrany typ kategorii
   String _categoryType = 'Expenses';
-
-  // Wybór koloru
   Color? _selectedColor;
-
-  // Wybór ikony
   IconData? _selectedIcon;
 
-  // Lista dostępnych kolorów
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -34,7 +28,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Colors.grey,
   ];
 
-  // Lista dostępnych ikon
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -53,26 +46,22 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Icons.travel_explore,
   ];
 
-  // Funkcja obsługująca wybór koloru
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
     });
   }
 
-  // Funkcja obsługująca wybór ikony
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
 
-      // Jeśli nie wybrano jeszcze koloru, ustaw domyślny kolor #191E29
       if (_selectedColor == null) {
-        _selectedColor = const Color(0xFF191E29); // Domyślny kolor
+        _selectedColor = const Color(0xFF191E29);
       }
     });
   }
 
-  // Funkcja nawigująca na inne strony (przykładowa)
   void _goToNextPage() {
     Navigator.push(
       context,
@@ -101,23 +90,52 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     );
   }
 
-  // Widget przycisku "więcej"
+  Widget colorPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _colorOptions.map((color) {
+              return GestureDetector(
+                onTap: () => _onColorSelected(color),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  margin: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(15),
+                    border: _selectedColor == color
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget moreButton() {
     return GestureDetector(
       onTap: () {
         print("More button pressed");
-        // Możesz tutaj dodać logikę do wyświetlania większej liczby ikon
       },
       child: Container(
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: const Color(0xFF494E59), // Szary kolor
+          color: const Color(0xFF494E59),
           borderRadius: BorderRadius.circular(15),
         ),
         child: const Center(
           child: Icon(
-            Icons.more_horiz, // Ikona więcej (trzy kropki poziomo)
+            Icons.more_horiz,
             size: 30,
             color: Colors.white,
           ),
@@ -132,11 +150,11 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
       backgroundColor: const Color(0xFF132D46),
       appBar: AppBar(
         title: const Text('Create Category'),
-        backgroundColor: const Color.fromARGB(255, 0, 141, 73),
+        backgroundColor: const Color(0xFF0B6B3A),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Powrót do poprzedniej strony
+            Navigator.pop(context);
           },
         ),
       ),
@@ -144,19 +162,26 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Pole "Category Name"
               inputTextField('Category Name', false, _categoryNameController),
               const SizedBox(height: 20),
 
-              // Pole "Planned Expenses"
-              inputTextField(
-                  'Planned Expenses', false, _plannedExpensesController),
+              inputTextField('Planned Expenses', false, _plannedExpensesController),
               const SizedBox(height: 20),
 
-              // Typ kategorii (przyciski radiowe)
+              const Text(
+                'Select Category Type:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 10),
+
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Radio<String>(
                     value: 'Expenses',
@@ -172,7 +197,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                     'Expenses',
                     style: TextStyle(color: Colors.white),
                   ),
-                  const SizedBox(width: 20), // Odległość między przyciskami
+                  const SizedBox(width: 20),
                   Radio<String>(
                     value: 'Income',
                     groupValue: _categoryType,
@@ -191,32 +216,31 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 20),
 
-              // Wybór koloru
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _colorOptions.map((color) {
-                    return GestureDetector(
-                      onTap: () => _onColorSelected(color),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(15),
-                          border: _selectedColor == color
-                              ? Border.all(color: Colors.white, width: 3)
-                              : null,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+              const Text(
+                'Select Category Color:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 10),
+
+              colorPicker(),
+              const SizedBox(height: 20),
+
+              const Text(
+                'Select Category Icon:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.left,
               ),
               const SizedBox(height: 20),
 
-              // Siatka ikon + przycisk "więcej"
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -245,34 +269,27 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                       ),
                     );
                   }).toList(),
-
-                  // Przycisk więcej
                   moreButton(),
                 ],
               ),
               const SizedBox(height: 20),
-
-              // Przycisk "Add"
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToNextPage, // Przejście na inną stronę
+                  onPressed: _goToNextPage,
                   style: ElevatedButton.styleFrom(
-                    fixedSize:
-                        const Size.fromHeight(58), // Stała wysokość przycisku
-                    backgroundColor:
-                        const Color(0xFF01C38D), // Kolor tła przycisku
+                    fixedSize: const Size.fromHeight(58),
+                    backgroundColor: const Color(0xFF01C38D),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(8), // Zaokrąglenie krawędzi
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
-                    'Add', // Tekst przycisku
+                    'Add Category',
                     style: TextStyle(
-                      fontSize: 16, // Rozmiar czcionki
-                      fontWeight: FontWeight.bold, // Pogrubienie czcionki
-                      color: Colors.white, // Kolor tekstu
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),

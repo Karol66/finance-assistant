@@ -93,6 +93,7 @@ class _CategoriesViewState extends State<CategoriesView> {
           // Przełączniki Expenses i Income
           Row(
             children: [
+              const SizedBox(height: 70),
               // Przełącznik Expenses
               Expanded(
                 child: GestureDetector(
@@ -152,6 +153,7 @@ class _CategoriesViewState extends State<CategoriesView> {
               ),
             ],
           ),
+          const SizedBox(height: 5),
           // Siatka kategorii
           Expanded(
             child: GridView.builder(

@@ -14,10 +14,8 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
   final TextEditingController _accountNumberController =
       TextEditingController();
 
-  String? _accountType; 
-
+  String? _accountType;
   Color? _selectedColor;
-
   IconData? _selectedIcon;
 
   final List<String> _accountTypes = [
@@ -68,7 +66,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
       _selectedIcon = icon;
 
       if (_selectedColor == null) {
-        _selectedColor = const Color(0xFF191E29); 
+        _selectedColor = const Color(0xFF191E29);
       }
     });
   }
@@ -101,6 +99,31 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     );
   }
 
+  Widget colorPicker() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _colorOptions.map((color) {
+          return GestureDetector(
+            onTap: () => _onColorSelected(color),
+            child: Container(
+              width: 30,
+              height: 30,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(15),
+                border: _selectedColor == color
+                    ? Border.all(color: Colors.white, width: 3)
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget moreButton() {
     return GestureDetector(
       onTap: () {
@@ -110,12 +133,12 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: const Color(0xFF494E59), 
+          color: const Color(0xFF494E59),
           borderRadius: BorderRadius.circular(15),
         ),
         child: const Center(
           child: Icon(
-            Icons.more_horiz, 
+            Icons.more_horiz,
             size: 30,
             color: Colors.white,
           ),
@@ -130,11 +153,11 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
       backgroundColor: const Color(0xFF132D46),
       appBar: AppBar(
         title: const Text('Create Account'),
-        backgroundColor: const Color.fromARGB(255, 0, 141, 73),
+        backgroundColor: const Color(0xFF0B6B3A),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         ),
       ),
@@ -142,6 +165,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               inputTextField('Account Name', false, _accountNameController),
               const SizedBox(height: 20),
@@ -180,29 +204,28 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               inputTextField('Account Number', false, _accountNumberController),
               const SizedBox(height: 20),
 
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _colorOptions.map((color) {
-                    return GestureDetector(
-                      onTap: () => _onColorSelected(color),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(15),
-                          border: _selectedColor == color
-                              ? Border.all(color: Colors.white, width: 3)
-                              : null,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+              const Text(
+                'Select Account Color:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 10),
+
+              colorPicker(),
               const SizedBox(height: 20),
+
+              const Text(
+                'Select Account Icon:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
 
               GridView.count(
                 shrinkWrap: true,
@@ -241,23 +264,20 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToNextPage, 
+                  onPressed: _goToNextPage,
                   style: ElevatedButton.styleFrom(
-                    fixedSize:
-                        const Size.fromHeight(58), 
-                    backgroundColor:
-                        const Color(0xFF01C38D), 
+                    fixedSize: const Size.fromHeight(58),
+                    backgroundColor: const Color(0xFF01C38D),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(8), 
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
-                    'Add', 
+                    'Add Account',
                     style: TextStyle(
-                      fontSize: 16, 
-                      fontWeight: FontWeight.bold, 
-                      color: Colors.white, 
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
