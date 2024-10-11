@@ -161,9 +161,9 @@ class _NotificationsViewState extends State<NotificationsView> {
           color: const Color(0xFF01C38D),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.add, size: 32, color: Colors.white),
             SizedBox(width: 10),
             Text(

@@ -8,7 +8,6 @@ import 'package:frontend/view/notifications/notifications_view.dart';
 import 'package:frontend/view/payments/payments_view.dart';
 import 'package:frontend/view/users/settings_view.dart';
 import 'package:frontend/view/statistic/statistic_view.dart';
-import 'package:frontend/view/transfers/transfers_view.dart';
 
 class DrawerNavigationController extends StatefulWidget {
   const DrawerNavigationController({super.key});
@@ -23,22 +22,20 @@ class _DrawerNavigationControllerState
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    DashboardView(),
-    AccountView(),
-    TransfersView(),
-    GoalsView(),
+    const DashboardView(),
+    const AccountView(),
+    const GoalsView(),
     StatisticView(),
-    CategoriesView(),
-    CardsView(),
-    RegularPaymentsView(),
-    NotificationsView(),
-    SettingsView(),
+    const CategoriesView(),
+    const CardsView(),
+    const RegularPaymentsView(),
+    const NotificationsView(),
+    const SettingsView(),
   ];
 
   static final List<String> _viewTitles = <String>[
     'Dashboard',
     'Accounts',
-    'Transfers',
     'Goals',
     'Statistic',
     'Categories',
@@ -81,8 +78,8 @@ class _DrawerNavigationControllerState
                     ),
                   ),
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B6B3A), 
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0B6B3A), 
                 ),
               ),
               ListTile(
@@ -96,44 +93,39 @@ class _DrawerNavigationControllerState
                 onTap: () => _onItemTapped(1),
               ),
               ListTile(
-                leading: const Icon(Icons.sync, color: Color(0xFFFFFFFF)),
-                title: const Text('Transfers', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(2),
-              ),
-              ListTile(
                 leading: const Icon(Icons.emoji_events, color: Color(0xFFFFFFFF)),
                 title: const Text('Goals', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(3),
+                onTap: () => _onItemTapped(2),
               ),
               ListTile(
                 leading: const Icon(Icons.bar_chart, color: Color(0xFFFFFFFF)),
                 title: const Text('Statistic', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(4),
+                onTap: () => _onItemTapped(3),
               ),
               ListTile(
                 leading: const Icon(Icons.grid_view, color: Color(0xFFFFFFFF)),
                 title: const Text('Categories', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(5),
+                onTap: () => _onItemTapped(4),
               ),
               ListTile(
                 leading: const Icon(Icons.credit_card, color: Color(0xFFFFFFFF)),
                 title: const Text('Cards', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(6),
+                onTap: () => _onItemTapped(5),
               ),
               ListTile(
                 leading: const Icon(Icons.attach_money, color: Color(0xFFFFFFFF)),
                 title: const Text('Regular payments', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(7),
+                onTap: () => _onItemTapped(6),
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
                 title: const Text('Notifications', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(8),
+                onTap: () => _onItemTapped(7),
               ),
               ListTile(
                 leading: const Icon(Icons.settings, color: Color(0xFFFFFFFF)),
                 title: const Text('Settings', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(9),
+                onTap: () => _onItemTapped(8),
               ),
             ],
           ),

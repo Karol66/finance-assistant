@@ -4,7 +4,7 @@ import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:frontend/view/transfers/transfers_view.dart';
 
 class AccountView extends StatefulWidget {
-  const AccountView({Key? key}) : super(key: key);
+  const AccountView({super.key});
 
   @override
   _AccountViewState createState() => _AccountViewState();
@@ -191,12 +191,12 @@ class _AccountViewState extends State<AccountView> {
           color: const Color(0xFF01C38D),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add, size: 32, color: Colors.white),
-            const SizedBox(width: 10),
-            const Text(
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
               "Create New Account",
               style: TextStyle(
                 fontSize: 18,

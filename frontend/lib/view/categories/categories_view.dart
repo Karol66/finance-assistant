@@ -30,7 +30,7 @@ class CategoryController {
 }
 
 class CategoriesView extends StatefulWidget {
-  const CategoriesView({Key? key}) : super(key: key);
+  const CategoriesView({super.key});
 
   @override
   _CategoriesViewState createState() => _CategoriesViewState();
@@ -93,7 +93,7 @@ class _CategoriesViewState extends State<CategoriesView> {
           // Przełączniki Expenses i Income
           Row(
             children: [
-              const SizedBox(height: 70),
+              const SizedBox(height: 60),
               // Przełącznik Expenses
               Expanded(
                 child: GestureDetector(

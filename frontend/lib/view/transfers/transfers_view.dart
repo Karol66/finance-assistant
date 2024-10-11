@@ -54,10 +54,21 @@ class _TransfersViewState extends State<TransfersView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
+      appBar: AppBar(
+        title: const Text('Transfer History'),
+        backgroundColor: const Color(0xFF0B6B3A),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); 
+          },
+        ),
+      ),
       body: Column(
         children: [
           Row(
             children: [
+              const SizedBox(height: 60),
               Expanded(
                 child: GestureDetector(
                   onTap: () {
@@ -156,9 +167,9 @@ class _TransfersViewState extends State<TransfersView> {
           color: const Color(0xFF01C38D),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.add, size: 32, color: Colors.white),
             SizedBox(width: 10),
             Text(

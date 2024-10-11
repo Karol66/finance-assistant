@@ -13,7 +13,7 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
   final TextEditingController _createdAtController = TextEditingController();
   final TextEditingController _sendAtController = TextEditingController();
   final TextEditingController _userIdController = TextEditingController();
-  bool _isDeleted = false;
+  // bool _isDeleted = false;
   Color? _selectedColor;
   IconData? _selectedIcon;
 

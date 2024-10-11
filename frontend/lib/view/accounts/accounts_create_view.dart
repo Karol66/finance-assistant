@@ -65,9 +65,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     setState(() {
       _selectedIcon = icon;
 
-      if (_selectedColor == null) {
-        _selectedColor = const Color(0xFF191E29);
-      }
+      _selectedColor ??= const Color(0xFF191E29);
     });
   }
 
@@ -254,7 +252,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                   moreButton(),
                 ],

@@ -58,8 +58,8 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               trailing: IconButton(
                 onPressed: profileManageClick,
-                icon: Icon(Icons.arrow_forward_ios),
-                color: Color(0xFFFFFFFF),
+                icon: const Icon(Icons.arrow_forward_ios),
+                color: const Color(0xFFFFFFFF),
                 iconSize: 24,
               ),
             ),
@@ -72,8 +72,8 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               trailing: IconButton(
                 onPressed: setPinClick,
-                icon: Icon(Icons.arrow_forward_ios),
-                color: Color(0xFFFFFFFF),
+                icon: const Icon(Icons.arrow_forward_ios),
+                color: const Color(0xFFFFFFFF),
                 iconSize: 24,
               ),
             ),
@@ -92,9 +92,9 @@ class _SettingsViewState extends State<SettingsView> {
                     _notificationsEnabled = value;
                   });
                 },
-                activeColor: Color(0xFF01C38D),
-                inactiveThumbColor: Color(0xFFBBBBBB),
-                inactiveTrackColor: Color(0xFF494E59),
+                activeColor: const Color(0xFF01C38D),
+                inactiveThumbColor: const Color(0xFFBBBBBB),
+                inactiveTrackColor: const Color(0xFF494E59),
               ),
             ),
             const Divider(color: Color(0xFFFFFFFF)),
@@ -111,9 +111,9 @@ class _SettingsViewState extends State<SettingsView> {
                     _darkTheme = value;
                   });
                 },
-                activeColor: Color(0xFF01C38D),
-                inactiveThumbColor: Color(0xFFBBBBBB),
-                inactiveTrackColor: Color(0xFF494E59),
+                activeColor: const Color(0xFF01C38D),
+                inactiveThumbColor: const Color(0xFFBBBBBB),
+                inactiveTrackColor: const Color(0xFF494E59),
               ),
             ),
             const Divider(color: Color(0xFFFFFFFF)),
@@ -125,7 +125,7 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               trailing: DropdownButton<String>(
                 value: _selectedCurrency,
-                dropdownColor: Color(0xFF132D46),
+                dropdownColor: const Color(0xFF132D46),
                 items: _currencies.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,

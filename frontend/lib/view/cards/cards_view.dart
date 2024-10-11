@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/view/cards/cards_create_view.dart';
 
 class CardsView extends StatefulWidget {
-  const CardsView({Key? key}) : super(key: key);
+  const CardsView({super.key});
 
   @override
   _CardsViewState createState() => _CardsViewState();
@@ -84,12 +84,12 @@ class _CardsViewState extends State<CardsView> {
           color: const Color(0xFF01C38D),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add, size: 32, color: Colors.white),
-            const SizedBox(width: 10),
-            const Text(
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
               "Create New Card",
               style: TextStyle(
                 fontSize: 18,

@@ -186,18 +186,18 @@ class _UserWidgetState extends State<UserWidget> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Row(
+                  const Row(
                     children: [
                       Expanded(child: Divider(color: Colors.white)),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: 10),
+                      Text(
                         'or',
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.white),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(child: Divider(color: Colors.white)),
                     ],
                   ),

@@ -77,7 +77,7 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: Icon(
+        suffixIcon: const Icon(
           Icons.calendar_today,
           color: Color(0xFF494E59), 
         ),

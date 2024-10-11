@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CategoriesCreateView extends StatefulWidget {
-  const CategoriesCreateView({Key? key}) : super(key: key);
+  const CategoriesCreateView({super.key});
 
   @override
   _CategoriesCreateViewState createState() => _CategoriesCreateViewState();
@@ -56,9 +56,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     setState(() {
       _selectedIcon = icon;
 
-      if (_selectedColor == null) {
-        _selectedColor = const Color(0xFF191E29);
-      }
+      _selectedColor ??= const Color(0xFF191E29);
     });
   }
 
@@ -191,7 +189,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: MaterialStateProperty.all(Colors.white),
+                    fillColor: WidgetStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Expenses',
@@ -206,7 +204,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: MaterialStateProperty.all(Colors.white),
+                    fillColor: WidgetStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Income',
@@ -268,7 +266,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                   moreButton(),
                 ],
               ),
