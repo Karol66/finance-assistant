@@ -10,8 +10,7 @@ class Category(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=255)
-    category_type = models.CharField(max_length=50,
-                                     choices=CATEGORY_TYPES)  # Użycie 'choices' dla ograniczenia wartości
+    category_type = models.CharField(max_length=50, choices=CATEGORY_TYPES)  # Użycie 'choices' dla ograniczenia wartości
     planned_expenses = models.DecimalField(max_digits=10, decimal_places=2)  # Planowane wydatki
     category_color = models.CharField(max_length=7)  # Kolor kategorii (hex, np. #FF5733)
     category_icon = models.CharField(max_length=50)  # Ikona kategorii

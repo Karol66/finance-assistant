@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/categories_service.dart';
 
 class CategoriesCreateView extends StatefulWidget {
   const CategoriesCreateView({super.key});
@@ -11,11 +12,14 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   final TextEditingController _categoryNameController = TextEditingController();
   final TextEditingController _plannedExpensesController =
       TextEditingController();
+  final CategoriesService _categoriesService =
+      CategoriesService(); // Utwórz instancję serwisu
 
-  String _categoryType = 'Expenses';
-  Color? _selectedColor;
-  IconData? _selectedIcon;
+  String _categoryType ='expense'; // Ustawienie domyślnego typu kategorii jako 'expense'
+  Color? _selectedColor; // Zmienna przechowująca wybrany kolor
+  IconData? _selectedIcon; // Zmienna przechowująca wybraną ikonę
 
+  // Opcje kolorów do wyboru
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -28,6 +32,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Colors.grey,
   ];
 
+  // Opcje ikon do wyboru
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -46,100 +51,47 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Icons.travel_explore,
   ];
 
+  // Metoda do tworzenia nowej kategorii
+  Future<void> _addCategory() async {
+    // Pobranie danych z formularza
+    String categoryName = _categoryNameController.text;
+    String plannedExpenses = double.parse(_plannedExpensesController.text)
+        .toStringAsFixed(2); // Upewnij się, że jest to liczba dziesiętna
+    String categoryColor =
+        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; // Poprawa formatu koloru (6 znaków)
+
+    // Przypisanie wybranej ikony przez użytkownika, jeśli została wybrana, lub domyślnej wartości
+    String categoryIcon = _selectedIcon != null
+        ? _selectedIcon!.codePoint.toString()
+        : 'default_icon'; // Wybrana ikona lub 'default_icon'
+
+    // Wywołanie serwisu, aby utworzyć kategorię
+    await _categoriesService.createCategory(
+      categoryName,
+      _categoryType,
+      plannedExpenses,
+      categoryColor,
+      categoryIcon, // Przekazujemy wybraną lub domyślną ikonę
+    );
+
+      // Po utworzeniu kategorii wracamy do poprzedniego ekranu i zwracamy wartość true
+    Navigator.pop(context, true);
+  }
+
+  // Metoda do wyboru koloru
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
     });
   }
 
+  // Metoda do wyboru ikony
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
-
-      _selectedColor ??= const Color(0xFF191E29);
+      _selectedColor ??= const Color(
+          0xFF191E29); // Ustawienie domyślnego koloru, jeśli nie wybrano wcześniej
     });
-  }
-
-  void _goToNextPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const Scaffold(
-          body: Center(child: Text("Next Page")),
-        ),
-      ),
-    );
-  }
-
-  Widget inputTextField(
-      String hintText, bool obscureText, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget colorPicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _colorOptions.map((color) {
-              return GestureDetector(
-                onTap: () => _onColorSelected(color),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  margin: const EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(15),
-                    border: _selectedColor == color
-                        ? Border.all(color: Colors.white, width: 3)
-                        : null,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget moreButton() {
-    return GestureDetector(
-      onTap: () {
-        print("More button pressed");
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: const Color(0xFF494E59),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.more_horiz,
-            size: 30,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -165,7 +117,8 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               inputTextField('Category Name', false, _categoryNameController),
               const SizedBox(height: 20),
 
-              inputTextField('Planned Expenses', false, _plannedExpensesController),
+              inputTextField(
+                  'Planned Expenses', false, _plannedExpensesController),
               const SizedBox(height: 20),
 
               const Text(
@@ -182,14 +135,14 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               Row(
                 children: [
                   Radio<String>(
-                    value: 'Expenses',
+                    value: 'expense', // Użyj małych liter zgodnie z Django
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: WidgetStateProperty.all(Colors.white),
+                    fillColor: MaterialStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Expenses',
@@ -197,14 +150,14 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                   ),
                   const SizedBox(width: 20),
                   Radio<String>(
-                    value: 'Income',
+                    value: 'income', // Użyj małych liter zgodnie z Django
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: WidgetStateProperty.all(Colors.white),
+                    fillColor: MaterialStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Income',
@@ -225,7 +178,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 10),
 
-              colorPicker(),
+              colorPicker(), // Wybór koloru
               const SizedBox(height: 20),
 
               const Text(
@@ -239,6 +192,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 20),
 
+              // Grid do wyboru ikony
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -248,7 +202,8 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                 children: [
                   ..._iconOptions.map((iconData) {
                     return GestureDetector(
-                      onTap: () => _onIconSelected(iconData),
+                      onTap: () => _onIconSelected(
+                          iconData), // Zmieniono na przypisanie wybranej ikony
                       child: Container(
                         decoration: BoxDecoration(
                           color: _selectedIcon == iconData
@@ -271,10 +226,13 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                 ],
               ),
               const SizedBox(height: 20),
+
+              // Przycisk dodania kategorii
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToNextPage,
+                  onPressed:
+                      _addCategory, // Wywołanie metody dodawania kategorii
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor: const Color(0xFF01C38D),
@@ -293,6 +251,81 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget do wprowadzania tekstu
+  Widget inputTextField(
+      String hintText, bool obscureText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hintText,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  // Widget do wyboru koloru
+  Widget colorPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _colorOptions.map((color) {
+              return GestureDetector(
+                onTap: () => _onColorSelected(
+                    color), // Zmieniono na przypisanie wybranego koloru
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  margin: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(15),
+                    border: _selectedColor == color
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Przycisk "More"
+  Widget moreButton() {
+    return GestureDetector(
+      onTap: () {
+        print("More button pressed");
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: const Color(0xFF494E59),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.more_horiz,
+            size: 30,
+            color: Colors.white,
           ),
         ),
       ),

@@ -25,7 +25,7 @@ class _DrawerNavigationControllerState
     const DashboardView(),
     const AccountView(),
     const GoalsView(),
-    StatisticView(),
+    const StatisticView(),
     const CategoriesView(),
     const CardsView(),
     const RegularPaymentsView(),

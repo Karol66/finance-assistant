@@ -1,43 +1,51 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Account
-from .forms import AccountForm
-from django.contrib.auth.decorators import login_required
+from .serializers import AccountSerializer
+from django.shortcuts import get_object_or_404
 
-@login_required
+
+# Pobranie listy kont
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def account_list(request):
-    accounts = Account.objects.filter(user=request.user, is_deleted=False)  # Pomiń soft-deleted konta
-    return render(request, 'account_list.html', {'accounts': accounts})
+    accounts = Account.objects.filter(user=request.user, is_deleted=False)
+    serializer = AccountSerializer(accounts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@login_required
+
+# Tworzenie nowego konta
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def account_create(request):
-    if request.method == 'POST':
-        form = AccountForm(request.POST)
-        if form.is_valid():
-            account = form.save(commit=False)
-            account.user = request.user  # Przypisanie konta do zalogowanego użytkownika
-            account.save()
-            return redirect('account_list')  # Przekierowanie po dodaniu konta
-    else:
-        form = AccountForm()
-    return render(request, 'account_form.html', {'form': form})
+    print("Dane POST:", request.data)
 
-@login_required
+    serializer = AccountSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)  # Przypisanie użytkownika
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Aktualizacja konta
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def account_update(request, pk):
     account = get_object_or_404(Account, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = AccountForm(request.POST, instance=account)
-        if form.is_valid():
-            form.save()
-            return redirect('account_list')  # Przekierowanie po aktualizacji konta
-    else:
-        form = AccountForm(instance=account)
-    return render(request, 'account_form.html', {'form': form})
+    serializer = AccountSerializer(account, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+
+# Usunięcie konta (soft delete)
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def account_delete(request, pk):
     account = get_object_or_404(Account, pk=pk, user=request.user)
-    if request.method == 'POST':
-        account.is_deleted = True  # Soft-delete zamiast usuwania z bazy danych
-        account.save()
-        return redirect('account_list')  # Przekierowanie po soft-delecie
-    return render(request, 'account_confirm_delete.html', {'account': account})
+    account.is_deleted = True
+    account.save()
+    return Response({'message': 'Account soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
