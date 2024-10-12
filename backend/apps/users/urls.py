@@ -1,10 +1,9 @@
-from django.contrib.auth.views import LogoutView
 from django.urls import path
-from .views import register, CustomLoginView, logout_view, home
+from .views import register_api, login_api
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
-    path('', home, name='home'),
-    path('register/', register, name='register'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),  # LogoutView obsłuży wylogowanie
+    path('register/', register_api, name='register_api'),
+    path('login/', login_api, name='login_api'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/view/navigation/drawer_navigation_view.dart';
 import 'package:frontend/view/users/registration_view.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class UserWidget extends StatefulWidget {
   final String title;
@@ -30,7 +31,9 @@ class _UserWidgetState extends State<UserWidget> {
   final TextEditingController passwordController = TextEditingController();
   bool isRemembered = false;
 
-  void login() {
+  final AuthService _authService = AuthService();
+
+  void login() async {
     final identifier = identifierController.text;
     final password = passwordController.text;
 
@@ -48,11 +51,37 @@ class _UserWidgetState extends State<UserWidget> {
           ],
         ),
       );
-    } else {
+      return;
+    }
+    // Wywołanie logowania za pomocą AuthService
+    final response = await _authService.login(identifier, password);
+    if (response != null) {
+      final accessToken = response['access'];
+      final refreshToken = response['refresh'];
+
+      // Przechowywanie tokenów (SharedPreferences lub FlutterSecureStorage)
+      print('Access Token: $accessToken');
+      print('Refresh Token: $refreshToken');
+
+      // Przekierowanie po zalogowaniu
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const DrawerNavigationController(),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login failed'),
+          content: const Text('Invalid username or password'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     }

@@ -1,32 +1,49 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, CustomAuthenticationForm
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework.permissions import AllowAny
 
-# Create your views here.
+User = get_user_model()
 
-def home(request):
-    return render(request, 'home.html')
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_api(request):
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
 
-def register(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)  # Automatyczne logowanie po rejestracji
-            return redirect('home')  # Przekierowanie na stronę główną
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = User.objects.create(
+        username=username,
+        email=email,
+        password=make_password(password)
+    )
+
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_api(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)
     else:
-        form = UserRegistrationForm()
-    return render(request, 'register.html', {'form': form})
-
-class CustomLoginView(LoginView):
-    authentication_form = CustomAuthenticationForm
-    template_name = 'login.html'
-    redirect_authenticated_user = True  # Przekierowanie, jeśli użytkownik jest zalogowany
-    next_page = 'home'  # Przekierowanie na stronę główną po zalogowaniu
-
-@login_required
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)

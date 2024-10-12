@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/view/users/login_view.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class RegistrationWidget extends StatefulWidget {
   final String title;
@@ -25,14 +26,15 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
-  void register() {
+ void register() async {
     final email = emailController.text;
     final username = usernameController.text;
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
+
+    final AuthService _authService = AuthService();
 
     if (email.isEmpty ||
         username.isEmpty ||
@@ -66,7 +68,15 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
         ),
       );
     } else {
-      Navigator.pushNamed(context, '/login');
+      // Wywołaj rejestrację przez AuthService
+      await _authService.register(username, email, password);
+      // Po pomyślnej rejestracji przekieruj na stronę logowania
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginView(),
+        ),
+      );
     }
   }
 
