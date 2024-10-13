@@ -15,6 +15,12 @@ def account_list(request):
     serializer = AccountSerializer(accounts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def account_detail(request, pk):
+    account = get_object_or_404(Account, pk=pk, user=request.user, is_deleted=False)
+    serializer = AccountSerializer(account)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Tworzenie nowego konta
 @api_view(['POST'])

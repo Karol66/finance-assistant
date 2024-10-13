@@ -1,44 +1,62 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Card
-from .forms import CardForm
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
-@login_required
+from .serializers import CardSerializer
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def card_list(request):
-    # Wyświetlamy tylko nieusunięte karty (is_deleted=False)
-    cards = Card.objects.filter(account__user=request.user, is_deleted=False)
-    return render(request, 'card_list.html', {'cards': cards})
+    cards = Card.objects.filter(user=request.user, is_deleted=False)
+    serializer = CardSerializer(cards, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@login_required
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def card_detail(request, pk):
+    card = get_object_or_404(Card, pk=pk, user=request.user, is_deleted=False)
+    serializer = CardSerializer(card)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def card_create(request):
-    if request.method == 'POST':
-        form = CardForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('card_list')  # Przekierowanie po dodaniu karty
-    else:
-        form = CardForm()
-    return render(request, 'card_form.html', {'form': form})
+    print("Dane POST:", request.data)  # Wyświetlenie przesyłanych danych
+    print(f"Zalogowany użytkownik: {request.user}")  # Wyświetlenie aktualnie zalogowanego użytkownika
 
-@login_required
+    serializer = CardSerializer(data=request.data)
+
+    if serializer.is_valid():
+        print("Dane są poprawne, zapisujemy...")
+        # Sprawdzamy, czy użytkownik jest poprawnie przypisany
+        serializer.save(user=request.user)  # Przypisanie zalogowanego użytkownika do kategorii
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    print("Błąd walidacji danych:", serializer.errors)  # Wyświetlenie błędów walidacji
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def card_update(request, pk):
-    # Pobieramy kartę, ale ignorujemy te, które są oznaczone jako usunięte
-    card = get_object_or_404(Card, pk=pk, account__user=request.user, is_deleted=False)
-    if request.method == 'POST':
-        form = CardForm(request.POST, instance=card)
-        if form.is_valid():
-            form.save()
-            return redirect('card_list')  # Przekierowanie po aktualizacji karty
-    else:
-        form = CardForm(instance=card)
-    return render(request, 'card_form.html', {'form': form})
+    card = get_object_or_404(Card, pk=pk, user=request.user)
+    serializer = CardSerializer(card, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def card_delete(request, pk):
-    # Soft-delete: zamiast usuwania karty, oznaczamy ją jako usuniętą
-    card = get_object_or_404(Card, pk=pk, account__user=request.user)
-    if request.method == 'POST':
-        card.is_deleted = True  # Oznaczenie karty jako usuniętej (soft-delete)
-        card.save()
-        return redirect('card_list')  # Przekierowanie po soft-delecie
-    return render(request, 'card_confirm_delete.html', {'card': card})
+    card = get_object_or_404(Card, pk=pk, user=request.user)
+    card.is_deleted = True
+    card.save()
+    return Response({'message': 'Card soft-deleted'}, status=status.HTTP_204_NO_CONTENT)

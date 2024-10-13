@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Category
+from .models import Card
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Card
         fields = '__all__'
         read_only_fields = ['user']

@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Category
+from .models import Statistics
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class StatisticsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Statistics
         fields = '__all__'
         read_only_fields = ['user']

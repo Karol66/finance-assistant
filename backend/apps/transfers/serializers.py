@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Category
+from .models import Transfer
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class TransferSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Transfer
         fields = '__all__'
         read_only_fields = ['user']

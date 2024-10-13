@@ -1,77 +1,62 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Payment
-from .forms import PaymentForm
-from django.contrib.auth.decorators import login_required
-from apps.statistics.models import Statistics
+from django.shortcuts import get_object_or_404
 
-@login_required
+from .serializers import PaymentSerializer
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def payment_list(request):
-    payments = Payment.objects.filter(card__account__user=request.user, is_deleted=False)  # Wyświetlamy tylko aktywne płatności
-    return render(request, 'payment_list.html', {'payments': payments})
+    payments = Payment.objects.filter(user=request.user, is_deleted=False)
+    serializer = PaymentSerializer(payments, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def payment_detail(request, pk):
+    payment = get_object_or_404(Payment, pk=pk, user=request.user, is_deleted=False)
+    serializer = PaymentSerializer(payment)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def payment_create(request):
-    if request.method == 'POST':
-        form = PaymentForm(request.POST)
-        if form.is_valid():
-            payment = form.save(commit=False)
-            # Aktualizacja salda konta
-            card = payment.card
-            account = card.account
-            account.balance -= payment.amount  # Odejmowanie kwoty płatności z salda konta
-            account.save()
+    print("Dane POST:", request.data)  # Wyświetlenie przesyłanych danych
+    print(f"Zalogowany użytkownik: {request.user}")  # Wyświetlenie aktualnie zalogowanego użytkownika
 
-            payment.save()
+    serializer = PaymentSerializer(data=request.data)
 
-            # Automatyczne tworzenie statystyk po dokonaniu płatności
-            # Dodanie statystyki dla wydatku
-            Statistics.objects.create(
-                account=account,
-                statistic_type='monthly_expense',  # Typ statystyki: wydatki
-                value=payment.amount
-            )
+    if serializer.is_valid():
+        print("Dane są poprawne, zapisujemy...")
+        # Sprawdzamy, czy użytkownik jest poprawnie przypisany
+        serializer.save(user=request.user)  # Przypisanie zalogowanego użytkownika do kategorii
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            return redirect('payment_list')  # Przekierowanie po dodaniu płatności
-    else:
-        form = PaymentForm()
-    return render(request, 'payment_form.html', {'form': form})
+    print("Błąd walidacji danych:", serializer.errors)  # Wyświetlenie błędów walidacji
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def payment_update(request, pk):
-    payment = get_object_or_404(Payment, pk=pk, card__account__user=request.user, is_deleted=False)
-    if request.method == 'POST':
-        form = PaymentForm(request.POST, instance=payment)
-        if form.is_valid():
-            old_amount = payment.amount  # Stara kwota
-            payment = form.save(commit=False)
-            card = payment.card
-            account = card.account
-            # Przywracanie starej kwoty do salda konta
-            account.balance += old_amount
-            # Odejmowanie nowej kwoty
-            account.balance -= payment.amount
-            account.save()
-
-            payment.save()
-            return redirect('payment_list')  # Przekierowanie po aktualizacji płatności
-    else:
-        form = PaymentForm(instance=payment)
-    return render(request, 'payment_form.html', {'form': form})
+    payment = get_object_or_404(Payment, pk=pk, user=request.user)
+    serializer = PaymentSerializer(payment, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@login_required
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def payment_delete(request, pk):
-    payment = get_object_or_404(Payment, pk=pk, card__account__user=request.user)
-    if request.method == 'POST':
-        card = payment.card
-        account = card.account
-        # Przywrócenie kwoty płatności do salda konta
-        account.balance += payment.amount
-        account.save()
-
-        payment.is_deleted = True  # Soft-delete
-        payment.save()
-        return redirect('payment_list')  # Przekierowanie po usunięciu
-    return render(request, 'payment_confirm_delete.html', {'payment': payment})
-
+    payment = get_object_or_404(Payment, pk=pk, user=request.user)
+    payment.is_deleted = True
+    payment.save()
+    return Response({'message': 'Payment soft-deleted'}, status=status.HTTP_204_NO_CONTENT)

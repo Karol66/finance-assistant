@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Category
+from .models import Payment
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Payment
         fields = '__all__'
         read_only_fields = ['user']
