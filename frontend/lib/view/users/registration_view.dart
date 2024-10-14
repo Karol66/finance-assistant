@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/view/users/login_view.dart';
-import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/services/users_service.dart';
 
 class RegistrationWidget extends StatefulWidget {
   final String title;

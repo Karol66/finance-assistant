@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/view/navigation/drawer_navigation_view.dart';
 import 'package:frontend/view/users/registration_view.dart';
-import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/services/users_service.dart';
 
 class UserWidget extends StatefulWidget {
   final String title;

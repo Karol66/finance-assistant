@@ -15,11 +15,11 @@ class Account(models.Model):
     currency = models.CharField(max_length=10)
     account_color = models.CharField(max_length=7, default='#FFFFFF')  # Kolor przypisany do konta (np. '#FFFFFF')
     account_icon = models.CharField(max_length=255, default='default_icon')  # Ikona przypisana do konta
+    account_number = models.CharField(max_length=26, unique=True)
     is_deleted = models.BooleanField(default=False)  # Soft delete
     include_in_total = models.BooleanField(default=True)  # Czy uwzględnić w bilansie
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    account_number = models.CharField(max_length=26, unique=True)
 
     def __str__(self):
         return f"{self.account_name} ({self.account_type})"
