@@ -10,10 +10,8 @@ class CategoriesCreateView extends StatefulWidget {
 
 class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   final TextEditingController _categoryNameController = TextEditingController();
-  final TextEditingController _plannedExpensesController =
-      TextEditingController();
-  final CategoriesService _categoriesService =
-      CategoriesService(); // Utwórz instancję serwisu
+  final TextEditingController _plannedExpensesController = TextEditingController();
+  final CategoriesService _categoriesService = CategoriesService(); // Utwórz instancję serwisu
 
   String _categoryType ='expense'; // Ustawienie domyślnego typu kategorii jako 'expense'
   Color? _selectedColor; // Zmienna przechowująca wybrany kolor

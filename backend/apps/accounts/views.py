@@ -7,7 +7,6 @@ from .serializers import AccountSerializer
 from django.shortcuts import get_object_or_404
 
 
-# Pobranie listy kont
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def account_list(request):
@@ -15,14 +14,16 @@ def account_list(request):
     serializer = AccountSerializer(accounts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def account_detail(request, pk):
+    print(f"Użytkownik: {request.user}, Konto ID: {pk}")
     account = get_object_or_404(Account, pk=pk, user=request.user, is_deleted=False)
     serializer = AccountSerializer(account)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# Tworzenie nowego konta
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def account_create(request):
@@ -30,12 +31,11 @@ def account_create(request):
 
     serializer = AccountSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(user=request.user)  # Przypisanie użytkownika
+        serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Aktualizacja konta
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def account_update(request, pk):
@@ -47,7 +47,6 @@ def account_update(request, pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Usunięcie konta (soft delete)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def account_delete(request, pk):

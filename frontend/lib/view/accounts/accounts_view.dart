@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/accounts_service.dart';
 import 'package:frontend/view/accounts/accounts_create_view.dart';
+import 'package:frontend/view/accounts/accounts_manage_view.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:frontend/view/transfers/transfers_view.dart';
 
@@ -11,47 +13,39 @@ class AccountView extends StatefulWidget {
 }
 
 class _AccountViewState extends State<AccountView> {
-  List<Map<String, dynamic>> accounts = [
-    {
-      "account_id": 1,
-      "account_name": "Savings",
-      "balance": "1200.50",
-      "account_color": Colors.blue,
-      "account_icon": Icons.savings,
-      "include_in_total": 1,
-    },
-    {
-      "account_id": 2,
-      "account_name": "Checking",
-      "balance": "-50.00",
-      "account_color": Colors.green,
-      "account_icon": Icons.account_balance_wallet,
-      "include_in_total": 1,
-    },
-    {
-      "account_id": 3,
-      "account_name": "Credit Card",
-      "balance": "-500.00",
-      "account_color": Colors.red,
-      "account_icon": Icons.credit_card,
-      "include_in_total": 1,
-    },
-    {
-      "account_id": 4,
-      "account_name": "Investment",
-      "balance": "2500.00",
-      "account_color": Colors.purple,
-      "account_icon": Icons.trending_up,
-      "include_in_total": 1,
-    },
-  ];
+  List<Map<String, dynamic>> accounts = [];
+
+  final AccountsService _accountsService = AccountsService();
 
   double totalBalance = 0.00;
 
   @override
   void initState() {
     super.initState();
-    _updateTotalBalance();
+    loadAccounts();
+  }
+
+  Future<void> loadAccounts() async {
+    final fetchedAccounts = await _accountsService.fetchAccounts();
+
+    if (fetchedAccounts != null) {
+      setState(() {
+        accounts = fetchedAccounts
+            .map((account) => {
+                  "account_id": account["id"],
+                  "account_name": account["account_name"],
+                  "account_type": account["account_type"],
+                  "balance": account["balance"],
+                  "include_in_total": account["include_in_total"],
+                  "account_color": _parseColor(account["account_color"]),
+                  "account_icon": _getIconFromString(account["account_icon"]),
+                })
+            .toList();
+        _updateTotalBalance();
+      });
+    } else {
+      print("Failed to load accounts.");
+    }
   }
 
   void _updateTotalBalance() {
@@ -59,22 +53,23 @@ class _AccountViewState extends State<AccountView> {
       0.0,
       (sum, account) =>
           sum +
-          (account["include_in_total"] == 1
-              ? double.parse(account["balance"])
+          ((account["include_in_total"] == true)
+              ? double.parse(account["balance"].toString())
               : 0.0),
     );
   }
 
-  void createAccountClick() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AccountsCreateView(),
-      ),
-    );
+  IconData _getIconFromString(String iconString) {
+    int codePoint = int.tryParse(iconString) ?? 0;
+    return IconData(codePoint, fontFamily: 'MaterialIcons');
   }
 
-    void transferHistoryClick() {
+  Color _parseColor(String colorString) {
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  void transferHistoryClick() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -83,7 +78,7 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
-    void newTransferClick() {
+  void newTransferClick() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -101,7 +96,6 @@ class _AccountViewState extends State<AccountView> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Główny kontener obejmujący Total Balance i przyciski
             Container(
               width: media.width,
               decoration: const BoxDecoration(
@@ -114,7 +108,6 @@ class _AccountViewState extends State<AccountView> {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               child: Column(
                 children: [
-                  // Sekcja Total Balance
                   Column(
                     children: [
                       const Text(
@@ -132,7 +125,6 @@ class _AccountViewState extends State<AccountView> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Grid z przyciskami
                   GridView.count(
                     shrinkWrap: true,
                     crossAxisCount: 2,
@@ -162,14 +154,13 @@ class _AccountViewState extends State<AccountView> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: accounts.length + 1, // Zwiększ itemCount o 1
+                    itemCount: accounts.length + 1,
                     itemBuilder: (context, index) {
                       if (index == accounts.length) {
-                        // Ostatni element - przycisk "Create New Account"
-                        return _buildCreateNewAccountButton();
+                        return createAddButton();
                       }
                       final account = accounts[index];
-                      return _buildAccountItem(account);
+                      return accountItem(account);
                     },
                   ),
                 ],
@@ -181,36 +172,6 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
-  Widget _buildCreateNewAccountButton() {
-    return GestureDetector(
-      onTap: createAccountClick,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF01C38D),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add, size: 32, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              "Create New Account",
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget dla przycisku
   Widget _buildButton(
       {required IconData icon,
       required String label,
@@ -248,8 +209,7 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
-  // Widget dla wyświetlania konta
-  Widget _buildAccountItem(Map<String, dynamic> account) {
+  Widget accountItem(Map<String, dynamic> account) {
     double balance = double.parse(account['balance']);
     bool isNegative = balance < 0;
     String balanceText = isNegative
@@ -257,15 +217,24 @@ class _AccountViewState extends State<AccountView> {
         : "+ \$${balance.toStringAsFixed(2)}";
 
     return GestureDetector(
-      onTap: () {
-        print("Manage account: ${account['account_name']}");
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AccountsManageView(
+              accountId: account["account_id"],
+            ),
+          ),
+        );
+        if (result == true) {
+          loadAccounts();
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(
-              0xFF191E29), // Zmieniony kolor na ten sam co ciemny kontener
+          color: const Color(0xFF191E29),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(
@@ -299,6 +268,45 @@ class _AccountViewState extends State<AccountView> {
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: isNegative ? Colors.red : Colors.green,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget createAddButton() {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AccountsCreateView(),
+          ),
+        );
+        if (result == true) {
+          loadAccounts();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Account",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/accounts_service.dart';
 
 class AccountsCreateView extends StatefulWidget {
   const AccountsCreateView({super.key});
@@ -10,11 +11,10 @@ class AccountsCreateView extends StatefulWidget {
 class _AccountsCreateViewState extends State<AccountsCreateView> {
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
-  final TextEditingController _currencyController = TextEditingController();
-  final TextEditingController _accountNumberController =
-      TextEditingController();
+  final TextEditingController _accountNumberController = TextEditingController();
+  final AccountsService _accountsService = AccountsService();
 
-  String? _accountType;
+  String _accountType ='Savings';
   Color? _selectedColor;
   IconData? _selectedIcon;
 
@@ -55,6 +55,29 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
     Icons.travel_explore,
   ];
 
+  Future<void> _addAccount() async {
+    String accountName = _accountNameController.text;
+    String accountNumber = _accountNumberController.text;
+    String balance = double.parse(_balanceController.text).toStringAsFixed(2);
+    String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+
+    String accountIcon = _selectedIcon != null
+        ? _selectedIcon!.codePoint.toString()
+        : 'default_icon'; 
+
+    await _accountsService.createAccount(
+      accountName,
+      _accountType,
+      balance,
+      categoryColor,
+      accountIcon, 
+      accountNumber,
+    );
+
+    Navigator.pop(context, true);
+  }
+
+
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
@@ -67,82 +90,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
 
       _selectedColor ??= const Color(0xFF191E29);
     });
-  }
-
-  void _goToNextPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const Scaffold(
-          body: Center(child: Text("Next Page")),
-        ),
-      ),
-    );
-  }
-
-  Widget inputTextField(
-      String hintText, bool obscureText, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget colorPicker() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _colorOptions.map((color) {
-          return GestureDetector(
-            onTap: () => _onColorSelected(color),
-            child: Container(
-              width: 30,
-              height: 30,
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(15),
-                border: _selectedColor == color
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget moreButton() {
-    return GestureDetector(
-      onTap: () {
-        print("More button pressed");
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: const Color(0xFF494E59),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.more_horiz,
-            size: 30,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -194,9 +141,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               const SizedBox(height: 20),
 
               inputTextField('Balance', false, _balanceController),
-              const SizedBox(height: 20),
-
-              inputTextField('Currency', false, _currencyController),
               const SizedBox(height: 20),
 
               inputTextField('Account Number', false, _accountNumberController),
@@ -262,7 +206,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToNextPage,
+                  onPressed: _addAccount,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor: const Color(0xFF01C38D),
@@ -281,6 +225,72 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  
+  Widget inputTextField(
+      String hintText, bool obscureText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hintText,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget colorPicker() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _colorOptions.map((color) {
+          return GestureDetector(
+            onTap: () => _onColorSelected(color),
+            child: Container(
+              width: 30,
+              height: 30,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(15),
+                border: _selectedColor == color
+                    ? Border.all(color: Colors.white, width: 3)
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget moreButton() {
+    return GestureDetector(
+      onTap: () {
+        print("More button pressed");
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: const Color(0xFF494E59),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.more_horiz,
+            size: 30,
+            color: Colors.white,
           ),
         ),
       ),

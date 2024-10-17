@@ -59,7 +59,6 @@ class AccountsService {
       String accountName,
       String accountType,
       String balance,
-      String currency,
       String accountColor,
       String accountIcon,
       String accountNumber) async {
@@ -81,7 +80,6 @@ class AccountsService {
         'account_name': accountName,
         'account_type': accountType,
         'balance': balance,
-        'currency': currency,
         'account_color': accountColor,
         'account_icon': accountIcon,
         'account_number': accountNumber,
@@ -100,7 +98,6 @@ class AccountsService {
       String accountName,
       String accountType,
       String balance,
-      String currency,
       String accountColor,
       String accountIcon,
       String accountNumber) async {
@@ -122,7 +119,6 @@ class AccountsService {
         'account_name': accountName,
         'account_type': accountType,
         'balance': balance,
-        'currency': currency,
         'account_color': accountColor,
         'account_icon': accountIcon,
         'account_number': accountNumber,
