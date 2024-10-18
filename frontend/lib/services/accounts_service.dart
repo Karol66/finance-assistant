@@ -60,8 +60,7 @@ class AccountsService {
       String accountType,
       String balance,
       String accountColor,
-      String accountIcon,
-      String accountNumber) async {
+      String accountIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -82,7 +81,6 @@ class AccountsService {
         'balance': balance,
         'account_color': accountColor,
         'account_icon': accountIcon,
-        'account_number': accountNumber,
       }),
     );
 
@@ -99,8 +97,7 @@ class AccountsService {
       String accountType,
       String balance,
       String accountColor,
-      String accountIcon,
-      String accountNumber) async {
+      String accountIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -121,7 +118,6 @@ class AccountsService {
         'balance': balance,
         'account_color': accountColor,
         'account_icon': accountIcon,
-        'account_number': accountNumber,
       }),
     );
 

@@ -12,8 +12,6 @@ class CategoriesManageView extends StatefulWidget {
 
 class _CategoriesManageViewState extends State<CategoriesManageView> {
   final TextEditingController _categoryNameController = TextEditingController();
-  final TextEditingController _plannedExpensesController =
-      TextEditingController();
   final CategoriesService _categoriesService =
       CategoriesService(); // Serwis do pobierania danych
 
@@ -63,8 +61,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
       setState(() {
         _categoryNameController.text =
             fetchedCategory['category_name']; // Ustawienie nazwy kategorii
-        _plannedExpensesController.text = fetchedCategory[
-            'planned_expenses']; // Ustawienie planowanych wydatków
         _categoryType =
             fetchedCategory['category_type']; // Ustawienie typu kategorii
         _selectedColor =
@@ -90,8 +86,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
   // Zaktualizowana metoda do zapisu edytowanej kategorii
   Future<void> _updateCategory() async {
     String categoryName = _categoryNameController.text;
-    String plannedExpenses = double.parse(_plannedExpensesController.text)
-        .toStringAsFixed(2); // Konwersja planowanych wydatków
     String categoryColor =
         '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; // Formatowanie koloru
     String categoryIcon = _selectedIcon != null
@@ -102,7 +96,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
         widget.categoryId,
         categoryName,
         _categoryType,
-        plannedExpenses,
         categoryColor,
         categoryIcon); // Aktualizacja kategorii
 
@@ -140,10 +133,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
             children: [
               inputTextField('Category Name', false,
                   _categoryNameController), // Nazwa kategorii
-              const SizedBox(height: 20),
-
-              inputTextField('Planned Expenses', false,
-                  _plannedExpensesController), // Planowane wydatki
               const SizedBox(height: 20),
 
               const Text(

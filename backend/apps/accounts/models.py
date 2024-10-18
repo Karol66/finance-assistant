@@ -9,7 +9,6 @@ class Account(models.Model):
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     account_color = models.CharField(max_length=7, default='#FFFFFF')
     account_icon = models.CharField(max_length=255, default='default_icon')
-    account_number = models.CharField(max_length=26, unique=True)
     is_deleted = models.BooleanField(default=False)
     include_in_total = models.BooleanField(default=True)  
     created_at = models.DateTimeField(auto_now_add=True)

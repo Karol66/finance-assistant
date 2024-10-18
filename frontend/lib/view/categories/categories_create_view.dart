@@ -10,7 +10,6 @@ class CategoriesCreateView extends StatefulWidget {
 
 class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   final TextEditingController _categoryNameController = TextEditingController();
-  final TextEditingController _plannedExpensesController = TextEditingController();
   final CategoriesService _categoriesService = CategoriesService(); // Utwórz instancję serwisu
 
   String _categoryType ='expense'; // Ustawienie domyślnego typu kategorii jako 'expense'
@@ -53,8 +52,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   Future<void> _addCategory() async {
     // Pobranie danych z formularza
     String categoryName = _categoryNameController.text;
-    String plannedExpenses = double.parse(_plannedExpensesController.text)
-        .toStringAsFixed(2); // Upewnij się, że jest to liczba dziesiętna
     String categoryColor =
         '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; // Poprawa formatu koloru (6 znaków)
 
@@ -67,7 +64,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     await _categoriesService.createCategory(
       categoryName,
       _categoryType,
-      plannedExpenses,
       categoryColor,
       categoryIcon, // Przekazujemy wybraną lub domyślną ikonę
     );
@@ -113,10 +109,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               inputTextField('Category Name', false, _categoryNameController),
-              const SizedBox(height: 20),
-
-              inputTextField(
-                  'Planned Expenses', false, _plannedExpensesController),
               const SizedBox(height: 20),
 
               const Text(

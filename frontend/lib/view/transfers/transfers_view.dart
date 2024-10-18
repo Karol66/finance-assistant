@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
 
 class TransfersView extends StatefulWidget {
@@ -10,36 +11,39 @@ class TransfersView extends StatefulWidget {
 
 class _TransfersViewState extends State<TransfersView> {
   bool isExpenses = true;
+  List<Map<String, dynamic>> transfers = [];
+  final TransfersService _transfersService = TransfersService();
 
-  List<Map<String, dynamic>> transfers = [
-    {
-      "id": 1,
-      "amount": 150.75,
-      "transfer_date": "2023-10-01 12:30:00",
-      "description": "Grocery Shopping",
-      "account_id": 1,
-      "category_id": 1,
-      "type": "Expenses",
-    },
-    {
-      "id": 2,
-      "amount": 150.75,
-      "transfer_date": "2023-10-01 12:30:00",
-      "description": "Grocery Shopping",
-      "account_id": 1,
-      "category_id": 1,
-      "type": "Expenses",
-    },
-    {
-      "id": 3,
-      "amount": 500.00,
-      "transfer_date": "2023-09-28 10:15:00",
-      "description": "Salary",
-      "account_id": 2,
-      "category_id": 2,
-      "type": "Income",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadTransfers(); // Pobieranie transferów z serwisu
+  }
+
+Future<void> loadTransfers() async {
+  final fetchedTransfers = await _transfersService.fetchTransfers();
+
+  if (fetchedTransfers != null) {
+    print('Fetched transfers: $fetchedTransfers'); // Dodaj logowanie
+
+    setState(() {
+      transfers = fetchedTransfers.map((transfer) {
+        return {
+          "id": transfer['id'],
+          "transfer_name": transfer['transfer_name'], // Zmiana, aby dopasować do nazwy w modelu
+          "amount": transfer['amount'],
+          "transfer_date": transfer['date'],
+          "description": transfer['description'],
+          "account_id": transfer['account'],
+          "category_id": transfer['category'],
+          "type": transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+        };
+      }).toList();
+    });
+  } else {
+    print("Failed to load transfers.");
+  }
+}
 
   void createTransferClick() {
     Navigator.push(
@@ -48,6 +52,11 @@ class _TransfersViewState extends State<TransfersView> {
         builder: (context) => const TransfersCreateView(),
       ),
     );
+  }
+
+  // Funkcja wyszukująca szczegóły kategorii na podstawie category_id (możesz dostosować w zależności od struktury kategorii)
+  Map<String, dynamic>? _getCategoryById(int categoryId) {
+    return null; // Dodaj tutaj odpowiednią logikę, jeśli kategorie są dostępne
   }
 
   @override
@@ -60,7 +69,7 @@ class _TransfersViewState extends State<TransfersView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         ),
       ),
@@ -110,8 +119,7 @@ class _TransfersViewState extends State<TransfersView> {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color:
-                              !isExpenses ? Colors.white : Colors.transparent,
+                          color: !isExpenses ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -192,68 +200,93 @@ class _TransfersViewState extends State<TransfersView> {
         ? '-\$${transfer['amount'].toStringAsFixed(2)}'
         : '+\$${transfer['amount'].toStringAsFixed(2)}';
 
+    // Pobieramy dane kategorii dla danego transferu
+    final category = _getCategoryById(transfer['category_id']);
+
     return Card(
-      color: const Color(0xFF191E29), 
+      color: const Color(0xFF191E29),
       margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Wyśrodkowana ikona kategorii
+            if (category != null)
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: category['category_color'],
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(
+                    category['category_icon'],
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 15), // Odstęp między ikoną a tekstem
 
-            Text(
-              "Date: ${transfer['transfer_date']}",
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
+            // Data, Opis, Konto i Kategoria
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Date: ${transfer['transfer_date']}",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    transfer['description'],
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Account: ${transfer['account_id'] == 1 ? 'Main Account' : 'Secondary Account'}",
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        "Category: ${category != null ? category['category_name'] : 'Unknown'}",
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  amountText,
-                  style: TextStyle(
-                    color: isExpense ? Colors.red : Colors.green,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+            // Wyśrodkowana kwota
+            Center(
+              child: Text(
+                amountText,
+                style: TextStyle(
+                  color: isExpense ? Colors.red : Colors.green,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-
-                Text(
-                  transfer['description'],
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Account ID: ${transfer['account_id']}",
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  "Category ID: ${transfer['category_id']}",
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),

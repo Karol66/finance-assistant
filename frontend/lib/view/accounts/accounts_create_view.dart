@@ -11,7 +11,6 @@ class AccountsCreateView extends StatefulWidget {
 class _AccountsCreateViewState extends State<AccountsCreateView> {
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
-  final TextEditingController _accountNumberController = TextEditingController();
   final AccountsService _accountsService = AccountsService();
 
   String _accountType ='Savings';
@@ -57,7 +56,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
 
   Future<void> _addAccount() async {
     String accountName = _accountNameController.text;
-    String accountNumber = _accountNumberController.text;
     String balance = double.parse(_balanceController.text).toStringAsFixed(2);
     String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
 
@@ -71,7 +69,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
       balance,
       categoryColor,
       accountIcon, 
-      accountNumber,
     );
 
     Navigator.pop(context, true);
@@ -141,9 +138,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
               const SizedBox(height: 20),
 
               inputTextField('Balance', false, _balanceController),
-              const SizedBox(height: 20),
-
-              inputTextField('Account Number', false, _accountNumberController),
               const SizedBox(height: 20),
 
               const Text(

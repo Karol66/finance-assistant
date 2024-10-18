@@ -59,7 +59,7 @@ class CategoriesService {
 
   // Tworzenie nowej kategorii
   Future<void> createCategory(String categoryName, String categoryType,
-      String plannedExpenses, String categoryColor, String categoryIcon) async {
+      String categoryColor, String categoryIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -77,7 +77,6 @@ class CategoriesService {
       body: jsonEncode({
         'category_name': categoryName,
         'category_type': categoryType,
-        'planned_expenses': plannedExpenses,
         'category_color': categoryColor,
         'category_icon': categoryIcon,
       }),
@@ -91,13 +90,8 @@ class CategoriesService {
   }
 
   // Aktualizacja kategorii
-  Future<void> updateCategory(
-      int categoryId,
-      String categoryName,
-      String categoryType,
-      String plannedExpenses,
-      String categoryColor,
-      String categoryIcon) async {
+  Future<void> updateCategory(int categoryId, String categoryName,
+      String categoryType, String categoryColor, String categoryIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -115,7 +109,6 @@ class CategoriesService {
       body: jsonEncode({
         'category_name': categoryName,
         'category_type': categoryType,
-        'planned_expenses': plannedExpenses,
         'category_color': categoryColor,
         'category_icon': categoryIcon,
       }),

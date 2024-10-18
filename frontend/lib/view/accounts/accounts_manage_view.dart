@@ -13,11 +13,9 @@ class AccountsManageView extends StatefulWidget {
 class _AccountsManageViewState extends State<AccountsManageView> {
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
-  final TextEditingController _accountNumberController =
-      TextEditingController();
   final AccountsService _accountsService = AccountsService();
 
-  String _accountType = 'Savings'; // Domyślna wartość
+  String _accountType = 'Savings'; 
   Color? _selectedColor;
   IconData? _selectedIcon;
 
@@ -72,7 +70,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
         _accountNameController.text = fetchedAccount['account_name'];
         _balanceController.text = fetchedAccount['balance'].toString();
         _accountType = fetchedAccount['account_type'];
-        _accountNumberController.text = fetchedAccount['account_number'];
         _selectedColor = _parseColor(fetchedAccount['account_color']);
         _selectedIcon = _getIconFromString(fetchedAccount['account_icon']);
       });
@@ -81,7 +78,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
 
   Future<void> _updateAccount() async {
     String accountName = _accountNameController.text;
-    String accountNumber = _accountNumberController.text;
     String balance = double.parse(_balanceController.text).toStringAsFixed(2);
     String accountColor =
         '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
@@ -96,25 +92,21 @@ class _AccountsManageViewState extends State<AccountsManageView> {
       balance,
       accountColor,
       accountIcon,
-      accountNumber,
     );
 
-    Navigator.pop(context, true); // Powrót po aktualizacji
+    Navigator.pop(context, true); 
   }
 
-  // Usunięcie konta
   Future<void> _deleteAccount() async {
     await _accountsService.deleteAccount(widget.accountId);
-    Navigator.pop(context, true); // Powrót po usunięciu
+    Navigator.pop(context, true); 
   }
 
-  // Konwersja stringa na IconData
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
     return IconData(codePoint, fontFamily: 'MaterialIcons');
   }
 
-  // Parsowanie koloru z formatu hex
   Color _parseColor(String colorString) {
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
@@ -171,9 +163,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
               inputTextField('Balance', false, _balanceController),
               const SizedBox(height: 20),
 
-              inputTextField('Account Number', false, _accountNumberController),
-              const SizedBox(height: 20),
-
               const Text(
                 'Select Account Color:',
                 style: TextStyle(
@@ -223,7 +212,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
               ),
               const SizedBox(height: 20),
 
-              // Przycisk aktualizacji konta
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -231,7 +219,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor:
-                        const Color(0xFF4CAF50), // Kolor przycisku aktualizacji
+                        const Color(0xFF4CAF50), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -247,7 +235,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
               ),
               const SizedBox(height: 20),
 
-              // Przycisk usunięcia konta
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -255,7 +242,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor:
-                        const Color(0xFFF44336), // Kolor przycisku usunięcia
+                        const Color(0xFFF44336), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -306,13 +293,13 @@ class _AccountsManageViewState extends State<AccountsManageView> {
               margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: color,
-                shape: BoxShape.circle, // Okrągły kształt
+                shape: BoxShape.circle, 
                 border: Border.all(
                   color: (_selectedColor?.value == color.value)
                       ? Colors.white
                       : Colors
-                          .transparent, // Biały border, jeśli wybrany kolor ma taką samą wartość
-                  width: 3, // Szerokość borderu
+                          .transparent,
+                  width: 3,
                 ),
               ),
             ),

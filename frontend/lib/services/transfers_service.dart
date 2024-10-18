@@ -69,6 +69,7 @@ class TransfersService {
   }
 
   Future<void> createTransfer(
+      String transferName,
       String amount,
       String description,
       String date,
@@ -89,11 +90,12 @@ class TransfersService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
+          'transfer_name': transferName, 
           'amount': amount,
           'description': description,
           'date': date,
-          'account_id': accountId,
-          'category_id': categoryId,
+          'account': accountId,
+          'category': categoryId,
         }),
       );
 
@@ -109,6 +111,7 @@ class TransfersService {
 
   Future<void> updateTransfer(
       int transferId,
+      String transferName,
       String amount,
       String description,
       String date,
@@ -129,11 +132,12 @@ class TransfersService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
+          'transfer_name': transferName, 
           'amount': amount,
           'description': description,
           'date': date,
-          'account_id': accountId,
-          'category_id': categoryId,
+          'account': accountId,
+          'category': categoryId,
         }),
       );
 
