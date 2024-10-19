@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
+import 'package:frontend/view/transfers/transfers_manage_view.dart';
 
 class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
@@ -10,6 +11,7 @@ class TransfersView extends StatefulWidget {
 }
 
 class _TransfersViewState extends State<TransfersView> {
+  bool isGeneral = true;
   bool isExpenses = true;
   List<Map<String, dynamic>> transfers = [];
   final TransfersService _transfersService = TransfersService();
@@ -20,30 +22,38 @@ class _TransfersViewState extends State<TransfersView> {
     loadTransfers(); // Pobieranie transferów z serwisu
   }
 
-Future<void> loadTransfers() async {
-  final fetchedTransfers = await _transfersService.fetchTransfers();
+  Future<void> loadTransfers() async {
+    final fetchedTransfers = await _transfersService.fetchTransfers();
 
-  if (fetchedTransfers != null) {
-    print('Fetched transfers: $fetchedTransfers'); // Dodaj logowanie
-
-    setState(() {
-      transfers = fetchedTransfers.map((transfer) {
-        return {
-          "id": transfer['id'],
-          "transfer_name": transfer['transfer_name'], // Zmiana, aby dopasować do nazwy w modelu
-          "amount": transfer['amount'],
-          "transfer_date": transfer['date'],
-          "description": transfer['description'],
-          "account_id": transfer['account'],
-          "category_id": transfer['category'],
-          "type": transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
-        };
-      }).toList();
-    });
-  } else {
-    print("Failed to load transfers.");
+    if (fetchedTransfers != null) {
+      setState(() {
+        transfers = fetchedTransfers.map((transfer) {
+          return {
+            "id": transfer['id'],
+            "transfer_name": transfer['transfer_name'],
+            "amount": transfer['amount'],
+            "transfer_date": transfer['date'],
+            "description": transfer['description'],
+            "account_name": transfer['account_name'],
+            "account_type": transfer['account_type'],
+            "category_name": transfer['category_name'],
+            "category_icon": transfer['category_icon'],
+            "category_color": _parseColor(transfer['category_color']),
+            "type":
+                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+          };
+        }).toList();
+      });
+    } else {
+      print("Failed to load transfers.");
+    }
   }
-}
+
+  // Funkcja konwertująca kolor HEX na obiekt Color
+  Color _parseColor(String colorString) {
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
 
   void createTransferClick() {
     Navigator.push(
@@ -52,11 +62,6 @@ Future<void> loadTransfers() async {
         builder: (context) => const TransfersCreateView(),
       ),
     );
-  }
-
-  // Funkcja wyszukująca szczegóły kategorii na podstawie category_id (możesz dostosować w zależności od struktury kategorii)
-  Map<String, dynamic>? _getCategoryById(int categoryId) {
-    return null; // Dodaj tutaj odpowiednią logikę, jeśli kategorie są dostępne
   }
 
   @override
@@ -75,6 +80,7 @@ Future<void> loadTransfers() async {
       ),
       body: Column(
         children: [
+          // Dodany wybór trybu General/Expenses/Income
           Row(
             children: [
               const SizedBox(height: 60),
@@ -82,7 +88,8 @@ Future<void> loadTransfers() async {
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      isExpenses = true;
+                      isGeneral = true;
+                      isExpenses = false;
                     });
                   },
                   child: Container(
@@ -90,16 +97,16 @@ Future<void> loadTransfers() async {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: isExpenses ? Colors.white : Colors.transparent,
+                          color: isGeneral ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      "Expenses",
+                      "General",
                       style: TextStyle(
-                        color: isExpenses ? Colors.white : Colors.grey[600],
+                        color: isGeneral ? Colors.white : Colors.grey[600],
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -111,6 +118,41 @@ Future<void> loadTransfers() async {
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
+                      isGeneral = false;
+                      isExpenses = true;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: !isGeneral && isExpenses
+                              ? Colors.white
+                              : Colors.transparent,
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Expenses",
+                      style: TextStyle(
+                        color: !isGeneral && isExpenses
+                            ? Colors.white
+                            : Colors.grey[600],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isGeneral = false;
                       isExpenses = false;
                     });
                   },
@@ -119,7 +161,9 @@ Future<void> loadTransfers() async {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: !isExpenses ? Colors.white : Colors.transparent,
+                          color: !isGeneral && !isExpenses
+                              ? Colors.white
+                              : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -128,7 +172,9 @@ Future<void> loadTransfers() async {
                     child: Text(
                       "Income",
                       style: TextStyle(
-                        color: !isExpenses ? Colors.white : Colors.grey[600],
+                        color: !isGeneral && !isExpenses
+                            ? Colors.white
+                            : Colors.grey[600],
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -141,22 +187,14 @@ Future<void> loadTransfers() async {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(10),
-              itemCount: transfers
-                      .where((transfer) =>
-                          transfer['type'] ==
-                          (isExpenses ? 'Expenses' : 'Income'))
-                      .length + 1,
+              itemCount: _filteredTransfers().length + 1,
               itemBuilder: (context, index) {
-                final filteredTransfers = transfers
-                    .where((transfer) =>
-                        transfer['type'] ==
-                        (isExpenses ? 'Expenses' : 'Income'))
-                    .toList();
+                final filteredTransfers = _filteredTransfers();
                 if (index == filteredTransfers.length) {
-                  return _buildCreateNewTransferButton();
+                  return createAddButton();
                 }
                 final transfer = filteredTransfers[index];
-                return _buildTransferItem(transfer);
+                return transferItem(transfer);
               },
             ),
           ),
@@ -165,7 +203,147 @@ Future<void> loadTransfers() async {
     );
   }
 
-  Widget _buildCreateNewTransferButton() {
+  // Filtrowanie danych w zależności od wybranego trybu (General, Expenses, Income)
+  List<Map<String, dynamic>> _filteredTransfers() {
+    if (isGeneral) {
+      return transfers; // Wyświetlamy wszystkie transakcje
+    } else if (isExpenses) {
+      return transfers
+          .where((transfer) => transfer['type'] == 'Expenses')
+          .toList(); // Tylko wydatki
+    } else {
+      return transfers
+          .where((transfer) => transfer['type'] == 'Income')
+          .toList(); // Tylko dochody
+    }
+  }
+
+  // Funkcja do formatowania daty, która usuwa godzinę
+  String _formatDate(String dateTimeString) {
+    DateTime parsedDate = DateTime.parse(dateTimeString);
+    return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+  }
+
+  Widget transferItem(Map<String, dynamic> transfer) {
+    // Konwersja amount na double, aby umożliwić zaokrąglenie
+    double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
+    final isExpense = transfer['type'] == 'Expenses';
+
+    // Użycie tej samej logiki zaokrąglenia co w accountItem
+    final amountText = isExpense
+        ? '-\$${amount.abs().toStringAsFixed(2)}'
+        : '+\$${amount.toStringAsFixed(2)}';
+
+    // Formatujemy datę, aby usunąć czas i zostawić tylko dzień
+    String formattedDate = _formatDate(transfer['transfer_date']);
+
+    return GestureDetector(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TransfersManageView(
+                transferId:
+                    transfer["id"], // Przejście do zarządzania transferem
+              ),
+            ),
+          );
+          if (result == true) {
+            loadTransfers(); // Odświeżenie transferów po powrocie
+          }
+        },
+        child: Card(
+          color: const Color(0xFF191E29),
+          margin: const EdgeInsets.symmetric(vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Wyśrodkowana ikona kategorii
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: transfer['category_color'], // Już przetworzony kolor
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      IconData(int.parse(transfer['category_icon']),
+                          fontFamily: 'MaterialIcons'),
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 15), // Odstęp między ikoną a tekstem
+
+                // Data, Opis, Konto i Kategoria
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Date: $formattedDate", // Wyświetlamy tylko dzienną część daty
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        transfer['description'],
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Account: ${transfer['account_name']} (${transfer['account_type']})", // Wyświetlanie danych konta
+                            style: const TextStyle(
+                              color: Colors.white38,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            "Category: ${transfer['category_name']}", // Wyświetlanie danych kategorii
+                            style: const TextStyle(
+                              color: Colors.white38,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Wyśrodkowana kwota
+                Center(
+                  child: Text(
+                    amountText,
+                    style: TextStyle(
+                      color: isExpense ? Colors.red : Colors.green,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  Widget createAddButton() {
     return GestureDetector(
       onTap: createTransferClick,
       child: Container(
@@ -186,106 +364,6 @@ Future<void> loadTransfers() async {
                 fontSize: 18,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTransferItem(Map<String, dynamic> transfer) {
-    final isExpense = transfer['type'] == 'Expenses';
-    final amountText = isExpense
-        ? '-\$${transfer['amount'].toStringAsFixed(2)}'
-        : '+\$${transfer['amount'].toStringAsFixed(2)}';
-
-    // Pobieramy dane kategorii dla danego transferu
-    final category = _getCategoryById(transfer['category_id']);
-
-    return Card(
-      color: const Color(0xFF191E29),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Wyśrodkowana ikona kategorii
-            if (category != null)
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: category['category_color'],
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    category['category_icon'],
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ),
-            const SizedBox(width: 15), // Odstęp między ikoną a tekstem
-
-            // Data, Opis, Konto i Kategoria
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Date: ${transfer['transfer_date']}",
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    transfer['description'],
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Account: ${transfer['account_id'] == 1 ? 'Main Account' : 'Secondary Account'}",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        "Category: ${category != null ? category['category_name'] : 'Unknown'}",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Wyśrodkowana kwota
-            Center(
-              child: Text(
-                amountText,
-                style: TextStyle(
-                  color: isExpense ? Colors.red : Colors.green,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
             ),
           ],

@@ -15,7 +15,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
   final TextEditingController _balanceController = TextEditingController();
   final AccountsService _accountsService = AccountsService();
 
-  String _accountType = 'Savings'; 
+  String _accountType = 'Savings';
   Color? _selectedColor;
   IconData? _selectedIcon;
 
@@ -59,10 +59,10 @@ class _AccountsManageViewState extends State<AccountsManageView> {
   @override
   void initState() {
     super.initState();
-    _loadAccoun();
+    _loadAccount();
   }
 
-  Future<void> _loadAccoun() async {
+  Future<void> _loadAccount() async {
     final fetchedAccount =
         await _accountsService.fetchAccountById(widget.accountId);
     if (fetchedAccount != null) {
@@ -94,12 +94,12 @@ class _AccountsManageViewState extends State<AccountsManageView> {
       accountIcon,
     );
 
-    Navigator.pop(context, true); 
+    Navigator.pop(context, true);
   }
 
   Future<void> _deleteAccount() async {
     await _accountsService.deleteAccount(widget.accountId);
-    Navigator.pop(context, true); 
+    Navigator.pop(context, true);
   }
 
   IconData _getIconFromString(String iconString) {
@@ -134,7 +134,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
             children: [
               inputTextField('Account Name', false, _accountNameController),
               const SizedBox(height: 20),
-
               DropdownButtonFormField<String>(
                 value: _accountType,
                 items: _accountTypes.map((type) {
@@ -159,10 +158,8 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                 ),
               ),
               const SizedBox(height: 20),
-
               inputTextField('Balance', false, _balanceController),
               const SizedBox(height: 20),
-
               const Text(
                 'Select Account Color:',
                 style: TextStyle(
@@ -172,10 +169,8 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-
               colorPicker(),
               const SizedBox(height: 20),
-
               const Text(
                 'Select Account Icon:',
                 style: TextStyle(
@@ -185,7 +180,6 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                 ),
               ),
               const SizedBox(height: 20),
-
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -211,15 +205,13 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                 }).toList(),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _updateAccount,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
-                    backgroundColor:
-                        const Color(0xFF4CAF50), 
+                    backgroundColor: const Color(0xFF4CAF50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -234,15 +226,13 @@ class _AccountsManageViewState extends State<AccountsManageView> {
                 ),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _deleteAccount,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
-                    backgroundColor:
-                        const Color(0xFFF44336), 
+                    backgroundColor: const Color(0xFFF44336),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -293,12 +283,11 @@ class _AccountsManageViewState extends State<AccountsManageView> {
               margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: color,
-                shape: BoxShape.circle, 
+                shape: BoxShape.circle,
                 border: Border.all(
                   color: (_selectedColor?.value == color.value)
                       ? Colors.white
-                      : Colors
-                          .transparent,
+                      : Colors.transparent,
                   width: 3,
                 ),
               ),

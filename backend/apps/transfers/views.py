@@ -21,7 +21,7 @@ def transfer_list(request):
 @permission_classes([IsAuthenticated])
 def transfer_detail(request, pk):
     print(f"Użytkownik: {request.user}, Transfer ID: {pk}")
-    transfer = get_object_or_404(Transfer, pk=pk, user=request.user, is_deleted=False)
+    transfer = get_object_or_404(Transfer, pk=pk, account__user=request.user, is_deleted=False)
     serializer = TransferSerializer(transfer)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -46,7 +46,7 @@ def transfer_create(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def transfer_update(request, pk):
-    transfer = get_object_or_404(Transfer, pk=pk, user=request.user)
+    transfer = get_object_or_404(Transfer, pk=pk, account__user=request.user)
     serializer = TransferSerializer(transfer, data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -57,7 +57,7 @@ def transfer_update(request, pk):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def transfer_delete(request, pk):
-    transfer = get_object_or_404(Transfer, pk=pk, user=request.user)
+    transfer = get_object_or_404(Transfer, pk=pk, account__user=request.user)
     transfer.is_deleted = True
     transfer.save()
     return Response({'message': 'Transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
