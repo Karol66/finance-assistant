@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -12,6 +13,7 @@ class _DashboardViewState extends State<DashboardView> {
   bool isGeneral = true;
   bool isExpanses = false;
   String selectedPeriod = 'Year';
+  DateTime selectedDate = DateTime.now();  // Stores the selected date/time
 
   // Przykładowe dane dla transakcji
   List<Map<String, dynamic>> expensesList = [
@@ -105,6 +107,36 @@ class _DashboardViewState extends State<DashboardView> {
     }).toList();
   }
 
+  // Helper function to format the period display based on the selected period
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  // Format for a day
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format for a week
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);  // Format for a month
+    } else {
+      return DateFormat('yyyy').format(selectedDate);  // Format for a year
+    }
+  }
+
+  // Move to the previous period
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -117,7 +149,7 @@ class _DashboardViewState extends State<DashboardView> {
             // Szary element na górze z wykresem kołowym
             Container(
               width: media.width,
-              height: 400,
+              height: 415,
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -128,7 +160,7 @@ class _DashboardViewState extends State<DashboardView> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start, // Ustawienie elementów do lewej
                   children: [
                     Row(
                       children: [
@@ -266,7 +298,26 @@ class _DashboardViewState extends State<DashboardView> {
                         ),
                       ],
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start, // Ustawienie do lewej
+                      children: [
+                        // Strzałka do cofania wstecz
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          onPressed: goToPreviousPeriod,
+                        ),
+                        // Wyświetlanie aktualnie wybranego okresu
+                        Text(
+                          getFormattedPeriod(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 10), // Odstęp przed wykresem
+                    const SizedBox(height: 10), // Identyczny odstęp między datą a wykresem
                     Expanded(
                       child: Stack(
                         alignment: Alignment.center,
