@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class StatisticView extends StatefulWidget {
   const StatisticView({super.key});
@@ -8,11 +9,14 @@ class StatisticView extends StatefulWidget {
   _StatisticViewState createState() => _StatisticViewState();
 }
 
+
 class _StatisticViewState extends State<StatisticView> {
   bool isGeneral = true;
   bool isExpanses = false;
   String selectedPeriod = 'Year';
+  DateTime selectedDate = DateTime.now();  // Przechowuje wybraną datę
 
+  // Przykładowe dane dla transakcji
   List<Map<String, dynamic>> expensesList = [
     {
       "name": "Spotify",
@@ -73,6 +77,36 @@ class _StatisticViewState extends State<StatisticView> {
     return expensesList.contains(transaction);
   }
 
+  // Funkcja formatująca datę w zależności od wybranego okresu
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  // Format dla dnia
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format dla tygodnia
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);  // Format dla miesiąca
+    } else {
+      return DateFormat('yyyy').format(selectedDate);  // Format dla roku
+    }
+  }
+
+  // Funkcja do cofania okresu
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -85,7 +119,7 @@ class _StatisticViewState extends State<StatisticView> {
             // Szary element na górze, z wykresem
             Container(
               width: media.width,
-              height: 400, // zwiększenie wysokości, aby zmieścić tekst i wykres
+              height: 415, // zwiększenie wysokości, aby zmieścić tekst i wykres
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -234,21 +268,37 @@ class _StatisticViewState extends State<StatisticView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 10), // Odstęp między wyborem okresu a datą
+                    // Dodanie strzałki i pola do zmiany daty
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          onPressed: goToPreviousPeriod,
+                        ),
+                        Text(
+                          getFormattedPeriod(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10), // Odstęp między datą a wykresem
                     Expanded(
                       child: BarChart(
                         BarChartData(
                           alignment: BarChartAlignment.spaceAround,
-                          maxY:
-                              calculateMaxY(), // dynamiczne ustawienie maksymalnej wartości Y
+                          maxY: calculateMaxY(), // dynamiczne ustawienie maksymalnej wartości Y
                           barTouchData: BarTouchData(enabled: true),
                           titlesData: FlTitlesData(
                             show: true,
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                getTitlesWidget:
-                                    (double value, TitleMeta meta) {
+                                getTitlesWidget: (double value, TitleMeta meta) {
                                   const style = TextStyle(
                                     color: Colors.white54,
                                     fontSize: 12,
@@ -556,23 +606,22 @@ class _StatisticViewState extends State<StatisticView> {
     return DateTime.now().weekday % 5;
   }
 
-double calculateMaxY() {
-  if (isGeneral) {
-    List<double> incomes = [8.0, 18.0, 5.0, 13.0, 6.0];
-    List<double> expenses = [6.0, 14.0, 8.0, 11.0, 10.0];
-    
-    // Find the maximum value in both incomes and expenses
-    double maxIncome = incomes.reduce((a, b) => a > b ? a : b);
-    double maxExpense = expenses.reduce((a, b) => a > b ? a : b);
-    
-    // Return the highest of the two, with a margin for better visualization
-    return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
-  } else {
-    // For other modes (Expenses, Income), use the current logic
-    List<double> transactionSums = calculateTransactionSums();
-    double maxTransactionValue = transactionSums.reduce((a, b) => a > b ? a : b).abs();
-    return maxTransactionValue + 10;
+  double calculateMaxY() {
+    if (isGeneral) {
+      List<double> incomes = [8.0, 18.0, 5.0, 13.0, 6.0];
+      List<double> expenses = [6.0, 14.0, 8.0, 11.0, 10.0];
+      
+      // Find the maximum value in both incomes and expenses
+      double maxIncome = incomes.reduce((a, b) => a > b ? a : b);
+      double maxExpense = expenses.reduce((a, b) => a > b ? a : b);
+      
+      // Return the highest of the two, with a margin for better visualization
+      return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
+    } else {
+      // For other modes (Expenses, Income), use the current logic
+      List<double> transactionSums = calculateTransactionSums();
+      double maxTransactionValue = transactionSums.reduce((a, b) => a > b ? a : b).abs();
+      return maxTransactionValue + 10;
+    }
   }
-}
-
 }
