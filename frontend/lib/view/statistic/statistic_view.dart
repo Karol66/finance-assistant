@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:frontend/services/transfers_service.dart'; // Import serwisu do zaczytywania transferów
 import 'package:intl/intl.dart';
 
 class StatisticView extends StatefulWidget {
@@ -9,72 +10,84 @@ class StatisticView extends StatefulWidget {
   _StatisticViewState createState() => _StatisticViewState();
 }
 
-
 class _StatisticViewState extends State<StatisticView> {
   bool isGeneral = true;
   bool isExpanses = false;
   String selectedPeriod = 'Year';
-  DateTime selectedDate = DateTime.now();  // Przechowuje wybraną datę
+  DateTime selectedDate = DateTime.now();
 
-  // Przykładowe dane dla transakcji
-  List<Map<String, dynamic>> expensesList = [
-    {
-      "name": "Spotify",
-      "category_color": Colors.green,
-      "icon": Icons.music_note,
-      "price": "5.99",
-    },
-    {
-      "name": "Youtube",
-      "category_color": Colors.red,
-      "icon": Icons.video_collection,
-      "price": "18.99",
-    },
-    {
-      "name": "Microsoft",
-      "category_color": Colors.blue,
-      "icon": Icons.computer,
-      "price": "29.99",
-    },
-    {
-      "name": "Netflix",
-      "category_color": Colors.orange,
-      "icon": Icons.movie,
-      "price": "15.00",
-    },
-  ];
+  List<Map<String, dynamic>> transfers = [];
+  final TransfersService _transfersService = TransfersService();
 
-  List<Map<String, dynamic>> incomeList = [
-    {
-      "name": "Salary",
-      "category_color": Colors.purple,
-      "icon": Icons.attach_money,
-      "price": "50.00",
-    },
-    {
-      "name": "Freelance",
-      "category_color": Colors.blue,
-      "icon": Icons.work,
-      "price": "5.00",
-    },
-  ];
-
-  List<Map<String, dynamic>> getAllTransactions() {
-    return [...expensesList, ...incomeList];
+  @override
+  void initState() {
+    super.initState();
+    loadTransfers(); // Pobieranie transferów z serwisu
   }
 
-  List<Map<String, dynamic>> getCurrentList() {
-    if (isGeneral) {
-      return getAllTransactions();
-    } else if (isExpanses) {
-      return expensesList;
+  Future<void> loadTransfers() async {
+    final fetchedTransfers = await _transfersService.fetchTransfers();
+
+    if (fetchedTransfers != null) {
+      setState(() {
+        transfers = fetchedTransfers.map((transfer) {
+          return {
+            "id": transfer['id'],
+            "transfer_name": transfer['transfer_name'],
+            "amount": transfer['amount'],
+            "transfer_date": transfer['date'],
+            "description": transfer['description'],
+            "account_name": transfer['account_name'],
+            "account_type": transfer['account_type'],
+            "category_name": transfer['category_name'],
+            "category_icon": transfer['category_icon'],
+            "category_color": _parseColor(transfer['category_color']),
+            "type": transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+          };
+        }).toList();
+      });
     } else {
-      return incomeList;
+      print("Failed to load transfers.");
     }
   }
 
-  bool isExpenseTransaction(Map<String, dynamic> transaction) {
-    return expensesList.contains(transaction);
+  // Funkcja konwertująca kolor HEX na obiekt Color
+  Color _parseColor(String colorString) {
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  // Filtrowanie transferów w zależności od wybranego okresu (Year, Month, Week, Day)
+  List<Map<String, dynamic>> _filteredTransfers() {
+    DateTime now = DateTime.now();
+    List<Map<String, dynamic>> filteredTransfers = transfers.where((transfer) {
+      DateTime transferDate = DateTime.parse(transfer['transfer_date']);
+      if (selectedPeriod == 'Year') {
+        return transferDate.year == now.year;
+      } else if (selectedPeriod == 'Month') {
+        return transferDate.year == now.year && transferDate.month == now.month;
+      } else if (selectedPeriod == 'Week') {
+        DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        return transferDate.isAfter(startOfWeek) && transferDate.isBefore(now.add(Duration(days: 1)));
+      } else if (selectedPeriod == 'Day') {
+        return transferDate.year == now.year &&
+            transferDate.month == now.month &&
+            transferDate.day == now.day;
+      }
+      return true;
+    }).toList();
+
+    if (isGeneral) {
+      return filteredTransfers; // Wyświetlamy wszystkie transakcje
+    } else if (isExpanses) {
+      return filteredTransfers
+          .where((transfer) => transfer['type'] == 'Expenses')
+          .toList(); // Tylko wydatki
+    } else {
+      return filteredTransfers
+          .where((transfer) => transfer['type'] == 'Income')
+          .toList(); // Tylko dochody
+    }
   }
 
   // Funkcja formatująca datę w zależności od wybranego okresu
@@ -107,6 +120,206 @@ class _StatisticViewState extends State<StatisticView> {
     });
   }
 
+  // Obliczanie sumy transferów
+  double getTotalAmount() {
+    double totalIncome = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Income')
+        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
+    double totalExpenses = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Expenses')
+        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
+
+    if (isGeneral) {
+      return totalIncome - totalExpenses;
+    } else if (isExpanses) {
+      return totalExpenses;
+    } else {
+      return totalIncome;
+    }
+  }
+
+  // Wyświetlanie pojedynczego elementu transferu
+  Widget transferItem(Map<String, dynamic> transfer) {
+    double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
+    final isExpense = transfer['type'] == 'Expenses';
+    final amountText = isExpense
+        ? '-\$${amount.abs().toStringAsFixed(2)}'
+        : '+\$${amount.toStringAsFixed(2)}';
+
+    String formattedDate = _formatDate(transfer['transfer_date']);
+
+    return Card(
+      color: const Color(0xFF191E29),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Ikona kategorii
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: transfer['category_color'], // Kolor kategorii
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  IconData(int.parse(transfer['category_icon']),
+                      fontFamily: 'MaterialIcons'),
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+            const SizedBox(width: 15),
+            // Dane transferu
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Date: $formattedDate",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    transfer['description'],
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Account: ${transfer['account_name']} (${transfer['account_type']})",
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        "Category: ${transfer['category_name']}",
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Kwota transferu
+            Center(
+              child: Text(
+                amountText,
+                style: TextStyle(
+                  color: isExpense ? Colors.red : Colors.green,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Formatowanie daty, aby wyświetlać tylko dzień
+  String _formatDate(String dateTimeString) {
+    DateTime parsedDate = DateTime.parse(dateTimeString);
+    return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+  }
+
+  // Dane dla wykresu słupkowego na podstawie transferów
+  List<BarChartGroupData> createBarGroups() {
+    List<double> incomes = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Income')
+        .map((transfer) => double.parse(transfer['amount']))
+        .toList();
+
+    List<double> expenses = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Expenses')
+        .map((transfer) => double.parse(transfer['amount']))
+        .toList();
+
+    // Obliczamy maksymalną liczbę grup (zakładamy maksymalnie 5 grup na wykresie)
+    int maxGroups = 5;
+    return List.generate(maxGroups, (index) {
+      double incomeValue = index < incomes.length ? incomes[index] : 0;
+      double expenseValue = index < expenses.length ? expenses[index] : 0;
+
+      // Jeśli tryb to "General", wyświetl dodatkowy słupek różnicy
+      if (isGeneral) {
+        double difference = incomeValue - expenseValue;
+        return BarChartGroupData(
+          x: index,
+          barRods: [
+            BarChartRodData(
+              toY: incomeValue,
+              color: Colors.green,
+              width: 11,
+            ),
+            BarChartRodData(
+              toY: expenseValue,
+              color: Colors.red,
+              width: 11,
+            ),
+            BarChartRodData(
+              toY: difference,
+              color: difference >= 0 ? Colors.blue : Colors.orange,
+              width: 11,
+            ),
+          ],
+          barsSpace: 6,
+        );
+      } else {
+        // W trybie "Expenses" lub "Income" wyświetl tylko odpowiedni słupek
+        return BarChartGroupData(
+          x: index,
+          barRods: [
+            BarChartRodData(
+              toY: isExpanses ? expenseValue : incomeValue,
+              color: isExpanses ? Colors.red : Colors.green,
+              width: 11,
+            ),
+          ],
+          barsSpace: 6,
+        );
+      }
+    });
+  }
+
+  double calculateMaxY() {
+    List<double> incomes = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Income')
+        .map((transfer) => double.parse(transfer['amount']))
+        .toList();
+
+    List<double> expenses = _filteredTransfers()
+        .where((transfer) => transfer['type'] == 'Expenses')
+        .map((transfer) => double.parse(transfer['amount']))
+        .toList();
+
+    double maxIncome = incomes.isNotEmpty ? incomes.reduce((a, b) => a > b ? a : b) : 0;
+    double maxExpense = expenses.isNotEmpty ? expenses.reduce((a, b) => a > b ? a : b) : 0;
+
+    // Zwracamy maksymalną wartość na wykresie, z lekką nadwyżką
+    return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -119,7 +332,7 @@ class _StatisticViewState extends State<StatisticView> {
             // Szary element na górze, z wykresem
             Container(
               width: media.width,
-              height: 415, // zwiększenie wysokości, aby zmieścić tekst i wykres
+              height: 400, // zwiększenie wysokości, aby zmieścić tekst i wykres
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -132,140 +345,13 @@ class _StatisticViewState extends State<StatisticView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Wybór okresu: Year, Month, Week, Day
                     Row(
                       children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedPeriod = 'Year';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: selectedPeriod == 'Year'
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Year",
-                                style: TextStyle(
-                                  color: selectedPeriod == 'Year'
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedPeriod = 'Month';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: selectedPeriod == 'Month'
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Month",
-                                style: TextStyle(
-                                  color: selectedPeriod == 'Month'
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedPeriod = 'Week';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: selectedPeriod == 'Week'
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Week",
-                                style: TextStyle(
-                                  color: selectedPeriod == 'Week'
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedPeriod = 'Day';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: selectedPeriod == 'Day'
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Day",
-                                style: TextStyle(
-                                  color: selectedPeriod == 'Day'
-                                      ? Colors.white
-                                      : Colors.grey,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        _buildPeriodSelector("Year"),
+                        _buildPeriodSelector("Month"),
+                        _buildPeriodSelector("Week"),
+                        _buildPeriodSelector("Day"),
                       ],
                     ),
                     const SizedBox(height: 10), // Odstęp między wyborem okresu a datą
@@ -286,7 +372,8 @@ class _StatisticViewState extends State<StatisticView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10), // Odstęp między datą a wykresem
+                    const SizedBox(height: 10),
+                    // Wykres słupkowy
                     Expanded(
                       child: BarChart(
                         BarChartData(
@@ -303,20 +390,10 @@ class _StatisticViewState extends State<StatisticView> {
                                     color: Colors.white54,
                                     fontSize: 12,
                                   );
-                                  switch (value.toInt()) {
-                                    case 0:
-                                      return Text('mon', style: style);
-                                    case 1:
-                                      return Text('tue', style: style);
-                                    case 2:
-                                      return Text('wen', style: style);
-                                    case 3:
-                                      return Text('thu', style: style);
-                                    case 4:
-                                      return Text('fri', style: style);
-                                    default:
-                                      return Text('', style: style);
-                                  }
+                                  return Text(
+                                    'Day ${value.toInt() + 1}',
+                                    style: style,
+                                  );
                                 },
                               ),
                             ),
@@ -331,9 +408,7 @@ class _StatisticViewState extends State<StatisticView> {
                             ),
                           ),
                           borderData: FlBorderData(show: false),
-                          barGroups: isGeneral
-                              ? createGeneralBarGroups() // Generuj słupki dla trybu "General"
-                              : createBarGroups(), // Dla trybów "Expenses" i "Income"
+                          barGroups: createBarGroups(),
                         ),
                       ),
                     ),
@@ -344,176 +419,21 @@ class _StatisticViewState extends State<StatisticView> {
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isGeneral = true;
-                        isExpanses = false;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isGeneral && !isExpanses
-                                ? Colors.white
-                                : Colors.transparent,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "General",
-                        style: TextStyle(
-                          color: isGeneral && !isExpanses
-                              ? Colors.white
-                              : Colors.grey,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isGeneral = false;
-                        isExpanses = true;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: !isGeneral && isExpanses
-                                ? Colors.white
-                                : Colors.transparent,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Expenses",
-                        style: TextStyle(
-                          color: !isGeneral && isExpanses
-                              ? Colors.white
-                              : Colors.grey,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isGeneral = false;
-                        isExpanses = false;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: !isGeneral && !isExpanses
-                                ? Colors.white
-                                : Colors.transparent,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Income",
-                        style: TextStyle(
-                          color: !isGeneral && !isExpanses
-                              ? Colors.white
-                              : Colors.grey,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                _buildTypeSelector("General", isGeneral),
+                _buildTypeSelector("Expenses", isExpanses),
+                _buildTypeSelector("Income", !isGeneral && !isExpanses),
               ],
             ),
             const SizedBox(height: 20),
-
+            // Lista transferów
             ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: getCurrentList().length,
+              itemCount: _filteredTransfers().length,
               itemBuilder: (context, index) {
-                var transaction = getCurrentList()[index];
-                bool isExpense = isExpenseTransaction(transaction);
-
-                return GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${transaction["name"]} tapped!')),
-                    );
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF191E29),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: transaction['category_color'],
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  transaction['icon'],
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            Text(
-                              transaction["name"],
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          "${isExpense ? '-' : '+'} \$${transaction["price"]}",
-                          style: TextStyle(
-                            color: isExpense ? Colors.red : Colors.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                var transfer = _filteredTransfers()[index];
+                return transferItem(transfer);
               },
             ),
             const SizedBox(height: 100),
@@ -523,105 +443,80 @@ class _StatisticViewState extends State<StatisticView> {
     );
   }
 
-  // Generowanie słupków dla trybu "General" (przychody, wydatki, różnica na każdy dzień)
-  List<BarChartGroupData> createGeneralBarGroups() {
-    List<double> incomes = [
-      8.0,
-      18.0,
-      5.0,
-      13.0,
-      6.0
-    ]; // przykładowe dane przychodów
-    List<double> expenses = [
-      6.0,
-      14.0,
-      8.0,
-      11.0,
-      10.0
-    ]; // przykładowe dane wydatków
-
-    return List.generate(5, (index) {
-      double difference = incomes[index] - expenses[index];
-      return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY: incomes[index],
-            color: Colors.green,
-            width: 11,
+  // Funkcja tworząca widget do wyboru okresu
+  Widget _buildPeriodSelector(String period) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedPeriod = period;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selectedPeriod == period
+                    ? Colors.white
+                    : Colors.transparent,
+                width: 2.0,
+              ),
+            ),
           ),
-          BarChartRodData(
-            toY: expenses[index],
-            color: Colors.red,
-            width: 11,
+          alignment: Alignment.center,
+          child: Text(
+            period,
+            style: TextStyle(
+              color: selectedPeriod == period ? Colors.white : Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          BarChartRodData(
-            toY: difference,
-            color: difference >= 0 ? Colors.blue : Colors.orange,
-            width: 11,
-          ),
-        ],
-        barsSpace: 6,
-      );
-    });
+        ),
+      ),
+    );
   }
 
-  // Generowanie słupków dla trybu "Expenses" i "Income"
-  List<BarChartGroupData> createBarGroups() {
-    List<double> sums = calculateTransactionSums();
-
-    return List.generate(5, (index) {
-      return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY: sums[index],
-            color: sums[index] >= 0 ? Colors.green : Colors.red,
-            width: 11,
+  // Funkcja tworząca widget do wyboru typu (General, Expenses, Income)
+  Widget _buildTypeSelector(String type, bool isSelected) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            if (type == "General") {
+              isGeneral = true;
+              isExpanses = false;
+            } else if (type == "Expenses") {
+              isGeneral = false;
+              isExpanses = true;
+            } else {
+              isGeneral = false;
+              isExpanses = false;
+            }
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected ? Colors.white : Colors.transparent,
+                width: 2.0,
+              ),
+            ),
           ),
-        ],
-        barsSpace: 6,
-      );
-    });
-  }
-
-  // Funkcja do obliczania sumy transakcji (w zależności od trybu)
-  List<double> calculateTransactionSums() {
-    List<double> sums =
-        List.filled(5, 0.0); // tablica z sumami dla każdego dnia
-
-    for (var transaction in getCurrentList()) {
-      double price = double.parse(transaction['price']);
-      // Zakładamy losowy podział transakcji na dni (do zaimplementowania)
-      int dayIndex = getDayIndexForTransaction(transaction);
-      sums[dayIndex] += isExpenseTransaction(transaction) ? -price : price;
-    }
-
-    return sums;
-  }
-
-  // Funkcja do przypisywania transakcji do dni
-  int getDayIndexForTransaction(Map<String, dynamic> transaction) {
-    // Przykładowo, przypisujemy losowo do dni tygodnia
-    return DateTime.now().weekday % 5;
-  }
-
-  double calculateMaxY() {
-    if (isGeneral) {
-      List<double> incomes = [8.0, 18.0, 5.0, 13.0, 6.0];
-      List<double> expenses = [6.0, 14.0, 8.0, 11.0, 10.0];
-      
-      // Find the maximum value in both incomes and expenses
-      double maxIncome = incomes.reduce((a, b) => a > b ? a : b);
-      double maxExpense = expenses.reduce((a, b) => a > b ? a : b);
-      
-      // Return the highest of the two, with a margin for better visualization
-      return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
-    } else {
-      // For other modes (Expenses, Income), use the current logic
-      List<double> transactionSums = calculateTransactionSums();
-      double maxTransactionValue = transactionSums.reduce((a, b) => a > b ? a : b).abs();
-      return maxTransactionValue + 10;
-    }
+          alignment: Alignment.center,
+          child: Text(
+            type,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

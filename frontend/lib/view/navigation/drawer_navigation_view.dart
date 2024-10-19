@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/view/accounts/accounts_view.dart';
-import 'package:frontend/view/cards/cards_view.dart';
 import 'package:frontend/view/categories/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
 import 'package:frontend/view/goals/goals_view.dart';
@@ -27,7 +26,6 @@ class _DrawerNavigationControllerState
     const GoalsView(),
     const StatisticView(),
     const CategoriesView(),
-    const CardsView(),
     const RegularPaymentsView(),
     const NotificationsView(),
     const SettingsView(),
@@ -39,7 +37,6 @@ class _DrawerNavigationControllerState
     'Goals',
     'Statistic',
     'Categories',
-    'Cards',
     'Regular Payments',
     'Notifications',
     'Settings',
@@ -108,24 +105,19 @@ class _DrawerNavigationControllerState
                 onTap: () => _onItemTapped(4),
               ),
               ListTile(
-                leading: const Icon(Icons.credit_card, color: Color(0xFFFFFFFF)),
-                title: const Text('Cards', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(5),
-              ),
-              ListTile(
                 leading: const Icon(Icons.attach_money, color: Color(0xFFFFFFFF)),
                 title: const Text('Regular payments', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(6),
+                onTap: () => _onItemTapped(5),
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
                 title: const Text('Notifications', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(7),
+                onTap: () => _onItemTapped(6),
               ),
               ListTile(
                 leading: const Icon(Icons.settings, color: Color(0xFFFFFFFF)),
                 title: const Text('Settings', style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(8),
+                onTap: () => _onItemTapped(7),
               ),
             ],
           ),
