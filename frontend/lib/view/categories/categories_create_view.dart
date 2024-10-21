@@ -132,7 +132,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: MaterialStateProperty.all(Colors.white),
+                    fillColor: WidgetStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Expenses',
@@ -147,7 +147,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                         _categoryType = value!;
                       });
                     },
-                    fillColor: MaterialStateProperty.all(Colors.white),
+                    fillColor: WidgetStateProperty.all(Colors.white),
                   ),
                   const Text(
                     'Income',

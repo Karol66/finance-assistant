@@ -55,15 +55,6 @@ class _TransfersViewState extends State<TransfersView> {
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  void createTransferClick() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const TransfersCreateView(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -345,7 +336,17 @@ class _TransfersViewState extends State<TransfersView> {
 
   Widget createAddButton() {
     return GestureDetector(
-      onTap: createTransferClick,
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const TransfersCreateView(),
+          ),
+        );
+        if (result == true) {
+          loadTransfers();
+        }
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(16),

@@ -26,7 +26,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
   Map<String, dynamic>? _selectedAccount;
   List<Map<String, dynamic>> _categories = [];
   List<Map<String, dynamic>> _accounts = [];
-  bool isExpenses = true;
 
   final CategoriesService _categoriesService = CategoriesService();
   final AccountsService _accountsService = AccountsService();
@@ -34,32 +33,33 @@ class _TransfersManageViewState extends State<TransfersManageView> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Ładujemy dane asynchronicznie
+    _loadData(); // Load data asynchronously
   }
 
   Future<void> _loadData() async {
     await Future.wait([
-      loadAccounts(), // Ładujemy konta
-      loadCategories(), // Ładujemy kategorie
-      _loadTransfer(), // Ładujemy transfer
+      loadAccounts(),
+      loadCategories(),
     ]);
 
-    // Po załadowaniu wszystkiego sprawdzamy, czy dane są gotowe
+    // Teraz ładujemy szczegóły transferu
+    await _loadTransfer();
+
     setState(() {
-      // Ustawiamy _selectedAccount tylko jeśli konta są załadowane
-      if (_accounts.isNotEmpty && _selectedAccount == null) {
-        _selectedAccount = _accounts.firstWhere(
-          (account) => account['account_id'] == _selectedAccount?['account_id'],
-          orElse: () => _accounts.first,
-        );
-      }
+      // Zaktualizowane dane już wczytane do list rozwijanych
     });
   }
 
   Future<void> _loadTransfer() async {
     final fetchedTransfer =
         await _transfersService.fetchTransferById(widget.transferId);
+
     if (fetchedTransfer != null) {
+      final fetchedCategory =
+          await _transfersService.fetchCategoryFromTransfer(widget.transferId);
+      final fetchedAccount =
+          await _transfersService.fetchAccountFromTransfer(widget.transferId);
+
       setState(() {
         _transferNameController.text = fetchedTransfer['transfer_name'];
         _amountController.text = fetchedTransfer['amount'].toString();
@@ -67,24 +67,21 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         _selectedDate = DateTime.parse(fetchedTransfer['date']);
         _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
 
-        // Ustawienie wybranego konta po pierwszym załadowaniu
-        _selectedAccount = _accounts.firstWhere(
-          (account) => account['account_id'] == fetchedTransfer['account_id'],
-          orElse: () => _accounts.isNotEmpty
-              ? _accounts.first
-              : {}, // Wybierz pierwsze dostępne konto, jeśli nie znaleziono
-        );
+        // Ustawienie wybranej kategorii
+        if (fetchedCategory != null) {
+          _selectedCategory = _categories.firstWhere(
+            (category) => category['category_id'] == fetchedCategory['id'],
+            orElse: () => _categories.isNotEmpty ? _categories.first : {},
+          );
+        }
 
-        // Ustawienie wybranej kategorii po pierwszym załadowaniu
-        _selectedCategory = _categories.firstWhere(
-          (category) =>
-              category['category_id'] == fetchedTransfer['category_id'],
-          orElse: () => _categories.isNotEmpty
-              ? _categories.first
-              : {}, // Wybierz pierwszą dostępną kategorię, jeśli nie znaleziono
-        );
-
-        isExpenses = fetchedTransfer['category_type'] == 'expense';
+        // Ustawienie wybranego konta
+        if (fetchedAccount != null) {
+          _selectedAccount = _accounts.firstWhere(
+            (account) => account['account_id'] == fetchedAccount['id'],
+            orElse: () => _accounts.isNotEmpty ? _accounts.first : {},
+          );
+        }
       });
     }
   }
@@ -94,23 +91,22 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     if (fetchedCategories != null) {
       setState(() {
         _categories = fetchedCategories
-            .where((category) =>
-                category["category_type"] ==
-                (isExpenses ? "expense" : "income"))
             .map((category) => {
                   "category_id": category["id"],
                   "category_name": category["category_name"],
-                  "category_color": _parseColor(category["category_color"]),
                   "category_icon":
-                      _getIconFromString(category["category_icon"]),
+                      category["category_icon"], // Pobieranie ikony
+                  "category_color":
+                      category["category_color"], // Pobieranie koloru
                 })
             .toList();
 
-        // Ustawienie pierwszej kategorii jako domyślnie wybranej, jeśli nie ma wybranej
         if (_selectedCategory == null && _categories.isNotEmpty) {
           _selectedCategory = _categories.first;
         }
       });
+    } else {
+      print('Failed to load categories');
     }
   }
 
@@ -122,22 +118,27 @@ class _TransfersManageViewState extends State<TransfersManageView> {
             .map((account) => {
                   "account_id": account["id"],
                   "account_name": account["account_name"],
-                  "account_balance": account["balance"],
-                  "account_color": _parseColor(account["account_color"]),
-                  "account_icon": _getIconFromString(account["account_icon"]),
+                  "account_icon": account["account_icon"], // Pobieranie ikony
+                  "account_color":
+                      account["account_color"], // Pobieranie koloru
+                  "account_balance": account["balance"], // Pobieranie salda
                 })
             .toList();
 
-        // Jeśli nie ustawiono wcześniej konta, ustaw pierwsze konto
         if (_selectedAccount == null && _accounts.isNotEmpty) {
-          _selectedAccount = _accounts.firstWhere(
-            (account) =>
-                account['account_id'] == _selectedAccount?['account_id'],
-            orElse: () => _accounts.first,
-          );
+          _selectedAccount = _accounts.first;
         }
       });
     }
+  }
+
+// Funkcja konwertująca kolor HEX na obiekt Color z obsługą null
+  Color _parseColor(String? colorString) {
+    if (colorString == null || colorString.isEmpty) {
+      return Colors.grey; // Domyślny kolor, jeśli brak danych
+    }
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Future<void> _updateTransfer() async {
@@ -161,8 +162,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     await _transfersService.updateTransfer(widget.transferId, transferName,
         amount, description, date, accountId, categoryId);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Transfer updated successfully!")));
     Navigator.pop(context, true);
   }
 
@@ -184,16 +183,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
-  }
-
-  IconData _getIconFromString(String iconString) {
-    int codePoint = int.tryParse(iconString) ?? 0;
-    return IconData(codePoint, fontFamily: 'MaterialIcons');
-  }
-
-  Color _parseColor(String colorString) {
-    return Color(
-        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Widget inputTextField(String hintText, TextEditingController controller,
@@ -234,191 +223,163 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     );
   }
 
-  Widget accountsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _accounts.length,
-      itemBuilder: (context, index) {
-        final account = _accounts[index];
-        // Porównaj ID konta, zamiast całego obiektu
-        bool isSelected =
-            _selectedAccount?['account_id'] == account['account_id'];
-
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedAccount = account;
-            });
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF191E29),
-              borderRadius: BorderRadius.circular(15),
-              // Ustawienie obramowania dla wybranego konta
-              border:
-                  isSelected ? Border.all(color: Colors.white, width: 3) : null,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: account['account_color'],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(account['account_icon'],
-                          size: 20, color: Colors.white),
-                    ),
-                    const SizedBox(width: 20),
-                    Text(
-                      account['account_name'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  "\+ \$${double.parse(account['account_balance'].toString()).toStringAsFixed(2)}",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: double.parse(account['account_balance']) < 0
-                        ? Colors.red
-                        : Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget categoryGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(10),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+// Dropdown for accounts with balance, icon, and dynamic color
+Widget accountDropdown() {
+  return DropdownButtonFormField<Map<String, dynamic>>(
+    value: _selectedAccount,
+    itemHeight: 50, // Ustawienie wysokości każdego elementu dropdown
+    isDense: false, // Zapewnienie większej przestrzeni dla wybranego elementu
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: const Color(0xFF191E29), // Dopasowane tło jak w widoku konta
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0), // Zwiększenie marginesu wewnętrznego
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
       ),
-      itemCount: _categories.length,
-      itemBuilder: (context, index) {
-        final category = _categories[index];
-        bool isSelected =
-            _selectedCategory?['category_id'] == category['category_id'];
+    ),
+    dropdownColor: const Color(0xFF191E29), // Kolor rozwijanego menu
+    isExpanded: true,
+    icon: const Icon(
+      Icons.arrow_drop_down,
+      color: Colors.grey,
+      size: 30, // Zwiększenie rozmiaru strzałki
+    ), 
+    items: _accounts.map((account) {
+      double balance = double.parse(account['account_balance'].toString());
+      bool isNegative = balance < 0;
+      String balanceText = isNegative
+          ? "- \$${balance.abs().toStringAsFixed(2)}"
+          : "+ \$${balance.toStringAsFixed(2)}";
+      return DropdownMenuItem(
+        value: account,
+        child: SizedBox(
+          height: 60, // Zwiększenie wysokości elementu w menu rozwijanym
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40, // Szerokość ikony
+                    height: 40  , // Wysokość ikony (równa, aby było koło)
+                    decoration: BoxDecoration(
+                      color: _parseColor(account['account_color'] as String?), // Dynamic color for account
+                      borderRadius: BorderRadius.circular(25), // Idealnie zaokrąglona ikona
+                    ),
+                    child: Center(
+                      child: Icon(
+                        IconData(
+                          int.parse(account['account_icon']),
+                          fontFamily: 'MaterialIcons',
+                        ),
+                        color: Colors.white,
+                        size: 24, // Rozmiar ikony
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Text(
+                    account['account_name'] ?? 'Unknown Account',
+                    style: const TextStyle(
+                      fontSize: 18, // Rozmiar tekstu
+                      color: Colors.white54, // Tekst w stylu widoku konta
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                balanceText,
+                style: TextStyle(
+                  fontSize: 18, // Rozmiar tekstu
+                  fontWeight: FontWeight.bold,
+                  color: isNegative ? Colors.red : Colors.green, // Kolor na podstawie wartości
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList(),
+    onChanged: (newAccount) {
+      setState(() {
+        _selectedAccount = newAccount;
+      });
+    },
+  );
+}
 
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedCategory = category;
-            });
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: category['category_color'],
-              borderRadius: BorderRadius.circular(15),
-              border:
-                  isSelected ? Border.all(color: Colors.white, width: 3) : null,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(category["category_icon"], size: 30, color: Colors.white),
-                const SizedBox(height: 5),
-                Text(
-                  category["category_name"],
-                  style: const TextStyle(
+// Dropdown for categories with dynamic icon and color
+Widget categoryDropdown() {
+  return DropdownButtonFormField<Map<String, dynamic>>(
+    value: _selectedCategory,
+    itemHeight: 50, // Wysokość każdego elementu dropdown
+    isDense: false, // Zapewnienie większej przestrzeni dla wybranego elementu
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: const Color(0xFF191E29), // Dopasowane tło jak w widoku konta
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0), // Zwiększenie marginesu wewnętrznego
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+    ),
+    dropdownColor: const Color(0xFF191E29), // Kolor rozwijanego menu
+    isExpanded: true,
+    icon: const Icon(
+      Icons.arrow_drop_down,
+      color: Colors.grey,
+      size: 30, // Zwiększenie rozmiaru strzałki
+    ),
+    items: _categories.map((category) {
+      return DropdownMenuItem(
+        value: category,
+        child: SizedBox(
+          height: 60, // Zwiększenie wysokości elementu w menu rozwijanym
+          child: Row(
+            children: [
+              Container(
+                width: 40, // Szerokość ikony
+                height: 40, // Wysokość ikony (równa, aby było koło)
+                decoration: BoxDecoration(
+                  color: _parseColor(category['category_color'] as String?), // Dynamic color for category
+                  borderRadius: BorderRadius.circular(25), // Idealnie zaokrąglona ikona
+                ),
+                child: Center(
+                  child: Icon(
+                    IconData(
+                      int.parse(category['category_icon']),
+                      fontFamily: 'MaterialIcons',
+                    ),
                     color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    size: 24, // Rozmiar ikony
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 20),
+              Text(
+                category['category_name'] ?? 'Unknown Category',
+                style: const TextStyle(
+                  fontSize: 18, // Rozmiar tekstu
+                  color: Colors.white54, // Tekst w stylu widoku konta
+                ),
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    }).toList(),
+    onChanged: (newCategory) {
+      setState(() {
+        _selectedCategory = newCategory ?? _categories.first;
+      });
+    },
+  );
+}
 
-  Widget expenseIncomeSwitch() {
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                isExpenses = true;
-                loadCategories();
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: isExpenses ? Colors.white : Colors.transparent,
-                    width: 2.0,
-                  ),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                "Expenses",
-                style: TextStyle(
-                  color: isExpenses ? Colors.white : Colors.grey[600],
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                isExpenses = false;
-                loadCategories();
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: !isExpenses ? Colors.white : Colors.transparent,
-                    width: 2.0,
-                  ),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                "Income",
-                style: TextStyle(
-                  color: !isExpenses ? Colors.white : Colors.grey[600],
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -457,7 +418,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-              accountsList(),
+              accountDropdown(),
               const SizedBox(height: 20),
               const Text(
                 'Select Category:',
@@ -468,9 +429,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-              expenseIncomeSwitch(),
-              const SizedBox(height: 10),
-              categoryGrid(),
+              categoryDropdown(),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/services/categories_service.dart';
-import 'package:frontend/services/accounts_service.dart'; // Dodano do obsługi kont
+import 'package:frontend/services/accounts_service.dart';
 
 class TransfersCreateView extends StatefulWidget {
   const TransfersCreateView({super.key});
@@ -20,15 +20,14 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
 
   DateTime? _selectedDate;
   Map<String, dynamic>? _selectedCategory;
-  Map<String, dynamic>? _selectedAccount; // Dodano wybranego konta
+  Map<String, dynamic>? _selectedAccount;
 
   List<Map<String, dynamic>> _categories = [];
-  List<Map<String, dynamic>> _accounts = []; // Dodano listę kont
+  List<Map<String, dynamic>> _accounts = [];
   bool isExpenses = true;
 
   final CategoriesService _categoriesService = CategoriesService();
-  final AccountsService _accountsService =
-      AccountsService(); // Dodano serwis do obsługi kont
+  final AccountsService _accountsService = AccountsService();
 
   Future<void> _submitTransfer() async {
     if (_transferNameController.text.isEmpty ||
@@ -36,8 +35,8 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
         _selectedAccount == null ||
         _selectedCategory == null ||
         _selectedDate == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Please fill in all fields.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please fill in all fields.")));
       return;
     }
 
@@ -50,15 +49,15 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
 
     await _transfersService.createTransfer(
         transferName, amount, description, date, accountId, categoryId);
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Transfer created successfully!")));
+
+    Navigator.pop(context, true);
   }
 
   @override
   void initState() {
     super.initState();
     loadCategories();
-    loadAccounts(); // Ładujemy konta użytkownika
+    loadAccounts();
   }
 
   Future<void> loadCategories() async {
@@ -167,73 +166,80 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
     );
   }
 
-  Widget accountItem(Map<String, dynamic> account) {
-    double balance = double.parse(account['account_balance'].toString());
-    bool isSelected = _selectedAccount == account;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedAccount = account; // Zaznaczamy wybrane konto
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF191E29), // Stały kolor tła dla każdego konta
+  Widget accountDropdown() {
+    return DropdownButtonFormField<Map<String, dynamic>>(
+      value: _selectedAccount,
+      itemHeight: 50,
+      isDense: false,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFF191E29),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          border: isSelected
-              ? Border.all(color: Colors.white, width: 3)
-              : null, // Biała obwódka tylko dla wybranego konta
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: account['account_color'],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Icon(account['account_icon'],
-                      size: 20, color: Colors.white),
-                ),
-                const SizedBox(width: 20),
-                Text(
-                  account['account_name'],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              "\+ \$${balance.toStringAsFixed(2)}",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: balance < 0 ? Colors.red : Colors.green,
-              ),
-            ),
-          ],
+          borderSide: BorderSide.none,
         ),
       ),
-    );
-  }
-
-  Widget accountsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _accounts.length,
-      itemBuilder: (context, index) {
-        final account = _accounts[index];
-        return accountItem(account);
+      dropdownColor: const Color(0xFF191E29),
+      isExpanded: true,
+      icon: const Icon(
+        Icons.arrow_drop_down,
+        color: Colors.grey,
+        size: 30,
+      ),
+      items: _accounts.map((account) {
+        double balance = double.parse(account['account_balance'].toString());
+        bool isNegative = balance < 0;
+        String balanceText = isNegative
+            ? "- \$${balance.abs().toStringAsFixed(2)}"
+            : "+ \$${balance.toStringAsFixed(2)}";
+        return DropdownMenuItem(
+          value: account,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: account['account_color'],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      account['account_icon'],
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Text(
+                    account['account_name'] ?? 'Unknown Account',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white54,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                balanceText,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isNegative ? Colors.red : Colors.green,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (newAccount) {
+        setState(() {
+          _selectedAccount = newAccount;
+        });
       },
     );
   }
@@ -392,7 +398,7 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
                 ),
               ),
               const SizedBox(height: 10),
-              accountsList(), // Zamieniono listę rozwijaną na listę kont
+              accountDropdown(),
               const SizedBox(height: 20),
               const Text(
                 'Select Category:',
@@ -411,7 +417,7 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _submitTransfer(); // Wywołanie funkcji wysyłającej dane do API
+                      _submitTransfer();
                     },
                     style: ElevatedButton.styleFrom(
                       fixedSize: const Size.fromHeight(58),

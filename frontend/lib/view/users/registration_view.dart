@@ -34,7 +34,7 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
 
-    final AuthService _authService = AuthService();
+    final AuthService authService = AuthService();
 
     if (email.isEmpty ||
         username.isEmpty ||
@@ -69,7 +69,7 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
       );
     } else {
       // Wywołaj rejestrację przez AuthService
-      await _authService.register(username, email, password);
+      await authService.register(username, email, password);
       // Po pomyślnej rejestracji przekieruj na stronę logowania
       Navigator.push(
         context,

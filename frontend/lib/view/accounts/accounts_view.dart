@@ -59,6 +59,18 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
+  Color _getBalanceColor() {
+    return totalBalance < 0 ? Colors.red : Colors.green;
+  }
+
+  String _getBalanceText() {
+    if (totalBalance < 0) {
+      return "- \$${totalBalance.abs().toStringAsFixed(2)}";
+    } else {
+      return "+ \$${totalBalance.toStringAsFixed(2)}";
+    }
+  }
+
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
     return IconData(codePoint, fontFamily: 'MaterialIcons');
@@ -115,11 +127,12 @@ class _AccountViewState extends State<AccountView> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       Text(
-                        "\$$totalBalance",
-                        style: const TextStyle(
+                        _getBalanceText(), // Wyświetl plus lub minus
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color:
+                              _getBalanceColor(), // Kolor w zależności od wyniku
                         ),
                       ),
                     ],

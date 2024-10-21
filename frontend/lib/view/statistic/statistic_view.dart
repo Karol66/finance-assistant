@@ -68,7 +68,7 @@ class _StatisticViewState extends State<StatisticView> {
         return transferDate.year == now.year && transferDate.month == now.month;
       } else if (selectedPeriod == 'Week') {
         DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        return transferDate.isAfter(startOfWeek) && transferDate.isBefore(now.add(Duration(days: 1)));
+        return transferDate.isAfter(startOfWeek) && transferDate.isBefore(now.add(const Duration(days: 1)));
       } else if (selectedPeriod == 'Day') {
         return transferDate.year == now.year &&
             transferDate.month == now.month &&
@@ -96,7 +96,7 @@ class _StatisticViewState extends State<StatisticView> {
       return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  // Format dla dnia
     } else if (selectedPeriod == 'Week') {
       DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-      DateTime lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
       return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format dla tygodnia
     } else if (selectedPeriod == 'Month') {
       return DateFormat('MMMM yyyy').format(selectedDate);  // Format dla miesiąca
@@ -397,13 +397,13 @@ class _StatisticViewState extends State<StatisticView> {
                                 },
                               ),
                             ),
-                            leftTitles: AxisTitles(
+                            leftTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false),
                             ),
-                            topTitles: AxisTitles(
+                            topTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false),
                             ),
-                            rightTitles: AxisTitles(
+                            rightTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false),
                             ),
                           ),

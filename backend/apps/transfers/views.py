@@ -7,6 +7,8 @@ from .serializers import TransferSerializer
 from django.shortcuts import get_object_or_404
 
 from .models import Account
+from ..accounts.serializers import AccountSerializer
+from ..categories.serializers import CategorySerializer
 
 
 @api_view(['GET'])
@@ -61,3 +63,22 @@ def transfer_delete(request, pk):
     transfer.is_deleted = True
     transfer.save()
     return Response({'message': 'Transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+
+# Endpoint do pobierania kategorii powiązanej z danym transferem
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_category_from_transfer(request, transfer_id):
+    transfer = get_object_or_404(Transfer, id=transfer_id, account__user=request.user, is_deleted=False)
+    if transfer.category:
+        serializer = CategorySerializer(transfer.category)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({'error': 'No category associated with this transfer'}, status=status.HTTP_404_NOT_FOUND)
+
+# Endpoint do pobierania konta powiązanego z danym transferem
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_account_from_transfer(request, transfer_id):
+    transfer = get_object_or_404(Transfer, id=transfer_id, account__user=request.user, is_deleted=False)
+    serializer = AccountSerializer(transfer.account)
+    return Response(serializer.data, status=status.HTTP_200_OK)

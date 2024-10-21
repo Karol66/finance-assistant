@@ -18,7 +18,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   List<Map<String, dynamic>> transfers = [];
   final TransfersService _transfersService = TransfersService();
-  
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +42,8 @@ class _DashboardViewState extends State<DashboardView> {
             "category_name": transfer['category_name'],
             "category_icon": transfer['category_icon'],
             "category_color": _parseColor(transfer['category_color']),
-            "type": transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+            "type":
+                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
           };
         }).toList();
       });
@@ -75,15 +76,18 @@ class _DashboardViewState extends State<DashboardView> {
   // Funkcja formatująca datę w zależności od wybranego okresu
   String getFormattedPeriod() {
     if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  // Format dla dnia
+      return DateFormat('EEEE, MMMM d, yyyy')
+          .format(selectedDate); // Format dla dnia
     } else if (selectedPeriod == 'Week') {
-      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-      DateTime lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
       return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format dla tygodnia
     } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy').format(selectedDate);  // Format dla miesiąca
+      return DateFormat('MMMM yyyy')
+          .format(selectedDate); // Format dla miesiąca
     } else {
-      return DateFormat('yyyy').format(selectedDate);  // Format dla roku
+      return DateFormat('yyyy').format(selectedDate); // Format dla roku
     }
   }
 
@@ -95,9 +99,11 @@ class _DashboardViewState extends State<DashboardView> {
       } else if (selectedPeriod == 'Week') {
         selectedDate = selectedDate.subtract(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
       } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
   }
@@ -208,7 +214,7 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   // Obliczanie sumy transferów
-  double getTotalAmount() {
+  double _getTotalAmount() {
     double totalIncome = transfers
         .where((transfer) => transfer['type'] == 'Income')
         .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
@@ -222,6 +228,18 @@ class _DashboardViewState extends State<DashboardView> {
       return totalExpenses;
     } else {
       return totalIncome;
+    }
+  }
+
+  Color _getTotalAmountColor(double totalAmount) {
+    return totalAmount < 0 ? Colors.red : Colors.green;
+  }
+
+  String _getTotalAmountText(double totalAmount) {
+    if (totalAmount < 0) {
+      return "- \$${totalAmount.abs().toStringAsFixed(2)}";
+    } else {
+      return "+ \$${totalAmount.toStringAsFixed(2)}";
     }
   }
 
@@ -273,13 +291,15 @@ class _DashboardViewState extends State<DashboardView> {
                         _buildPeriodSelector("Day"),
                       ],
                     ),
-                    const SizedBox(height: 10), // Odstęp między wyborem okresu a datą
+                    const SizedBox(
+                        height: 10), // Odstęp między wyborem okresu a datą
                     // Dodanie strzałki i pola do zmiany daty
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.white),
                           onPressed: goToPreviousPeriod,
                         ),
                         Text(
@@ -306,12 +326,14 @@ class _DashboardViewState extends State<DashboardView> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              // Użyjemy funkcji pomocniczych do ustalenia koloru i tekstu
                               Text(
-                                "${isExpenses ? '-' : '+'} \$${getTotalAmount().toStringAsFixed(2)}",
+                                _getTotalAmountText(_getTotalAmount()),
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: isExpenses ? Colors.red : Colors.green,
+                                  color: _getTotalAmountColor(
+                                      _getTotalAmount()), // Kolor na podstawie wartości
                                 ),
                               ),
                               Text(

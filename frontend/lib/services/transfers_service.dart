@@ -177,4 +177,63 @@ class TransfersService {
       print('Error deleting transfer: $error');
     }
   }
+
+  Future<Map<String, dynamic>?> fetchCategoryFromTransfer(int transferId) async {
+  String? token = await _getToken();
+
+  if (token == null) {
+    print("User not authenticated");
+    return null;
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/transfers/$transferId/category/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to fetch category: ${response.body}');
+      return null;
+    }
+  } catch (error) {
+    print('Error fetching category: $error');
+    return null;
+  }
+}
+
+Future<Map<String, dynamic>?> fetchAccountFromTransfer(int transferId) async {
+  String? token = await _getToken();
+
+  if (token == null) {
+    print("User not authenticated");
+    return null;
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/transfers/$transferId/account/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to fetch account: ${response.body}');
+      return null;
+    }
+  } catch (error) {
+    print('Error fetching account: $error');
+    return null;
+  }
+}
+
 }
