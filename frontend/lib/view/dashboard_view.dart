@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/services/transfers_service.dart';
+import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:intl/intl.dart';
 
 class DashboardView extends StatefulWidget {
@@ -367,9 +368,13 @@ class _DashboardViewState extends State<DashboardView> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: _filteredTransfers().length,
+              itemCount: _filteredTransfers().length + 1,
               itemBuilder: (context, index) {
-                var transfer = _filteredTransfers()[index];
+                final filteredTransfers = _filteredTransfers();
+                if (index == filteredTransfers.length) {
+                  return createAddButton();
+                }
+                final transfer = filteredTransfers[index];
                 return transferItem(transfer);
               },
             ),
@@ -452,6 +457,45 @@ class _DashboardViewState extends State<DashboardView> {
               fontWeight: FontWeight.bold,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+    Widget createAddButton() {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const TransfersCreateView(),
+          ),
+        );
+        if (result == true) {
+          loadTransfers();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Transfer",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
