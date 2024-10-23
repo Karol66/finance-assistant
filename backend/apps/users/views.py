@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -53,3 +54,29 @@ def user_detail(request):
     user = request.user
     serializer = UserRegisterSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user = request.user
+    data = request.data
+
+    # Serializacja użytkownika z danymi
+    serializer = UserRegisterSerializer(user, data=data, partial=True)
+
+    if serializer.is_valid():
+        # Zapisz zaktualizowane dane
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # Logowanie błędów w konsoli
+    logger.error(f"Validation errors: {serializer.errors}")
+
+    # Zwróć szczegóły błędów zwróconych przez serializator
+    return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+

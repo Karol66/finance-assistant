@@ -8,12 +8,22 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {
+            'password': {'write_only': True, 'allow_blank': True}
+        }
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
         return super(UserRegisterSerializer, self).create(validated_data)
 
+    def update(self, instance, validated_data):
+        password = validated_data.get('password', None)
+        if password:
+            validated_data['password'] = make_password(password)
+        else:
+            validated_data.pop('password', None)
+
+        return super(UserRegisterSerializer, self).update(instance, validated_data)
 
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
