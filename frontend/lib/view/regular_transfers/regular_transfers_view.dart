@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/view/regular_transfers/regular_transfers_create_view.dart';
+import 'package:frontend/services/transfers_service.dart';
+import 'package:intl/intl.dart';
 
 class RegularTransfersView extends StatefulWidget {
   const RegularTransfersView({super.key});
@@ -9,56 +10,126 @@ class RegularTransfersView extends StatefulWidget {
 }
 
 class _RegularTransfersViewState extends State<RegularTransfersView> {
-  List<Map<String, dynamic>> regularTransfers = [
-    {
-      "icon": Icons.music_note,
-      "description": "Spotify Subscription",
-      "amount": 5.99,
-      "transfer_date": DateTime(2023, 1, 30),
-      "category_color": Colors.green,
-    },
-    {
-      "icon": Icons.video_collection,
-      "description": "YouTube Premium",
-      "amount": 18.99,
-      "transfer_date": DateTime(2023, 1, 30),
-      "category_color": Colors.red,
-    },
-    {
-      "icon": Icons.movie,
-      "description": "Netflix Subscription",
-      "amount": 9.99,
-      "transfer_date": DateTime(2023, 2, 2),
-      "category_color": Colors.orange,
-    },
-    {
-      "icon": Icons.computer,
-      "description": "Microsoft 365",
-      "amount": 29.99,
-      "transfer_date": DateTime(2023, 2, 5),
-      "category_color": Colors.blue,
-    },
-  ];
+  List<Map<String, dynamic>> regularTransfers = [];
+  final TransfersService _transfersService = TransfersService();
+  String selectedPeriod = 'Year';
+  DateTime selectedDate = DateTime.now();
 
-  void createRegularTransferClick() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const RegularTransfersCreateView(),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    loadRegularTransfers();
+  }
+
+  Future<void> loadRegularTransfers() async {
+    final fetchedTransfers = await _transfersService.fetchRegularTransfers();
+    if (fetchedTransfers != null) {
+      setState(() {
+        regularTransfers = fetchedTransfers.map((transfer) {
+          return {
+            "id": transfer['id'],
+            "description": transfer['description'],
+            "amount": transfer['amount'],
+            "transfer_date": DateTime.parse(transfer['date']),
+            "category_color": _parseColor(transfer['category_color']),
+            "category_icon": transfer['category_icon'],
+            "type":
+                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+          };
+        }).toList();
+      });
+    } else {
+      print("Failed to load regular transfers.");
+    }
+  }
+
+  Color _parseColor(String colorString) {
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  List<Map<String, dynamic>> _filteredRegularTransfers() {
+    return regularTransfers.where((transfer) {
+      DateTime transferDate = transfer["transfer_date"];
+      DateTime now = selectedDate;
+      if (selectedPeriod == 'Year') {
+        return transferDate.year == now.year;
+      } else if (selectedPeriod == 'Month') {
+        return transferDate.year == now.year && transferDate.month == now.month;
+      } else if (selectedPeriod == 'Week') {
+        DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
+        return transferDate.isAfter(startOfWeek) &&
+            transferDate.isBefore(endOfWeek);
+      } else if (selectedPeriod == 'Day') {
+        return transferDate.year == now.year &&
+            transferDate.month == now.month &&
+            transferDate.day == now.day;
+      }
+      return true;
+    }).toList();
+  }
+
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);
+    } else {
+      return DateFormat('yyyy').format(selectedDate);
+    }
+  }
+
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+  }
+
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.add(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Container(
               width: media.width,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -69,109 +140,59 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: _buildCalendarView(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _buildPeriodSelector("Year"),
+                      _buildPeriodSelector("Month"),
+                      _buildPeriodSelector("Week"),
+                      _buildPeriodSelector("Day"),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.white),
+                        onPressed: goToPreviousPeriod,
+                      ),
+                      Text(
+                        getFormattedPeriod(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.white),
+                        onPressed: goToNextPeriod,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: regularTransfers.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == regularTransfers.length) {
-                    return _buildCreateNewRegularTransferButton();
-                  }
-                  final regularTransfer = regularTransfers[index];
-                  return _buildRegularTransferItem(
-                    icon: regularTransfer['icon'],
-                    description: regularTransfer['description'],
-                    amount: regularTransfer['amount'],
-                    transferDate: regularTransfer['transfer_date'],
-                    categoryColor: regularTransfer['category_color'],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCalendarView() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal, 
-      child: Row(
-        children: List.generate(7, (index) {
-          DateTime today = DateTime.now();
-          DateTime date = today.add(Duration(days: index));
-
-          return Column(
-            children: [
-              Text(
-                _getWeekday(date),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white54,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: 38, 
-                height: 38, 
-                margin: const EdgeInsets.symmetric(horizontal: 4), 
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: date.day == today.day
-                      ? Colors.orange
-                      : Colors.grey.shade800,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "${date.day}",
-                  style: const TextStyle(
-                    fontSize: 16, 
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _filteredRegularTransfers().length,
+                    itemBuilder: (context, index) {
+                      final regularTransfer =
+                          _filteredRegularTransfers()[index];
+                      return _buildRegularTransferItem(regularTransfer);
+                    },
                   ),
-                ),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  String _getWeekday(DateTime date) {
-    const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return weekdays[date.weekday - 1];
-  }
-
-  Widget _buildCreateNewRegularTransferButton() {
-    return GestureDetector(
-      onTap: createRegularTransferClick,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF01C38D),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add, size: 32, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              "Create Regular Transfer",
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+                ],
               ),
             ),
           ],
@@ -180,13 +201,48 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
     );
   }
 
-  Widget _buildRegularTransferItem({
-    required IconData icon,
-    required String description,
-    required double amount,
-    required DateTime transferDate,
-    required Color categoryColor,
-  }) {
+  Widget _buildPeriodSelector(String period) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedPeriod = period;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selectedPeriod == period
+                    ? Colors.white
+                    : Colors.transparent,
+                width: 2.0,
+              ),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            period,
+            style: TextStyle(
+              color: selectedPeriod == period ? Colors.white : Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegularTransferItem(Map<String, dynamic> transfer) {
+    DateTime transferDate = transfer['transfer_date'];
+    double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
+    bool isExpense = transfer['type'] == 'Expenses';
+    String formattedAmount = isExpense
+        ? "-\$${amount.abs().toStringAsFixed(2)}"
+        : "+\$${amount.toStringAsFixed(2)}";
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -200,39 +256,45 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
+              color: transfer['category_color'],
               shape: BoxShape.circle,
-              color: categoryColor,
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(
+              IconData(int.parse(transfer['category_icon']),
+                  fontFamily: 'MaterialIcons'),
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transfer['description'],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "${transferDate.day}/${transferDate.month}/${transferDate.year}",
-                style: const TextStyle(
-                  color: Colors.white54,
+                const SizedBox(height: 4),
+                Text(
+                  _formatDate(transferDate),
+                  style: const TextStyle(
+                    color: Colors.white54,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const Spacer(),
           Text(
-            "\$${amount.toStringAsFixed(2)}",
-            style: const TextStyle(
+            formattedAmount,
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isExpense ? Colors.red : Colors.green,
             ),
           ),
         ],

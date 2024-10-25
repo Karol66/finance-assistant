@@ -68,13 +68,9 @@ class TransfersService {
     }
   }
 
-  Future<void> createTransfer(
-      String transferName,
-      String amount,
-      String description,
-      String date,
-      int accountId,
-      int categoryId) async {
+  Future<void> createTransfer(String transferName, String amount,
+      String description, String date, int accountId, int categoryId,
+      {bool isRegular = false, String interval = ''}) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -90,12 +86,14 @@ class TransfersService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'transfer_name': transferName, 
+          'transfer_name': transferName,
           'amount': amount,
           'description': description,
           'date': date,
           'account': accountId,
           'category': categoryId,
+          'is_regular': isRegular,
+          'interval': interval,
         }),
       );
 
@@ -116,7 +114,9 @@ class TransfersService {
       String description,
       String date,
       int accountId,
-      int categoryId) async {
+      int categoryId,
+      {bool isRegular = false,
+      String interval = ''}) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -132,12 +132,14 @@ class TransfersService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'transfer_name': transferName, 
+          'transfer_name': transferName,
           'amount': amount,
           'description': description,
           'date': date,
           'account': accountId,
           'category': categoryId,
+          'is_regular': isRegular,
+          'interval': interval,
         }),
       );
 
@@ -178,62 +180,91 @@ class TransfersService {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchCategoryFromTransfer(int transferId) async {
-  String? token = await _getToken();
+  Future<Map<String, dynamic>?> fetchCategoryFromTransfer(
+      int transferId) async {
+    String? token = await _getToken();
 
-  if (token == null) {
-    print("User not authenticated");
-    return null;
-  }
-
-  try {
-    final response = await http.get(
-      Uri.parse('$baseUrl/transfers/$transferId/category/'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print('Failed to fetch category: ${response.body}');
+    if (token == null) {
+      print("User not authenticated");
       return null;
     }
-  } catch (error) {
-    print('Error fetching category: $error');
-    return null;
-  }
-}
 
-Future<Map<String, dynamic>?> fetchAccountFromTransfer(int transferId) async {
-  String? token = await _getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/transfers/$transferId/category/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-  if (token == null) {
-    print("User not authenticated");
-    return null;
-  }
-
-  try {
-    final response = await http.get(
-      Uri.parse('$baseUrl/transfers/$transferId/account/'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print('Failed to fetch account: ${response.body}');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Failed to fetch category: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching category: $error');
       return null;
     }
-  } catch (error) {
-    print('Error fetching account: $error');
-    return null;
   }
-}
 
+  Future<Map<String, dynamic>?> fetchAccountFromTransfer(int transferId) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/transfers/$transferId/account/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Failed to fetch account: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching account: $error');
+      return null;
+    }
+  }
+
+  Future<List<dynamic>?> fetchRegularTransfers() async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/transfers/regular/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Failed to fetch regular transfers: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching regular transfers: $error');
+      return null;
+    }
+  }
 }

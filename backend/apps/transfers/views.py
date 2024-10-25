@@ -83,3 +83,11 @@ def get_account_from_transfer(request, transfer_id):
     transfer = get_object_or_404(Transfer, id=transfer_id, account__user=request.user, is_deleted=False)
     serializer = AccountSerializer(transfer.account)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def regular_transfer_list(request):
+    transfers = Transfer.objects.filter(account__user=request.user, is_regular=True, is_deleted=False)
+    serializer = TransferSerializer(transfers, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
