@@ -75,6 +75,7 @@ def get_category_from_transfer(request, transfer_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response({'error': 'No category associated with this transfer'}, status=status.HTTP_404_NOT_FOUND)
 
+
 # Endpoint do pobierania konta powiązanego z danym transferem
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

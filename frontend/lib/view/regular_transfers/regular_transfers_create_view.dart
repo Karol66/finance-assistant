@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:frontend/services/notifications_service.dart';
+import 'package:intl/intl.dart'; 
 
-class NotificationsManageView extends StatefulWidget {
-  final int notificationId;
-
-  const NotificationsManageView({super.key, required this.notificationId});
+class RegularTransfersCreateView extends StatefulWidget {
+  const RegularTransfersCreateView({super.key});
 
   @override
-  _NotificationsManageViewState createState() => _NotificationsManageViewState();
+  _RegularTransfersCreateViewState createState() => _RegularTransfersCreateViewState();
 }
 
-class _NotificationsManageViewState extends State<NotificationsManageView> {
-  final TextEditingController _messageController = TextEditingController();
-  final TextEditingController _sendAtController = TextEditingController();
-  final NotificationsService _notificationsService = NotificationsService();
+class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView> {
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _transferDateController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
+  int? _selectedCardId;
+  int? _selectedCategoryId;
   Color? _selectedColor;
   IconData? _selectedIcon;
-  DateTime? _selectedSendAtDate;
 
+  final List<int> _cardIds = [1, 2, 3]; 
+  final List<int> _categoryIds = [10, 20, 30]; 
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -31,7 +31,6 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
     Colors.pink,
     Colors.grey,
   ];
-
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -50,80 +49,24 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
     Icons.travel_explore,
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadNotification();
-  }
-
-  Future<void> _loadNotification() async {
-    final fetchedNotification = await _notificationsService.fetchNotificationById(widget.notificationId);
-    if (fetchedNotification != null) {
-      setState(() {
-        _messageController.text = fetchedNotification['message'];
-        _selectedSendAtDate = DateTime.parse(fetchedNotification['send_at']);
-        _sendAtController.text = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
-        _selectedColor = _parseColor(fetchedNotification['category_color']);
-        _selectedIcon = _getIconFromString(fetchedNotification['category_icon']);
-      });
-    }
-  }
-
-  Future<void> _updateNotification() async {
-    if (_messageController.text.isEmpty || _selectedSendAtDate == null || _selectedColor == null || _selectedIcon == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill in all fields.")));
-      return;
-    }
-
-    String message = _messageController.text;
-    String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
-    String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
-    String categoryIcon = _selectedIcon!.codePoint.toString();
-
-    await _notificationsService.updateNotification(
-      widget.notificationId,
-      message,
-      sendAt,
-      categoryColor,
-      categoryIcon,
-      false, // is_deleted set to false for update
-    );
-
-    Navigator.pop(context, true);
-  }
-
-  Future<void> _deleteNotification() async {
-    await _notificationsService.deleteNotification(widget.notificationId);
-    Navigator.pop(context, true);
-  }
-
-  Future<void> _selectSendAtDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedSendAtDate ?? DateTime.now(),
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null) {
+    if (pickedDate != null) {
       setState(() {
-        _selectedSendAtDate = picked;
-        _sendAtController.text = DateFormat('yyyy-MM-dd').format(picked);
+        _transferDateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
   }
 
-  IconData _getIconFromString(String iconString) {
-    int codePoint = int.tryParse(iconString) ?? 0;
-    return IconData(codePoint, fontFamily: 'MaterialIcons');
-  }
-
-  Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
-  }
-
-  Widget inputTextField(String hintText, TextEditingController controller) {
+  Widget inputTextField(String hintText, TextEditingController controller, {bool isNumeric = false}) {
     return TextField(
       controller: controller,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -133,6 +76,28 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+
+  Widget dropdownField(String hint, List<int> options, int? selectedValue, Function(int?) onChanged) {
+    return DropdownButtonFormField<int>(
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      value: selectedValue,
+      onChanged: onChanged,
+      items: options.map((int value) {
+        return DropdownMenuItem<int>(
+          value: value,
+          child: Text(value.toString()),
+        );
+      }).toList(),
     );
   }
 
@@ -153,7 +118,7 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
           color: Color(0xFF494E59),
         ),
       ),
-      onTap: () => _selectSendAtDate(context),
+      onTap: () => _selectDate(context),
     );
   }
 
@@ -173,7 +138,9 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.circular(15),
-                border: _selectedColor == color ? Border.all(color: Colors.white, width: 3) : null,
+                border: _selectedColor == color
+                    ? Border.all(color: Colors.white, width: 3)
+                    : null,
               ),
             ),
           );
@@ -196,11 +163,19 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
           }),
           child: Container(
             decoration: BoxDecoration(
-              color: _selectedIcon == iconData ? (_selectedColor ?? const Color(0xFF191E29)) : const Color(0xFF191E29),
+              color: _selectedIcon == iconData
+                  ? (_selectedColor ?? const Color(0xFF191E29))
+                  : const Color(0xFF191E29),
               borderRadius: BorderRadius.circular(15),
-              border: _selectedIcon == iconData ? Border.all(color: Colors.white, width: 3) : null,
+              border: _selectedIcon == iconData
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
             ),
-            child: Icon(iconData, size: 40, color: Colors.white),
+            child: Icon(
+              iconData,
+              size: 40,
+              color: Colors.white,
+            ),
           ),
         );
       }).toList(),
@@ -212,7 +187,7 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
       appBar: AppBar(
-        title: const Text('Manage Notification'),
+        title: const Text('Create Regular Transfer'),
         backgroundColor: const Color(0xFF0B6B3A),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -227,10 +202,29 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              inputTextField('Message', _messageController),
+              inputTextField('Amount', _amountController, isNumeric: true),
               const SizedBox(height: 20),
-              datePickerField('Select Send At Date', _sendAtController),
+
+              datePickerField('Select Regular Transfer Date', _transferDateController),
               const SizedBox(height: 20),
+
+              inputTextField('Description', _descriptionController),
+              const SizedBox(height: 20),
+
+              dropdownField('Select Card', _cardIds, _selectedCardId, (int? newValue) {
+                setState(() {
+                  _selectedCardId = newValue;
+                });
+              }),
+              const SizedBox(height: 20),
+
+              dropdownField('Select Category', _categoryIds, _selectedCategoryId, (int? newValue) {
+                setState(() {
+                  _selectedCategoryId = newValue;
+                });
+              }),
+              const SizedBox(height: 20),
+
               const Text(
                 'Select Color:',
                 style: TextStyle(
@@ -242,6 +236,7 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
               const SizedBox(height: 10),
               colorPicker(),
               const SizedBox(height: 20),
+
               const Text(
                 'Select Icon:',
                 style: TextStyle(
@@ -253,41 +248,28 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
               const SizedBox(height: 10),
               iconPicker(),
               const SizedBox(height: 20),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _updateNotification,
+                  onPressed: () {
+                    print('Regular Transfer created with amount: ${_amountController.text}');
+                    print('Transfer Date: ${_transferDateController.text}');
+                    print('Description: ${_descriptionController.text}');
+                    print('Selected Card ID: $_selectedCardId');
+                    print('Selected Category ID: $_selectedCategoryId');
+                    print('Selected Color: $_selectedColor');
+                    print('Selected Icon: $_selectedIcon');
+                  },
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF01C38D),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
-                    'Update Notification',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _deleteNotification,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFFF44336),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Delete Notification',
+                    'Add Regular Transfer',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

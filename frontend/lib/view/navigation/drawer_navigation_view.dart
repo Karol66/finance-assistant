@@ -5,7 +5,7 @@ import 'package:frontend/view/categories/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
 import 'package:frontend/view/goals/goals_view.dart';
 import 'package:frontend/view/notifications/notifications_view.dart';
-import 'package:frontend/view/payments/payments_view.dart';
+import 'package:frontend/view/regular_transfers/regular_transfers_view.dart';
 import 'package:frontend/view/users/login_view.dart';
 import 'package:frontend/view/users/settings_view.dart';
 import 'package:frontend/view/statistic/statistic_view.dart';
@@ -31,7 +31,7 @@ class _DrawerNavigationControllerState
     const GoalsView(),
     const StatisticView(),
     const CategoriesView(),
-    const RegularPaymentsView(),
+    const RegularTransfersView(),
     const NotificationsView(),
     const SettingsView(),
   ];
@@ -42,7 +42,7 @@ class _DrawerNavigationControllerState
     'Goals',
     'Statistic',
     'Categories',
-    'Regular Payments',
+    'Regular Transfers',
     'Notifications',
     'Settings',
   ];
@@ -50,34 +50,28 @@ class _DrawerNavigationControllerState
   @override
   void initState() {
     super.initState();
-    _loadUserData(); // Ładujemy dane użytkownika przy inicjalizacji
+    _loadUserData(); 
   }
 
   Future<void> _loadUserData() async {
-    // Pobieramy token z SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
     if (token != null) {
-      // Używamy AuthService, aby pobrać dane użytkownika
       await AuthService().getUserDetail(token);
 
-      // Po pobraniu danych odświeżamy interfejs użytkownika
       setState(() {
         _username = prefs.getString('username') ?? 'Unknown User';
         _email = prefs.getString('email') ?? 'Unknown Email';
       });
     } else {
       print('No JWT token found');
-      // Obsłuż brak tokena, np. przekierowanie na ekran logowania
     }
   }
 
   void _logout() async {
-    // Wylogowanie przy użyciu AuthService
     await AuthService().logout();
 
-    // Przejdź na ekran logowania
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -158,7 +152,7 @@ class _DrawerNavigationControllerState
               ListTile(
                 leading:
                     const Icon(Icons.attach_money, color: Color(0xFFFFFFFF)),
-                title: const Text('Regular payments',
+                title: const Text('Regular transfers',
                     style: TextStyle(color: Color(0xFFFFFFFF))),
                 onTap: () => _onItemTapped(5),
               ),
@@ -179,7 +173,7 @@ class _DrawerNavigationControllerState
                 leading: const Icon(Icons.logout, color: Color(0xFFFFFFFF)),
                 title: const Text('Logout',
                     style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: _logout, // Wylogowanie po naciśnięciu
+                onTap: _logout, 
               ),
             ],
           ),

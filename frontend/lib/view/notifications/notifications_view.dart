@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/view/notifications/notifications_manage_view.dart';
+import 'package:intl/intl.dart';
+import 'package:frontend/services/notifications_service.dart';
 import 'package:frontend/view/notifications/notifications_create_view.dart';
 
 class NotificationsView extends StatefulWidget {
@@ -9,36 +12,105 @@ class NotificationsView extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsView> {
-  List<Map<String, dynamic>> notifications = [
-    {
-      "id": 1,
-      "message": "Pay the electricity bill",
-      "send_at": DateTime(2023, 10, 5, 10, 0),
-      "icon": Icons.notifications_active,
-      "color": Colors.orange,
-    },
-    {
-      "id": 2,
-      "message": "Doctor's appointment",
-      "send_at": DateTime(2023, 10, 3, 9, 0),
-      "icon": Icons.medical_services,
-      "color": Colors.red,
-    },
-    {
-      "id": 3,
-      "message": "Subscription renewal for Spotify",
-      "send_at": DateTime(2023, 10, 7, 12, 0),
-      "icon": Icons.music_note,
-      "color": Colors.green,
-    },
-    {
-      "id": 4,
-      "message": "Car insurance payment",
-      "send_at": DateTime(2023, 10, 10, 8, 0),
-      "icon": Icons.directions_car,
-      "color": Colors.blue,
-    },
-  ];
+  List<Map<String, dynamic>> notifications = [];
+  final NotificationsService _notificationsService = NotificationsService();
+
+  String selectedPeriod = 'Year';
+  DateTime selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    loadNotifications();
+  }
+
+  Future<void> loadNotifications() async {
+    final fetchedNotifications = await _notificationsService.fetchNotifications();
+    if (fetchedNotifications != null) {
+      setState(() {
+        notifications = fetchedNotifications.map((notification) => {
+          "notification_id": notification["id"],
+          "message": notification["message"],
+          "send_at": notification["send_at"],
+          "icon": _getIconFromString(notification["category_icon"]),
+          "color": _parseColor(notification["category_color"]),
+          "is_deleted": notification["is_deleted"]
+        }).toList();
+      });
+    } else {
+      print("Failed to load notifications.");
+    }
+  }
+
+  IconData _getIconFromString(String iconString) {
+    int codePoint = int.tryParse(iconString) ?? 0;
+    return IconData(codePoint, fontFamily: 'MaterialIcons');
+  }
+
+  Color _parseColor(String colorString) {
+    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  List<Map<String, dynamic>> _filteredNotifications() {
+    DateTime now = DateTime.now();
+    return notifications.where((notification) {
+      DateTime sendDate = notification["send_at"];
+      if (selectedPeriod == 'Year') {
+        return sendDate.year == now.year;
+      } else if (selectedPeriod == 'Month') {
+        return sendDate.year == now.year && sendDate.month == now.month;
+      } else if (selectedPeriod == 'Week') {
+        DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
+        return sendDate.isAfter(startOfWeek) && sendDate.isBefore(endOfWeek);
+      } else if (selectedPeriod == 'Day') {
+        return sendDate.year == now.year && sendDate.month == now.month && sendDate.day == now.day;
+      }
+      return true;
+    }).toList();
+  }
+
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);
+    } else {
+      return DateFormat('yyyy').format(selectedDate);
+    }
+  }
+
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+  }
+
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.add(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(selectedDate.year + 1, selectedDate.month, selectedDate.day);
+      }
+    });
+  }
 
   void createNotificationClick() {
     Navigator.push(
@@ -46,7 +118,11 @@ class _NotificationsViewState extends State<NotificationsView> {
       MaterialPageRoute(
         builder: (context) => const NotificationsCreateView(),
       ),
-    );
+    ).then((value) {
+      if (value == true) {
+        loadNotifications();
+      }
+    });
   }
 
   @override
@@ -57,9 +133,7 @@ class _NotificationsViewState extends State<NotificationsView> {
       backgroundColor: const Color(0xFF132D46),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Container(
               width: media.width,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -70,28 +144,60 @@ class _NotificationsViewState extends State<NotificationsView> {
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: _buildCalendarView(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _buildPeriodSelector("Year"),
+                      _buildPeriodSelector("Month"),
+                      _buildPeriodSelector("Week"),
+                      _buildPeriodSelector("Day"),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                        onPressed: goToPreviousPeriod,
+                      ),
+                      Text(
+                        getFormattedPeriod(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                        onPressed: goToNextPeriod,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: notifications.length + 1, 
-                itemBuilder: (context, index) {
-                  if (index == notifications.length) {
-                    return _buildCreateNewNotificationButton();
-                  }
-                  final notification = notifications[index];
-                  return _buildNotificationItem(
-                    icon: notification['icon'],
-                    message: notification['message'],
-                    sendAt: notification['send_at'],
-                    color: notification['color'],
-                  );
-                },
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _filteredNotifications().length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == _filteredNotifications().length) {
+                        return _buildCreateNewNotificationButton();
+                      }
+                      final notification = _filteredNotifications()[index];
+                      if (notification["is_deleted"]) return Container();
+                      return _buildNotificationItem(notification);
+                    },
+                  ),
+                ],
               ),
             ),
           ],
@@ -100,55 +206,99 @@ class _NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  Widget _buildCalendarView() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal, 
-      child: Row(
-        children: List.generate(7, (index) {
-          DateTime today = DateTime.now();
-          DateTime date = today.add(Duration(days: index));
-
-          return Column(
-            children: [
-              Text(
-                _getWeekday(date),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white54,
-                ),
+  Widget _buildPeriodSelector(String period) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedPeriod = period;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selectedPeriod == period ? Colors.white : Colors.transparent,
+                width: 2.0,
               ),
-              const SizedBox(height: 4),
-              Container(
-                width: 38, 
-                height: 38, 
-                margin: const EdgeInsets.symmetric(horizontal: 4), 
-                alignment: Alignment.center, 
-                decoration: BoxDecoration(
-                  color: date.day == today.day
-                      ? Colors.orange
-                      : Colors.grey.shade800,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "${date.day}",
-                  style: const TextStyle(
-                    fontSize: 16, 
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          );
-        }),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            period,
+            style: TextStyle(
+              color: selectedPeriod == period ? Colors.white : Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  String _getWeekday(DateTime date) {
-    const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return weekdays[date.weekday - 1];
+  Widget _buildNotificationItem(Map<String, dynamic> notification) {
+    DateTime sendAt = notification['send_at'];
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NotificationsManageView(
+              notificationId: notification["notification_id"],
+            ),
+          ),
+        );
+        if (result == true) {
+          loadNotifications();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF191E29),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: notification['color'],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(notification['icon'], color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    notification['message'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${sendAt.day}/${sendAt.month}/${sendAt.year} ${sendAt.hour}:${sendAt.minute.toString().padLeft(2, '0')}",
+                    style: const TextStyle(
+                      color: Colors.white54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCreateNewNotificationButton() {
@@ -176,58 +326,6 @@ class _NotificationsViewState extends State<NotificationsView> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationItem({
-    required IconData icon,
-    required String message,
-    required DateTime sendAt,
-    required Color color,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF191E29),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color,
-            ),
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  message,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "${sendAt.day}/${sendAt.month}/${sendAt.year} ${sendAt.hour}:${sendAt.minute.toString().padLeft(2, '0')}",
-                  style: const TextStyle(
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

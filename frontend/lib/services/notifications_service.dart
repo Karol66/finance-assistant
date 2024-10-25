@@ -10,7 +10,7 @@ class NotificationsService {
     return prefs.getString('jwtToken');
   }
 
-  Future<List<dynamic>?> fetchNotifications() async {
+  Future<List<Map<String, dynamic>>?> fetchNotifications() async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -27,7 +27,16 @@ class NotificationsService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((notification) => {
+            "id": notification["id"],
+            "message": notification["message"],
+            "created_at": DateTime.parse(notification["created_at"]),
+            "send_at": DateTime.parse(notification["send_at"]),
+            "category_color": notification["category_color"],
+            "category_icon": notification["category_icon"],
+            "is_deleted": notification["is_deleted"]
+          }).toList();
     } else {
       print('Failed to fetch notifications: ${response.body}');
       return null;
@@ -60,11 +69,9 @@ class NotificationsService {
 
   Future<void> createNotification(
       String message,
-      String createdAt,
       String sendAt,
-      int userId,
-      String notificationColor,
-      String notificationIcon) async {
+      String categoryColor,
+      String categoryIcon) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -80,11 +87,10 @@ class NotificationsService {
       },
       body: jsonEncode({
         'message': message,
-        'created_at': createdAt,
         'send_at': sendAt,
-        'user_id': userId,
-        'color': notificationColor,
-        'icon': notificationIcon,
+        'category_color': categoryColor,
+        'category_icon': categoryIcon,
+        'is_deleted': false,
       }),
     );
 
@@ -98,11 +104,10 @@ class NotificationsService {
   Future<void> updateNotification(
       int notificationId,
       String message,
-      String createdAt,
       String sendAt,
-      int userId,
-      String notificationColor,
-      String notificationIcon) async {
+      String categoryColor,
+      String categoryIcon,
+      bool isDeleted) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -118,11 +123,10 @@ class NotificationsService {
       },
       body: jsonEncode({
         'message': message,
-        'created_at': createdAt,
         'send_at': sendAt,
-        'user_id': userId,
-        'color': notificationColor,
-        'icon': notificationIcon,
+        'category_color': categoryColor,
+        'category_icon': categoryIcon,
+        'is_deleted': isDeleted,
       }),
     );
 

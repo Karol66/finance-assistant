@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Do formatowania daty
+import 'package:intl/intl.dart';
+import 'package:frontend/services/notifications_service.dart';
 
 class NotificationsCreateView extends StatefulWidget {
   const NotificationsCreateView({super.key});
@@ -10,14 +11,13 @@ class NotificationsCreateView extends StatefulWidget {
 
 class _NotificationsCreateViewState extends State<NotificationsCreateView> {
   final TextEditingController _messageController = TextEditingController();
-  final TextEditingController _createdAtController = TextEditingController();
   final TextEditingController _sendAtController = TextEditingController();
-  final TextEditingController _userIdController = TextEditingController();
-  // bool _isDeleted = false;
+  final NotificationsService _notificationsService = NotificationsService();
+
   Color? _selectedColor;
   IconData? _selectedIcon;
+  DateTime? _selectedSendAtDate;
 
-  final List<int> _userIds = [1, 2, 3]; // Przykładowe ID użytkowników
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -29,6 +29,7 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     Colors.pink,
     Colors.grey,
   ];
+
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -47,26 +48,47 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     Icons.travel_explore,
   ];
 
-  // Wybór daty
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? pickedDate = await showDatePicker(
+  Future<void> _addNotification() async {
+    if (_messageController.text.isEmpty || _selectedSendAtDate == null || _selectedColor == null || _selectedIcon == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill in all fields.")));
+      return;
+    }
+
+    String message = _messageController.text;
+    String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!); // Konwersja daty na String
+    String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+    String categoryIcon = _selectedIcon != null
+        ? _selectedIcon!.codePoint.toString()
+        : 'default_icon';
+
+    await _notificationsService.createNotification(
+      message,
+      sendAt,
+      categoryColor,
+      categoryIcon,
+    );
+
+    Navigator.pop(context, true);
+  }
+
+  Future<void> _selectSendAtDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (pickedDate != null) {
+    if (picked != null) {
       setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        _selectedSendAtDate = picked;
+        _sendAtController.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
 
-  // Widget do wprowadzania danych tekstowych
-  Widget inputTextField(String hintText, TextEditingController controller, {bool isNumeric = false}) {
+  Widget inputTextField(String hintText, TextEditingController controller) {
     return TextField(
       controller: controller,
-      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -79,30 +101,6 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     );
   }
 
-  // Widget do wyboru użytkownika
-  Widget dropdownField(String hint, List<int> options, int? selectedValue, Function(int?) onChanged) {
-    return DropdownButtonFormField<int>(
-      decoration: InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      value: selectedValue,
-      onChanged: onChanged,
-      items: options.map((int value) {
-        return DropdownMenuItem<int>(
-          value: value,
-          child: Text(value.toString()),
-        );
-      }).toList(),
-    );
-  }
-
-  // Widget wyboru daty
   Widget datePickerField(String hintText, TextEditingController controller) {
     return TextField(
       controller: controller,
@@ -120,11 +118,10 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
           color: Color(0xFF494E59),
         ),
       ),
-      onTap: () => _selectDate(context, controller),
+      onTap: () => _selectSendAtDate(context),
     );
   }
 
-  // Widget do wyboru koloru
   Widget colorPicker() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -152,7 +149,6 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     );
   }
 
-  // Widget do wyboru ikony
   Widget iconPicker() {
     return GridView.count(
       shrinkWrap: true,
@@ -209,16 +205,6 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
               inputTextField('Message', _messageController),
               const SizedBox(height: 20),
 
-              dropdownField('Select User', _userIds, null, (int? newValue) {
-                setState(() {
-                  _userIdController.text = newValue.toString();
-                });
-              }),
-              const SizedBox(height: 20),
-
-              datePickerField('Select Created At Date', _createdAtController),
-              const SizedBox(height: 20),
-
               datePickerField('Select Send At Date', _sendAtController),
               const SizedBox(height: 20),
 
@@ -249,14 +235,7 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    print('Notification created with message: ${_messageController.text}');
-                    print('Created At: ${_createdAtController.text}');
-                    print('Send At: ${_sendAtController.text}');
-                    print('User ID: ${_userIdController.text}');
-                    print('Selected Color: $_selectedColor');
-                    print('Selected Icon: $_selectedIcon');
-                  },
+                  onPressed: _addNotification,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor: const Color(0xFF01C38D),

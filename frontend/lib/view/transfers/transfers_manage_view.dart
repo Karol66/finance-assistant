@@ -7,8 +7,7 @@ import 'package:intl/intl.dart';
 class TransfersManageView extends StatefulWidget {
   final int transferId;
 
-  const TransfersManageView({Key? key, required this.transferId})
-      : super(key: key);
+  const TransfersManageView({super.key, required this.transferId});
 
   @override
   _TransfersManageViewState createState() => _TransfersManageViewState();

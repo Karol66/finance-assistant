@@ -40,11 +40,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     'apps.accounts',
-    'apps.cards',
     'apps.categories',
+    'apps.goals',
     'apps.notifications',
-    'apps.payments',
-    'apps.statistics',
     'apps.transfers',
     'apps.users',
 ]

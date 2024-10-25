@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Transfer
 
+
 class TransferSerializer(serializers.ModelSerializer):
     # Pola dla danych konta
     account_name = serializers.SerializerMethodField()
@@ -11,6 +12,10 @@ class TransferSerializer(serializers.ModelSerializer):
     category_name = serializers.SerializerMethodField()
     category_icon = serializers.SerializerMethodField()
     category_color = serializers.SerializerMethodField()
+
+    # Nowe pola do obsługi regularnych transferów
+    is_regular = serializers.BooleanField(required=False, default=False)
+    interval = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Transfer
