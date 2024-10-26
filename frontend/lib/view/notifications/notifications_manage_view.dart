@@ -163,23 +163,32 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
       child: Row(
         children: _colorOptions.map((color) {
           return GestureDetector(
-            onTap: () => setState(() {
-              _selectedColor = color;
-            }),
+            onTap: () => _onColorSelected(color),
             child: Container(
               width: 30,
               height: 30,
               margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(15),
-                border: _selectedColor == color ? Border.all(color: Colors.white, width: 3) : null,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: (_selectedColor?.value == color.value)
+                      ? Colors.white
+                      : Colors.transparent,
+                  width: 3,
+                ),
               ),
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  void _onColorSelected(Color color) {
+    setState(() {
+      _selectedColor = color;
+    });
   }
 
   Widget iconPicker() {

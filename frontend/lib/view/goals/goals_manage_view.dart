@@ -19,8 +19,8 @@ class _GoalsManageViewState extends State<GoalsManageView> {
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _priorityController = TextEditingController();
 
-  IconData? _selectedGoalIcon;
-  Color? _selectedGoalColor;
+  IconData? _selectedIcon;
+  Color? _selectedColor;
   String? _selectedStatus;
   Map<String, dynamic>? _selectedAccount;
 
@@ -47,7 +47,8 @@ class _GoalsManageViewState extends State<GoalsManageView> {
   ];
 
   final List<String> _goalStatusOptions = ['active', 'completed', 'cancelled'];
-  final List<Color> _goalColorOptions = [
+  
+  final List<Color> _colorOptions = [
     Colors.green,
     Colors.red,
     Colors.blue,
@@ -77,8 +78,8 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         _endDateController.text = fetchedGoal['end_date'];
         _priorityController.text = fetchedGoal['priority'].toString();
         _selectedStatus = fetchedGoal['status'];
-        _selectedGoalColor = _parseColor(fetchedGoal['goal_color']);
-        _selectedGoalIcon = _getIconFromString(fetchedGoal['goal_icon']);
+        _selectedColor = _parseColor(fetchedGoal['goal_color']);
+        _selectedIcon = _getIconFromString(fetchedGoal['goal_icon']);
         _selectedAccount = _accounts.firstWhere(
           (account) => account['account_id'] == fetchedGoal['account'],
           orElse: () => {},
@@ -111,15 +112,9 @@ class _GoalsManageViewState extends State<GoalsManageView> {
     return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  void _onColorSelected(Color color) {
-    setState(() {
-      _selectedGoalColor = color;
-    });
-  }
-
   void _onIconSelected(IconData icon) {
     setState(() {
-      _selectedGoalIcon = icon;
+      _selectedIcon = icon;
     });
   }
 
@@ -144,8 +139,8 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         _endDateController.text.isEmpty ||
         _selectedStatus == null ||
         _selectedAccount == null ||
-        _selectedGoalColor == null ||
-        _selectedGoalIcon == null ||
+        _selectedColor == null ||
+        _selectedIcon == null ||
         _priorityController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please fill in all fields.")));
@@ -161,8 +156,8 @@ class _GoalsManageViewState extends State<GoalsManageView> {
       _selectedStatus!,
       int.parse(_priorityController.text),
       _selectedAccount!['account_id'],
-      '#${_selectedGoalColor?.value.toRadixString(16).substring(2, 8)}',
-      _selectedGoalIcon!.codePoint.toString(),
+      '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}',
+      _selectedIcon!.codePoint.toString(),
     );
 
     Navigator.pop(context, true);
@@ -190,11 +185,11 @@ class _GoalsManageViewState extends State<GoalsManageView> {
     );
   }
 
-  Widget goalColorPicker() {
+  Widget colorPicker() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _goalColorOptions.map((color) {
+        children: _colorOptions.map((color) {
           return GestureDetector(
             onTap: () => _onColorSelected(color),
             child: Container(
@@ -203,16 +198,25 @@ class _GoalsManageViewState extends State<GoalsManageView> {
               margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(15),
-                border: _selectedGoalColor == color
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: (_selectedColor?.value == color.value)
+                      ? Colors.white
+                      : Colors.transparent,
+                  width: 3,
+                ),
               ),
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  void _onColorSelected(Color color) {
+    setState(() {
+      _selectedColor = color;
+    });
   }
 
   Widget goalIconGrid() {
@@ -228,11 +232,11 @@ class _GoalsManageViewState extends State<GoalsManageView> {
             onTap: () => _onIconSelected(iconData),
             child: Container(
               decoration: BoxDecoration(
-                color: _selectedGoalIcon == iconData
-                    ? (_selectedGoalColor ?? const Color(0xFF191E29))
+                color: _selectedIcon == iconData
+                    ? (_selectedColor ?? const Color(0xFF191E29))
                     : const Color(0xFF191E29),
                 borderRadius: BorderRadius.circular(15),
-                border: _selectedGoalIcon == iconData
+                border: _selectedIcon == iconData
                     ? Border.all(color: Colors.white, width: 3)
                     : null,
               ),
@@ -427,7 +431,7 @@ class _GoalsManageViewState extends State<GoalsManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-              goalColorPicker(),
+              colorPicker(),
               const SizedBox(height: 20),
               const Text(
                 'Select Goal Icon:',
