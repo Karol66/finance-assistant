@@ -57,9 +57,12 @@ class GoalsService {
 
   Future<void> createGoal(
       String goalName,
-      String budget,
-      String amountSpent,
-      String remaining,
+      String targetAmount,
+      String currentAmount,
+      String endDate,
+      String status,
+      int priority,
+      int accountId,
       String goalColor,
       String goalIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -78,9 +81,12 @@ class GoalsService {
       },
       body: jsonEncode({
         'goal_name': goalName,
-        'budget': budget,
-        'amount_spent': amountSpent,
-        'remaining': remaining,
+        'target_amount': targetAmount,
+        'current_amount': currentAmount,
+        'end_date': endDate,
+        'status': status,
+        'priority': priority,
+        'account': accountId,
         'goal_color': goalColor,
         'goal_icon': goalIcon,
       }),
@@ -96,9 +102,12 @@ class GoalsService {
   Future<void> updateGoal(
       int goalId,
       String goalName,
-      String budget,
-      String amountSpent,
-      String remaining,
+      String targetAmount,
+      String currentAmount,
+      String endDate,
+      String status,
+      int priority,
+      int accountId,
       String goalColor,
       String goalIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -117,9 +126,12 @@ class GoalsService {
       },
       body: jsonEncode({
         'goal_name': goalName,
-        'budget': budget,
-        'amount_spent': amountSpent,
-        'remaining': remaining,
+        'target_amount': targetAmount,
+        'current_amount': currentAmount,
+        'end_date': endDate,
+        'status': status,
+        'priority': priority,
+        'account': accountId,
         'goal_color': goalColor,
         'goal_icon': goalIcon,
       }),
