@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/transfers_service.dart';
+import 'package:frontend/view/regular_transfers/regular_transfers_create_view.dart';
+import 'package:frontend/view/regular_transfers/regular_transfers_manage_view.dart';
 import 'package:intl/intl.dart';
 
 class RegularTransfersView extends StatefulWidget {
@@ -27,7 +29,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
       setState(() {
         regularTransfers = fetchedTransfers.map((transfer) {
           return {
-            "id": transfer['id'],
+            "transfer_id": transfer['id'],
             "description": transfer['description'],
             "amount": transfer['amount'],
             "transfer_date": DateTime.parse(transfer['date']),
@@ -121,6 +123,19 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
     });
   }
 
+  void createRegularTransferClick() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RegularTransfersCreateView(),
+      ),
+    ).then((value) {
+      if (value == true) {
+        loadRegularTransfers();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -185,11 +200,14 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _filteredRegularTransfers().length,
+                    itemCount: _filteredRegularTransfers().length + 1,
                     itemBuilder: (context, index) {
+                      if (index == _filteredRegularTransfers().length) {
+                        return _buildCreateNewRegularTransferButton();
+                      }
                       final regularTransfer =
                           _filteredRegularTransfers()[index];
-                      return _buildRegularTransferItem(regularTransfer);
+                      return regularTransferItem(regularTransfer);
                     },
                   ),
                 ],
@@ -235,69 +253,111 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
     );
   }
 
-  Widget _buildRegularTransferItem(Map<String, dynamic> transfer) {
+  Widget regularTransferItem(Map<String, dynamic> transfer) {
     DateTime transferDate = transfer['transfer_date'];
     double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
     bool isExpense = transfer['type'] == 'Expenses';
     String formattedAmount = isExpense
         ? "-\$${amount.abs().toStringAsFixed(2)}"
         : "+\$${amount.toStringAsFixed(2)}";
+    return GestureDetector(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RegularTransfersManageView(
+                transferId: transfer["transfer_id"],
+              ),
+            ),
+          );
+          if (result == true) {
+            loadRegularTransfers();
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF191E29),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: transfer['category_color'],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  IconData(int.parse(transfer['category_icon']),
+                      fontFamily: 'MaterialIcons'),
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transfer['description'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatDate(transferDate),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                formattedAmount,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isExpense ? Colors.red : Colors.green,
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF191E29),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: transfer['category_color'],
-              shape: BoxShape.circle,
+  Widget _buildCreateNewRegularTransferButton() {
+    return GestureDetector(
+      onTap: createRegularTransferClick,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 32, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Create New Regular Transfer",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            child: Icon(
-              IconData(int.parse(transfer['category_icon']),
-                  fontFamily: 'MaterialIcons'),
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transfer['description'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatDate(transferDate),
-                  style: const TextStyle(
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            formattedAmount,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isExpense ? Colors.red : Colors.green,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

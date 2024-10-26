@@ -267,4 +267,149 @@ class TransfersService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> fetchRegularTransferById(int transferId) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/transfers/regular/$transferId/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Failed to fetch regular transfer: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching regular transfer: $error');
+      return null;
+    }
+  }
+
+  Future<void> createRegularTransfer(
+      String transferName,
+      String amount,
+      String description,
+      String date,
+      int accountId,
+      int categoryId,
+      String interval) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/transfers/regular/create/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'transfer_name': transferName,
+          'amount': amount,
+          'description': description,
+          'date': date,
+          'account': accountId,
+          'category': categoryId,
+          'is_regular': true,
+          'interval': interval,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        print('Regular transfer created successfully');
+      } else {
+        print('Failed to create regular transfer: ${response.body}');
+      }
+    } catch (error) {
+      print('Error creating regular transfer: $error');
+    }
+  }
+
+  Future<void> updateRegularTransfer(
+      int transferId,
+      String transferName,
+      String amount,
+      String description,
+      String date,
+      int accountId,
+      int categoryId,
+      String interval) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return;
+    }
+
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/transfers/regular/$transferId/edit/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'transfer_name': transferName,
+          'amount': amount,
+          'description': description,
+          'date': date,
+          'account': accountId,
+          'category': categoryId,
+          'is_regular': true,
+          'interval': interval,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Regular transfer updated successfully');
+      } else {
+        print('Failed to update regular transfer: ${response.body}');
+      }
+    } catch (error) {
+      print('Error updating regular transfer: $error');
+    }
+  }
+
+  Future<void> deleteRegularTransfer(int transferId) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return;
+    }
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/transfers/regular/$transferId/delete/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        print('Regular transfer deleted successfully');
+      } else {
+        print('Failed to delete regular transfer: ${response.body}');
+      }
+    } catch (error) {
+      print('Error deleting regular transfer: $error');
+    }
+  }
 }

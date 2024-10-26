@@ -34,7 +34,6 @@ class _NotificationsViewState extends State<NotificationsView> {
           "send_at": notification["send_at"],
           "icon": _getIconFromString(notification["category_icon"]),
           "color": _parseColor(notification["category_color"]),
-          "is_deleted": notification["is_deleted"]
         }).toList();
       });
     } else {
@@ -193,8 +192,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                         return _buildCreateNewNotificationButton();
                       }
                       final notification = _filteredNotifications()[index];
-                      if (notification["is_deleted"]) return Container();
-                      return _buildNotificationItem(notification);
+                      return notificationItem(notification);
                     },
                   ),
                 ],
@@ -238,7 +236,7 @@ class _NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  Widget _buildNotificationItem(Map<String, dynamic> notification) {
+  Widget notificationItem(Map<String, dynamic> notification) {
     DateTime sendAt = notification['send_at'];
     return GestureDetector(
       onTap: () async {
