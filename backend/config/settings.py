@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.categories',
     'apps.goals',
+    'apps.linear_regression',
     'apps.notifications',
     'apps.transfers',
     'apps.users',

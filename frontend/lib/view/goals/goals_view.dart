@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend/view/goals/goals_create_view.dart';
 import 'package:frontend/view/goals/goals_manage_view.dart';
 import 'package:frontend/services/goals_service.dart';
+import 'package:frontend/view/linear_regression/predicted_savings_view.dart';
+import 'package:frontend/view/linear_regression/saving_strategies.dart';
 
 class GoalsView extends StatefulWidget {
   const GoalsView({super.key});
@@ -24,15 +26,18 @@ class _GoalsViewState extends State<GoalsView> {
     final fetchedGoals = await _goalsService.fetchGoals();
     if (fetchedGoals != null) {
       setState(() {
-        goals = fetchedGoals.map((goal) => {
-          "goal_id": goal['id'],
-          "icon": _getIconFromString(goal["goal_icon"]),
-          "goal_name": goal["goal_name"],
-          "current_amount": goal["current_amount"],
-          "target_amount": goal["target_amount"],
-          "remaining": double.parse(goal["target_amount"]) - double.parse(goal["current_amount"]),
-          "goal_color": _parseColor(goal["goal_color"]),
-        }).toList();
+        goals = fetchedGoals
+            .map((goal) => {
+                  "goal_id": goal['id'],
+                  "icon": _getIconFromString(goal["goal_icon"]),
+                  "goal_name": goal["goal_name"],
+                  "current_amount": goal["current_amount"],
+                  "target_amount": goal["target_amount"],
+                  "remaining": double.parse(goal["target_amount"]) -
+                      double.parse(goal["current_amount"]),
+                  "goal_color": _parseColor(goal["goal_color"]),
+                })
+            .toList();
       });
     } else {
       print("Failed to load goals.");
@@ -45,7 +50,34 @@ class _GoalsViewState extends State<GoalsView> {
   }
 
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+
+  void showPredictedSavings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PredictedSavingsView(),
+      ),
+    ).then((value) {
+      if (value == true) {
+        loadGoals();
+      }
+    });
+  }
+
+  void showSavingStrategies() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SavingStrategies(),
+      ),
+    ).then((value) {
+      if (value == true) {
+        loadGoals();
+      }
+    });
   }
 
   void createGoalClick() {
@@ -81,16 +113,35 @@ class _GoalsViewState extends State<GoalsView> {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               child: Column(
                 children: [
-                  Container(
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF191E29),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    // Puste miejsce po usunięciu wykresu
+                  // Place the buttons at the top
+                  GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    children: [
+                      _buildButton(
+                        icon: Icons.show_chart,
+                        label: "Predicted Savings",
+                        onTap: showPredictedSavings,
+                      ),
+                      _buildButton(
+                        icon: Icons.lightbulb,
+                        label: "Saving Strategies",
+                        onTap: showSavingStrategies,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
+                  // Space for future widgets (like a chart or other info)
+                  // Container(
+                  //   width: 300,
+                  //   height: 200,
+                  //   decoration: BoxDecoration(
+                  //     color: const Color(0xFF191E29),
+                  //     borderRadius: BorderRadius.circular(15),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -100,7 +151,7 @@ class _GoalsViewState extends State<GoalsView> {
               child: ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: goals.length + 1, 
+                itemCount: goals.length + 1,
                 itemBuilder: (context, index) {
                   if (index == goals.length) {
                     return _buildCreateNewGoalButton();
@@ -108,6 +159,43 @@ class _GoalsViewState extends State<GoalsView> {
                   final goal = goals[index];
                   return _buildGoalItem(goal);
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF191E29),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1EB980),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Icon(icon, size: 40, color: Colors.white),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
               ),
             ),
           ],
@@ -207,7 +295,9 @@ class _GoalsViewState extends State<GoalsView> {
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
-              value: (double.parse(goal['target_amount'].toString()) - double.parse(goal['remaining'].toString())) / double.parse(goal['target_amount'].toString()),
+              value: (double.parse(goal['target_amount'].toString()) -
+                      double.parse(goal['remaining'].toString())) /
+                  double.parse(goal['target_amount'].toString()),
               valueColor: AlwaysStoppedAnimation<Color>(goal['goal_color']),
               backgroundColor: Colors.grey[800],
             ),

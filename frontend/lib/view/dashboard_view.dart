@@ -233,11 +233,17 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Color _getTotalAmountColor(double totalAmount) {
-    return totalAmount < 0 ? Colors.red : Colors.green;
+    if (isExpenses) {
+      return Colors.red;
+    } else {
+      return totalAmount < 0 ? Colors.red : Colors.green;
+    }
   }
 
   String _getTotalAmountText(double totalAmount) {
-    if (totalAmount < 0) {
+    if (isExpenses) {
+      return "- \$${totalAmount.toStringAsFixed(2)}";
+    } else if (totalAmount < 0) {
       return "- \$${totalAmount.abs().toStringAsFixed(2)}";
     } else {
       return "+ \$${totalAmount.toStringAsFixed(2)}";
@@ -462,7 +468,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-    Widget createAddButton() {
+  Widget createAddButton() {
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(

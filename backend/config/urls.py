@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/', include('apps.transfers.urls')),
     path('api/', include('apps.notifications.urls')),
     path('api/', include('apps.goals.urls')),
+    path('api/', include('apps.linear_regression.urls')),
 ]

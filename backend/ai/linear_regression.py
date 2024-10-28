@@ -20,37 +20,36 @@ df['Transaction Type'] = df['Transaction Type'].map({'debit': -1, 'credit': 1})
 df['Date'] = pd.to_datetime(df['Date'])
 df['YearMonth'] = df['Date'].dt.to_period('M')  # Utworzenie kolumny z miesiącem i rokiem
 
-# Obliczmy osobno sumę przychodów i wydatków dla każdego miesiąca
+# Obliczamy osobno sumę przychodów i wydatków dla każdego miesiąca
 
 # Filtrujemy transakcje typu 'credit' jako przychody
-przychody = df[df['Transaction Type'] == 1].groupby('YearMonth')['Amount'].sum().reset_index()
+income = df[df['Transaction Type'] == 1].groupby('YearMonth')['Amount'].sum().reset_index()
 
 # Filtrujemy transakcje typu 'debit' jako wydatki
-wydatki = df[df['Transaction Type'] == -1].groupby('YearMonth')['Amount'].sum().reset_index()
+expenses = df[df['Transaction Type'] == -1].groupby('YearMonth')['Amount'].sum().reset_index()
 
 # Łączymy przychody i wydatki w jeden dataframe na podstawie 'YearMonth'
-monthly_data = pd.merge(przychody, wydatki, on='YearMonth', how='outer', suffixes=('_Przychody', '_Wydatki'))
+monthly_data = pd.merge(income, expenses, on='YearMonth', how='outer', suffixes=('_income', '_expenses'))
 
 # Zmieniamy nazwy kolumn
-monthly_data.rename(columns={'Amount_Przychody': 'Przychody', 'Amount_Wydatki': 'Wydatki'}, inplace=True)
+monthly_data.rename(columns={'Amount_income': 'income', 'Amount_expenses': 'expenses'}, inplace=True)
 
 # Uzupełniamy ewentualne wartości NaN zerami (jeśli w danym miesiącu były tylko przychody lub tylko wydatki)
 monthly_data.fillna(0, inplace=True)
 
 # Obliczamy oszczędności jako różnicę między przychodami a wydatkami
-monthly_data['Oszczędności'] = monthly_data['Przychody'] - monthly_data['Wydatki']
+monthly_data['savings'] = monthly_data['income'] - monthly_data['expenses']
 
 # Wyświetlenie danych miesięcznych
 print(monthly_data)
 
-
 print("------------------------------")
 
-# Zmienne niezależne: Przychody i Wydatki z historycznych danych
-X = monthly_data[['Przychody', 'Wydatki']]
+# Zmienne niezależne: income i expenses z historycznych danych
+X = monthly_data[['income', 'expenses']]
 
-# Zmienna zależna: Oszczędności
-y = monthly_data['Oszczędności']
+# Zmienna zależna: savings
+y = monthly_data['savings']
 
 # Podział danych na zbiór treningowy i testowy
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -74,8 +73,8 @@ mse = mean_squared_error(y_test, y_pred)
 print(f'Błąd średniokwadratowy (Regresja Liniowa): {mse}')
 
 # Wyniki dla regresji liniowej
-predykcje = pd.DataFrame({'Rzeczywiste oszczędności': y_test, 'Prognozowane oszczędności': y_pred})
-print(predykcje)
+predictions = pd.DataFrame({'Rzeczywiste oszczędności': y_test, 'Prognozowane oszczędności': y_pred})
+print(predictions)
 
 # Wykres rzeczywistych vs prognozowanych oszczędności
 plt.scatter(y_test, y_pred)
