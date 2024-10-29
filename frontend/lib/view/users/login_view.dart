@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend/view/navigation/drawer_navigation_view.dart';
 import 'package:frontend/view/users/registration_view.dart';
 import 'package:frontend/services/users_service.dart';
@@ -101,18 +100,6 @@ class _UserWidgetState extends State<UserWidget> {
           borderSide: BorderSide.none,
         ),
       ),
-    );
-  }
-
-  Widget socialButton(IconData icon, Color color) {
-    return ElevatedButton(
-      onPressed: () {},
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.all(16),
-        backgroundColor: Colors.grey.shade200,
-        shape: const CircleBorder(),
-      ),
-      child: FaIcon(icon, size: 30, color: color),
     );
   }
 
@@ -228,16 +215,6 @@ class _UserWidgetState extends State<UserWidget> {
                       ),
                       SizedBox(width: 10),
                       Expanded(child: Divider(color: Colors.white)),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      socialButton(
-                          FontAwesomeIcons.facebookF, const Color(0xFF3b5998)),
-                      socialButton(FontAwesomeIcons.google, Colors.red),
-                      socialButton(FontAwesomeIcons.apple, Colors.black),
                     ],
                   ),
                   const SizedBox(height: 20),
