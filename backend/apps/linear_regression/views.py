@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 import joblib
 import numpy as np
 import pandas as pd
@@ -12,7 +11,7 @@ from datetime import timedelta
 from apps.goals.models import Goal
 from apps.transfers.models import Transfer
 
-# Load model and scaler
+# Wczytanie modelu i skalera
 model = joblib.load('ai/model_regresji_liniowej.pkl')
 scaler = joblib.load('ai/scaler.pkl')
 
@@ -34,27 +33,43 @@ def get_predicted_savings(user):
 
     df['amount'] = df['amount'].astype(float)
     df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
-    df['YearMonth'] = df['date'].dt.to_period('M')
-    income_df = df[df['category_type'] == 'income'].groupby('YearMonth')['amount'].sum().reset_index()
-    expenses_df = df[df['category_type'] == 'expense'].groupby('YearMonth')['amount'].sum().reset_index()
-    monthly_data = pd.merge(income_df, expenses_df, on='YearMonth', how='outer',
-                            suffixes=('_income', '_expense')).fillna(0)
-    monthly_data.rename(columns={'amount_income': 'income', 'amount_expense': 'expenses'}, inplace=True)
-    monthly_data['savings'] = monthly_data['income'] - monthly_data['expenses']
 
+    # Obliczanie dziennego dochodu netto
+    daily_data = df.groupby('date').agg({'amount': 'sum'}).reset_index()
+    daily_data.columns = ['Date', 'Net Income']
+    daily_data['Cumulative Savings'] = daily_data['Net Income'].cumsum()
+
+    # Ustawienia początkowe do predykcji
     predicted_savings = []
-    last_income = monthly_data.iloc[-1]['income'] if not monthly_data.empty else 0
-    last_expenses = monthly_data.iloc[-1]['expenses'] if not monthly_data.empty else 0
+    last_date = daily_data['Date'].iloc[-1]
+    last_savings = daily_data['Cumulative Savings'].iloc[-1]
 
-    for _ in range(12):
-        input_data = pd.DataFrame([[last_income, last_expenses]], columns=['income', 'expenses'])
-        scaled_data = scaler.transform(input_data)
+    # Prognozowanie dzienne na przyszłość (365 dni do przodu)
+    future_dates = []
+    for day in range(1, 366):
+        next_date = last_date + timedelta(days=1)
+        month = next_date.month
+        day_of_year = next_date.dayofyear
+
+        # Upewnij się, że input_data to DataFrame z kolumnami o odpowiednich nazwach
+        input_data = pd.DataFrame([[month, day_of_year, last_savings]],
+                                  columns=['Month', 'DayOfYear', 'Cumulative Savings'])
+        scaled_data = pd.DataFrame(scaler.transform(input_data),
+                                   columns=input_data.columns)  # Dodaj kolumny po skalowaniu
         predicted_saving = model.predict(scaled_data)[0]
-        predicted_savings.append(predicted_saving)
-        last_income += np.random.normal(0, 50)
-        last_expenses += np.random.normal(0, 50)
 
-    return predicted_savings, None
+        # Aktualizacja wartości dla kolejnego dnia
+        predicted_savings.append(predicted_saving)
+        last_savings = predicted_saving
+        last_date = next_date
+        future_dates.append(next_date)
+
+    # Grupowanie dziennych prognoz do poziomu miesięcznego
+    predicted_future_df = pd.DataFrame({'Date': future_dates, 'Predicted Daily Savings': predicted_savings})
+    predicted_future_df['Month'] = predicted_future_df['Date'].dt.to_period('M')
+    monthly_predicted_savings = predicted_future_df.groupby('Month')['Predicted Daily Savings'].sum().reset_index()
+
+    return monthly_predicted_savings['Predicted Daily Savings'].tolist(), None
 
 
 @api_view(['GET'])
