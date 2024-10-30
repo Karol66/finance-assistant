@@ -62,8 +62,9 @@ def get_predicted_savings(user):
     predicted_future_df['Month'] = predicted_future_df['Date'].dt.to_period('M')
     monthly_predicted_savings = predicted_future_df.groupby('Month')['Predicted Daily Savings'].sum().reset_index()
 
-    return monthly_predicted_savings['Predicted Daily Savings'].tolist(), None
+    divided_savings = (monthly_predicted_savings['Predicted Daily Savings'] / 20).tolist()
 
+    return divided_savings, None
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
