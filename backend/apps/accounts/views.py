@@ -27,8 +27,6 @@ def account_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def account_create(request):
-    print("Dane POST:", request.data)
-
     serializer = AccountSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(user=request.user)

@@ -3,9 +3,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CategoriesService {
-  final String baseUrl = 'http://10.0.2.2:8000/api'; // Adres API
+  final String baseUrl = 'http://10.0.2.2:8000/api'; 
 
-  // Pobieranie listy kategorii
   Future<List<dynamic>?> fetchCategories() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
@@ -19,7 +18,7 @@ class CategoriesService {
       Uri.parse('$baseUrl/categories/'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Użycie tokenu JWT
+        'Authorization': 'Bearer $token', 
       },
     );
 
@@ -31,7 +30,6 @@ class CategoriesService {
     }
   }
 
-  // Pobieranie pojedynczej kategorii
   Future<Map<String, dynamic>?> fetchCategoryById(int categoryId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
@@ -45,7 +43,7 @@ class CategoriesService {
       Uri.parse('$baseUrl/categories/$categoryId/'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Użycie tokenu JWT
+        'Authorization': 'Bearer $token', 
       },
     );
 
@@ -57,7 +55,6 @@ class CategoriesService {
     }
   }
 
-  // Tworzenie nowej kategorii
   Future<void> createCategory(String categoryName, String categoryType,
       String categoryColor, String categoryIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -89,7 +86,6 @@ class CategoriesService {
     }
   }
 
-  // Aktualizacja kategorii
   Future<void> updateCategory(int categoryId, String categoryName,
       String categoryType, String categoryColor, String categoryIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -121,7 +117,6 @@ class CategoriesService {
     }
   }
 
-  // Usuwanie kategorii
   Future<void> deleteCategory(int categoryId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');

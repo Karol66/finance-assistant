@@ -11,7 +11,6 @@ from datetime import timedelta
 from apps.goals.models import Goal
 from apps.transfers.models import Transfer
 
-# Wczytanie modelu i skalera
 model = joblib.load('ai/model_regresji_liniowej.pkl')
 scaler = joblib.load('ai/scaler.pkl')
 
@@ -34,37 +33,31 @@ def get_predicted_savings(user):
     df['amount'] = df['amount'].astype(float)
     df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
 
-    # Obliczanie dziennego dochodu netto
     daily_data = df.groupby('date').agg({'amount': 'sum'}).reset_index()
     daily_data.columns = ['Date', 'Net Income']
     daily_data['Cumulative Savings'] = daily_data['Net Income'].cumsum()
 
-    # Ustawienia początkowe do predykcji
     predicted_savings = []
     last_date = daily_data['Date'].iloc[-1]
     last_savings = daily_data['Cumulative Savings'].iloc[-1]
 
-    # Prognozowanie dzienne na przyszłość (365 dni do przodu)
     future_dates = []
     for day in range(1, 366):
         next_date = last_date + timedelta(days=1)
         month = next_date.month
         day_of_year = next_date.dayofyear
 
-        # Upewnij się, że input_data to DataFrame z kolumnami o odpowiednich nazwach
         input_data = pd.DataFrame([[month, day_of_year, last_savings]],
                                   columns=['Month', 'DayOfYear', 'Cumulative Savings'])
         scaled_data = pd.DataFrame(scaler.transform(input_data),
-                                   columns=input_data.columns)  # Dodaj kolumny po skalowaniu
+                                   columns=input_data.columns)
         predicted_saving = model.predict(scaled_data)[0]
 
-        # Aktualizacja wartości dla kolejnego dnia
         predicted_savings.append(predicted_saving)
         last_savings = predicted_saving
         last_date = next_date
         future_dates.append(next_date)
 
-    # Grupowanie dziennych prognoz do poziomu miesięcznego
     predicted_future_df = pd.DataFrame({'Date': future_dates, 'Predicted Daily Savings': predicted_savings})
     predicted_future_df['Month'] = predicted_future_df['Date'].dt.to_period('M')
     monthly_predicted_savings = predicted_future_df.groupby('Month')['Predicted Daily Savings'].sum().reset_index()
@@ -104,7 +97,6 @@ def propose_saving_strategy(request):
         monthly_allocation = []
 
         for saving in predicted_savings:
-            # Pomiń ujemne prognozowane wartości
             if saving <= 0:
                 continue
 

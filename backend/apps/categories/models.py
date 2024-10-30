@@ -10,10 +10,10 @@ class Category(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=255)
-    category_type = models.CharField(max_length=50, choices=CATEGORY_TYPES)  # Użycie 'choices' dla ograniczenia wartości
-    category_color = models.CharField(max_length=7)  # Kolor kategorii (hex, np. #FF5733)
-    category_icon = models.CharField(max_length=50)  # Ikona kategorii
-    is_deleted = models.BooleanField(default=False)  # Pole do oznaczania kategorii jako usuniętej
+    category_type = models.CharField(max_length=50, choices=CATEGORY_TYPES)
+    category_color = models.CharField(max_length=7)
+    category_icon = models.CharField(max_length=50)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.category_name} ({self.category_type})"

@@ -11,7 +11,6 @@ class Transfer(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
 
-    # Nowe pola do wsparcia regularnych transferów
     is_regular = models.BooleanField(default=False)
     interval = models.CharField(
         max_length=50,

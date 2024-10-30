@@ -10,13 +10,12 @@ class CategoriesCreateView extends StatefulWidget {
 
 class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   final TextEditingController _categoryNameController = TextEditingController();
-  final CategoriesService _categoriesService = CategoriesService(); // Utwórz instancję serwisu
+  final CategoriesService _categoriesService = CategoriesService(); 
 
-  String _categoryType ='expense'; // Ustawienie domyślnego typu kategorii jako 'expense'
-  Color? _selectedColor; // Zmienna przechowująca wybrany kolor
-  IconData? _selectedIcon; // Zmienna przechowująca wybraną ikonę
+  String _categoryType ='expense'; 
+  Color? _selectedColor; 
+  IconData? _selectedIcon; 
 
-  // Opcje kolorów do wyboru
   final List<Color> _colorOptions = [
     Colors.red,
     Colors.green,
@@ -29,7 +28,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Colors.grey,
   ];
 
-  // Opcje ikon do wyboru
   final List<IconData> _iconOptions = [
     Icons.directions_car,
     Icons.phone,
@@ -48,43 +46,36 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     Icons.travel_explore,
   ];
 
-  // Metoda do tworzenia nowej kategorii
   Future<void> _addCategory() async {
-    // Pobranie danych z formularza
     String categoryName = _categoryNameController.text;
     String categoryColor =
-        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; // Poprawa formatu koloru (6 znaków)
+        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; 
 
-    // Przypisanie wybranej ikony przez użytkownika, jeśli została wybrana, lub domyślnej wartości
     String categoryIcon = _selectedIcon != null
         ? _selectedIcon!.codePoint.toString()
-        : 'default_icon'; // Wybrana ikona lub 'default_icon'
+        : 'default_icon'; 
 
-    // Wywołanie serwisu, aby utworzyć kategorię
     await _categoriesService.createCategory(
       categoryName,
       _categoryType,
       categoryColor,
-      categoryIcon, // Przekazujemy wybraną lub domyślną ikonę
+      categoryIcon, 
     );
 
-      // Po utworzeniu kategorii wracamy do poprzedniego ekranu i zwracamy wartość true
     Navigator.pop(context, true);
   }
 
-  // Metoda do wyboru koloru
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
     });
   }
 
-  // Metoda do wyboru ikony
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
       _selectedColor ??= const Color(
-          0xFF191E29); // Ustawienie domyślnego koloru, jeśli nie wybrano wcześniej
+          0xFF191E29); 
     });
   }
 
@@ -125,7 +116,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               Row(
                 children: [
                   Radio<String>(
-                    value: 'expense', // Użyj małych liter zgodnie z Django
+                    value: 'expense', 
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
@@ -140,7 +131,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                   ),
                   const SizedBox(width: 20),
                   Radio<String>(
-                    value: 'income', // Użyj małych liter zgodnie z Django
+                    value: 'income', 
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
@@ -168,7 +159,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 10),
 
-              colorPicker(), // Wybór koloru
+              colorPicker(), 
               const SizedBox(height: 20),
 
               const Text(
@@ -182,7 +173,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 20),
 
-              // Grid do wyboru ikony
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -193,7 +183,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
                   ..._iconOptions.map((iconData) {
                     return GestureDetector(
                       onTap: () => _onIconSelected(
-                          iconData), // Zmieniono na przypisanie wybranej ikony
+                          iconData), 
                       child: Container(
                         decoration: BoxDecoration(
                           color: _selectedIcon == iconData
@@ -217,12 +207,11 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
               ),
               const SizedBox(height: 20),
 
-              // Przycisk dodania kategorii
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed:
-                      _addCategory, // Wywołanie metody dodawania kategorii
+                      _addCategory, 
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
                     backgroundColor: const Color(0xFF01C38D),
@@ -247,7 +236,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     );
   }
 
-  // Widget do wprowadzania tekstu
   Widget inputTextField(
       String hintText, bool obscureText, TextEditingController controller) {
     return TextField(
@@ -265,7 +253,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     );
   }
 
-  // Widget do wyboru koloru
   Widget colorPicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +264,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
             children: _colorOptions.map((color) {
               return GestureDetector(
                 onTap: () => _onColorSelected(
-                    color), // Zmieniono na przypisanie wybranego koloru
+                    color), 
                 child: Container(
                   width: 30,
                   height: 30,
@@ -298,7 +285,6 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
     );
   }
 
-  // Przycisk "More"
   Widget moreButton() {
     return GestureDetector(
       onTap: () {

@@ -4,7 +4,7 @@ import 'package:frontend/services/accounts_service.dart';
 import 'package:frontend/services/goals_service.dart';
 
 class GoalsManageView extends StatefulWidget {
-  final int goalId; // Dodajemy identyfikator celu, aby wczytać dane
+  final int goalId;
 
   const GoalsManageView({super.key, required this.goalId});
 

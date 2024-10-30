@@ -1,6 +1,5 @@
 from django.db import models
-from django.conf import settings  # Używamy dla modelu użytkownika (User)
-from django.utils import timezone
+from django.conf import settings
 
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

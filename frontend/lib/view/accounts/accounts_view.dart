@@ -127,12 +127,12 @@ class _AccountViewState extends State<AccountView> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       Text(
-                        _getBalanceText(), // Wyświetl plus lub minus
+                        _getBalanceText(),
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color:
-                              _getBalanceColor(), // Kolor w zależności od wyniku
+                              _getBalanceColor(), 
                         ),
                       ),
                     ],

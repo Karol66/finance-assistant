@@ -86,7 +86,7 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
       sendAt,
       categoryColor,
       categoryIcon,
-      false, // is_deleted set to false for update
+      false, 
     );
 
     Navigator.pop(context, true);

@@ -30,7 +30,6 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
   final CategoriesService _categoriesService = CategoriesService();
   final AccountsService _accountsService = AccountsService();
 
-  // Lista dostępnych interwałów
   final List<String> _intervals = ['daily', 'weekly', 'monthly', 'yearly'];
 
   Future<void> _submitRegularTransfer() async {
@@ -59,7 +58,7 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
       date,
       accountId,
       categoryId,
-      _selectedInterval!, // Przekazanie wybranego interwału
+      _selectedInterval!, 
     );
 
     Navigator.pop(context, true);

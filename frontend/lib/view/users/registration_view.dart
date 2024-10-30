@@ -68,9 +68,7 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
         ),
       );
     } else {
-      // Wywołaj rejestrację przez AuthService
       await authService.register(username, email, password);
-      // Po pomyślnej rejestracji przekieruj na stronę logowania
       Navigator.push(
         context,
         MaterialPageRoute(

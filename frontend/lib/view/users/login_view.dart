@@ -52,17 +52,14 @@ class _UserWidgetState extends State<UserWidget> {
       );
       return;
     }
-    // Wywołanie logowania za pomocą AuthService
     final response = await _authService.login(identifier, password);
     if (response != null) {
       final accessToken = response['access'];
       final refreshToken = response['refresh'];
 
-      // Przechowywanie tokenów (SharedPreferences lub FlutterSecureStorage)
       print('Access Token: $accessToken');
       print('Refresh Token: $refreshToken');
 
-      // Przekierowanie po zalogowaniu
       Navigator.push(
         context,
         MaterialPageRoute(

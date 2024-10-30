@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/categories_service.dart';
 
 class CategoriesManageView extends StatefulWidget {
-  final int categoryId; // Odbieramy ID kategorii
+  final int categoryId;
 
   const CategoriesManageView({super.key, required this.categoryId});
 
@@ -12,10 +12,9 @@ class CategoriesManageView extends StatefulWidget {
 
 class _CategoriesManageViewState extends State<CategoriesManageView> {
   final TextEditingController _categoryNameController = TextEditingController();
-  final CategoriesService _categoriesService =
-      CategoriesService(); // Serwis do pobierania danych
+  final CategoriesService _categoriesService = CategoriesService();
 
-  String _categoryType = 'expense'; // Domyślny typ
+  String _categoryType = 'expense';
   Color? _selectedColor;
   IconData? _selectedIcon;
 
@@ -51,64 +50,50 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
   @override
   void initState() {
     super.initState();
-    _loadCategory(); // Ładowanie danych kategorii
+    _loadCategory();
   }
 
   Future<void> _loadCategory() async {
-    final fetchedCategory = await _categoriesService
-        .fetchCategoryById(widget.categoryId); // Pobieramy kategorię po ID
+    final fetchedCategory =
+        await _categoriesService.fetchCategoryById(widget.categoryId);
     if (fetchedCategory != null) {
       setState(() {
-        _categoryNameController.text =
-            fetchedCategory['category_name']; // Ustawienie nazwy kategorii
-        _categoryType =
-            fetchedCategory['category_type']; // Ustawienie typu kategorii
-        _selectedColor =
-            _parseColor(fetchedCategory['category_color']); // Ustawienie koloru
-        _selectedIcon = _getIconFromString(
-            fetchedCategory['category_icon']); // Ustawienie ikony
+        _categoryNameController.text = fetchedCategory['category_name'];
+        _categoryType = fetchedCategory['category_type'];
+        _selectedColor = _parseColor(fetchedCategory['category_color']);
+        _selectedIcon = _getIconFromString(fetchedCategory['category_icon']);
       });
     }
   }
 
-  // Konwersja stringa na IconData
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
     return IconData(codePoint, fontFamily: 'MaterialIcons');
   }
 
-  // Parsowanie koloru z formatu hex
   Color _parseColor(String colorString) {
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  // Zaktualizowana metoda do zapisu edytowanej kategorii
   Future<void> _updateCategory() async {
     String categoryName = _categoryNameController.text;
     String categoryColor =
-        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; // Formatowanie koloru
+        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
     String categoryIcon = _selectedIcon != null
         ? _selectedIcon!.codePoint.toString()
-        : 'default_icon'; // Przypisanie wybranej ikony
+        : 'default_icon';
 
-    await _categoriesService.updateCategory(
-        widget.categoryId,
-        categoryName,
-        _categoryType,
-        categoryColor,
-        categoryIcon); // Aktualizacja kategorii
+    await _categoriesService.updateCategory(widget.categoryId, categoryName,
+        _categoryType, categoryColor, categoryIcon);
 
-    Navigator.pop(
-        context, true); // Powrót do poprzedniego ekranu po aktualizacji
+    Navigator.pop(context, true);
   }
 
-  // Metoda do usunięcia kategorii
   Future<void> _deleteCategory() async {
-    await _categoriesService
-        .deleteCategory(widget.categoryId); // Usuwanie kategorii
+    await _categoriesService.deleteCategory(widget.categoryId);
 
-    Navigator.pop(context, true); // Powrót do poprzedniego ekranu po usunięciu
+    Navigator.pop(context, true);
   }
 
   @override
@@ -131,10 +116,8 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              inputTextField('Category Name', false,
-                  _categoryNameController), // Nazwa kategorii
+              inputTextField('Category Name', false, _categoryNameController),
               const SizedBox(height: 20),
-
               const Text(
                 'Select Category Type:',
                 style: TextStyle(
@@ -144,11 +127,10 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-
               Row(
                 children: [
                   Radio<String>(
-                    value: 'expense', // Wartość 'expense'
+                    value: 'expense',
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
@@ -160,7 +142,7 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                   const Text('Expenses', style: TextStyle(color: Colors.white)),
                   const SizedBox(width: 20),
                   Radio<String>(
-                    value: 'income', // Wartość 'income'
+                    value: 'income',
                     groupValue: _categoryType,
                     onChanged: (value) {
                       setState(() {
@@ -173,7 +155,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ],
               ),
               const SizedBox(height: 20),
-
               const Text(
                 'Select Category Color:',
                 style: TextStyle(
@@ -183,10 +164,8 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              colorPicker(), // Picker koloru
+              colorPicker(),
               const SizedBox(height: 20),
-
               const Text(
                 'Select Category Icon:',
                 style: TextStyle(
@@ -196,7 +175,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ),
               ),
               const SizedBox(height: 20),
-
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 4,
@@ -206,8 +184,7 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 children: [
                   ..._iconOptions.map((iconData) {
                     return GestureDetector(
-                      onTap: () =>
-                          _onIconSelected(iconData), // Zmiana zaznaczonej ikony
+                      onTap: () => _onIconSelected(iconData),
                       child: Container(
                         decoration: BoxDecoration(
                           color: _selectedIcon == iconData
@@ -226,17 +203,13 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ],
               ),
               const SizedBox(height: 20),
-
-              // Przycisk aktualizacji kategorii
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      _updateCategory, // Wywołanie metody aktualizacji kategorii
+                  onPressed: _updateCategory,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(
-                        0xFF4CAF50), // Zielony kolor przycisku aktualizacji
+                    backgroundColor: const Color(0xFF4CAF50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -251,17 +224,13 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Przycisk usunięcia kategorii
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      _deleteCategory, // Wywołanie metody usunięcia kategorii
+                  onPressed: _deleteCategory,
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(
-                        0xFFF44336), // Czerwony kolor przycisku usunięcia
+                    backgroundColor: const Color(0xFFF44336),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -282,7 +251,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
     );
   }
 
-  // Widget do wprowadzania tekstu
   Widget inputTextField(
       String hintText, bool obscureText, TextEditingController controller) {
     return TextField(
@@ -300,51 +268,46 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
     );
   }
 
-// Wybór koloru
-Widget colorPicker() {
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: Row(
-      children: _colorOptions.map((color) {
-        return GestureDetector(
-          onTap: () => _onColorSelected(color), // Zaznaczenie wybranego koloru
-          child: Container(
-            width: 30,
-            height: 30,
-            margin: const EdgeInsets.symmetric(horizontal: 5),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle, // Okrągły kształt
-              border: Border.all(
-                color: (_selectedColor?.value == color.value) 
-                    ? Colors.white 
-                    : Colors.transparent, // Biały border, jeśli wybrany kolor ma taką samą wartość
-                width: 3, // Szerokość borderu
+  Widget colorPicker() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _colorOptions.map((color) {
+          return GestureDetector(
+            onTap: () => _onColorSelected(color),
+            child: Container(
+              width: 30,
+              height: 30,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: (_selectedColor?.value == color.value)
+                      ? Colors.white
+                      : Colors.transparent,
+                  width: 3,
+                ),
               ),
             ),
-          ),
-        );
-      }).toList(),
-    ),
-  );
-}
+          );
+        }).toList(),
+      ),
+    );
+  }
 
-
-  // Wybór koloru
   void _onColorSelected(Color color) {
     setState(() {
       _selectedColor = color;
     });
   }
 
-  // Wybór ikony
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
     });
   }
 
-  // Przycisk "More"
   Widget moreButton() {
     return GestureDetector(
       onTap: () {

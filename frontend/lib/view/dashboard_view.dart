@@ -23,7 +23,7 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   void initState() {
     super.initState();
-    loadTransfers(); // Pobieranie transferów z serwisu
+    loadTransfers();
   }
 
   Future<void> loadTransfers() async {
@@ -53,46 +53,40 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  // Funkcja konwertująca kolor HEX na obiekt Color
   Color _parseColor(String colorString) {
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  // Filtrowanie danych w zależności od wybranego trybu (General, Expenses, Income)
   List<Map<String, dynamic>> _filteredTransfers() {
     if (isGeneral) {
-      return transfers; // Wyświetlamy wszystkie transakcje
+      return transfers;
     } else if (isExpenses) {
       return transfers
           .where((transfer) => transfer['type'] == 'Expenses')
-          .toList(); // Tylko wydatki
+          .toList();
     } else {
       return transfers
           .where((transfer) => transfer['type'] == 'Income')
-          .toList(); // Tylko dochody
+          .toList();
     }
   }
 
-  // Funkcja formatująca datę w zależności od wybranego okresu
   String getFormattedPeriod() {
     if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy')
-          .format(selectedDate); // Format dla dnia
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
     } else if (selectedPeriod == 'Week') {
       DateTime firstDayOfWeek =
           selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
       DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format dla tygodnia
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
     } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy')
-          .format(selectedDate); // Format dla miesiąca
+      return DateFormat('MMMM yyyy').format(selectedDate);
     } else {
-      return DateFormat('yyyy').format(selectedDate); // Format dla roku
+      return DateFormat('yyyy').format(selectedDate);
     }
   }
 
-  // Funkcja do cofania okresu
   void goToPreviousPeriod() {
     setState(() {
       if (selectedPeriod == 'Day') {
@@ -109,7 +103,6 @@ class _DashboardViewState extends State<DashboardView> {
     });
   }
 
-  // Wyświetlanie pojedynczego elementu transferu
   Widget transferItem(Map<String, dynamic> transfer) {
     double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
     final isExpense = transfer['type'] == 'Expenses';
@@ -130,12 +123,11 @@ class _DashboardViewState extends State<DashboardView> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Ikona kategorii
             Container(
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: transfer['category_color'], // Kolor kategorii
+                color: transfer['category_color'],
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -148,7 +140,6 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
             const SizedBox(width: 15),
-            // Dane transferu
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +182,6 @@ class _DashboardViewState extends State<DashboardView> {
                 ],
               ),
             ),
-            // Kwota transferu
             Center(
               child: Text(
                 amountText,
@@ -208,13 +198,11 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  // Formatowanie daty, aby wyświetlać tylko dzień
   String _formatDate(String dateTimeString) {
     DateTime parsedDate = DateTime.parse(dateTimeString);
     return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
   }
 
-  // Obliczanie sumy transferów
   double _getTotalAmount() {
     double totalIncome = transfers
         .where((transfer) => transfer['type'] == 'Income')
@@ -250,7 +238,6 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  // Dane dla wykresu kołowego na podstawie transferów
   List<PieChartSectionData> getPieChartData() {
     return _filteredTransfers().map((transfer) {
       double value = double.parse(transfer["amount"]);
@@ -273,7 +260,6 @@ class _DashboardViewState extends State<DashboardView> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Sekcja wykresu kołowego
             Container(
               width: media.width,
               height: 415,
@@ -289,7 +275,6 @@ class _DashboardViewState extends State<DashboardView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Wybór okresu: Year, Month, Week, Day
                     Row(
                       children: [
                         _buildPeriodSelector("Year"),
@@ -298,9 +283,7 @@ class _DashboardViewState extends State<DashboardView> {
                         _buildPeriodSelector("Day"),
                       ],
                     ),
-                    const SizedBox(
-                        height: 10), // Odstęp między wyborem okresu a datą
-                    // Dodanie strzałki i pola do zmiany daty
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -333,14 +316,13 @@ class _DashboardViewState extends State<DashboardView> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Użyjemy funkcji pomocniczych do ustalenia koloru i tekstu
                               Text(
                                 _getTotalAmountText(_getTotalAmount()),
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: _getTotalAmountColor(
-                                      _getTotalAmount()), // Kolor na podstawie wartości
+                                  color:
+                                      _getTotalAmountColor(_getTotalAmount()),
                                 ),
                               ),
                               Text(
@@ -360,7 +342,6 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
             const SizedBox(height: 20),
-            // Wybór typu: General, Expenses, Income
             Row(
               children: [
                 _buildTypeSelector("General", isGeneral),
@@ -369,7 +350,6 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             ),
             const SizedBox(height: 20),
-            // Lista transferów
             ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const NeverScrollableScrollPhysics(),
@@ -391,7 +371,6 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  // Funkcja tworząca widget do wyboru okresu
   Widget _buildPeriodSelector(String period) {
     return Expanded(
       child: GestureDetector(
@@ -426,7 +405,6 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  // Funkcja tworząca widget do wyboru typu (General, Expenses, Income)
   Widget _buildTypeSelector(String type, bool isSelected) {
     return Expanded(
       child: GestureDetector(

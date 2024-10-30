@@ -150,14 +150,13 @@ class _SavingStrategiesState extends State<SavingStrategies> {
                   double widthFraction =
                       allocation / (goal['target_amount'] ?? 1);
 
-                  // Wybierz bardziej kontrastowe kolory dla każdego fragmentu
                   Color color = [
                     Colors.blueAccent,
                     Colors.orangeAccent,
                     Colors.greenAccent,
                     Colors.redAccent,
                     Colors.purpleAccent,
-                  ][idx % 5]; // Wybór koloru na podstawie indeksu
+                  ][idx % 5]; 
 
                   return Expanded(
                     flex: (widthFraction * 1000).toInt(),

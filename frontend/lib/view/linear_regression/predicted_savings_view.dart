@@ -38,10 +38,10 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
         x: index,
         barRods: [
           BarChartRodData(
-            toY: double.parse(value.toStringAsFixed(2)), // Rounds to 2 decimals
+            toY: double.parse(value.toStringAsFixed(2)), 
             color: value < 0
                 ? Colors.red
-                : Colors.green, // Red for negative, green for positive
+                : Colors.green, 
             width: 11,
           ),
         ],
@@ -101,7 +101,7 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
                           titlesData: FlTitlesData(
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
-                                  showTitles: false), // Hides the Y-axis titles
+                                  showTitles: false), 
                             ),
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(

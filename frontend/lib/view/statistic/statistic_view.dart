@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:frontend/services/transfers_service.dart'; // Import serwisu do zaczytywania transferów
+import 'package:frontend/services/transfers_service.dart'; 
 import 'package:intl/intl.dart';
 
 class StatisticView extends StatefulWidget {
@@ -22,7 +22,7 @@ class _StatisticViewState extends State<StatisticView> {
   @override
   void initState() {
     super.initState();
-    loadTransfers(); // Pobieranie transferów z serwisu
+    loadTransfers(); 
   }
 
   Future<void> loadTransfers() async {
@@ -51,13 +51,11 @@ class _StatisticViewState extends State<StatisticView> {
     }
   }
 
-  // Funkcja konwertująca kolor HEX na obiekt Color
   Color _parseColor(String colorString) {
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  // Filtrowanie transferów w zależności od wybranego okresu (Year, Month, Week, Day)
   List<Map<String, dynamic>> _filteredTransfers() {
     DateTime now = DateTime.now();
     List<Map<String, dynamic>> filteredTransfers = transfers.where((transfer) {
@@ -78,34 +76,32 @@ class _StatisticViewState extends State<StatisticView> {
     }).toList();
 
     if (isGeneral) {
-      return filteredTransfers; // Wyświetlamy wszystkie transakcje
+      return filteredTransfers; 
     } else if (isExpanses) {
       return filteredTransfers
           .where((transfer) => transfer['type'] == 'Expenses')
-          .toList(); // Tylko wydatki
+          .toList(); 
     } else {
       return filteredTransfers
           .where((transfer) => transfer['type'] == 'Income')
-          .toList(); // Tylko dochody
+          .toList(); 
     }
   }
 
-  // Funkcja formatująca datę w zależności od wybranego okresu
   String getFormattedPeriod() {
     if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  // Format dla dnia
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  
     } else if (selectedPeriod == 'Week') {
       DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
       DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; // Format dla tygodnia
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; 
     } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy').format(selectedDate);  // Format dla miesiąca
+      return DateFormat('MMMM yyyy').format(selectedDate);  
     } else {
-      return DateFormat('yyyy').format(selectedDate);  // Format dla roku
+      return DateFormat('yyyy').format(selectedDate);
     }
   }
 
-  // Funkcja do cofania okresu
   void goToPreviousPeriod() {
     setState(() {
       if (selectedPeriod == 'Day') {
@@ -120,7 +116,6 @@ class _StatisticViewState extends State<StatisticView> {
     });
   }
 
-  // Obliczanie sumy transferów
   double getTotalAmount() {
     double totalIncome = _filteredTransfers()
         .where((transfer) => transfer['type'] == 'Income')
@@ -138,7 +133,6 @@ class _StatisticViewState extends State<StatisticView> {
     }
   }
 
-  // Wyświetlanie pojedynczego elementu transferu
   Widget transferItem(Map<String, dynamic> transfer) {
     double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
     final isExpense = transfer['type'] == 'Expenses';
@@ -159,12 +153,11 @@ class _StatisticViewState extends State<StatisticView> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Ikona kategorii
             Container(
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: transfer['category_color'], // Kolor kategorii
+                color: transfer['category_color'],
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -177,7 +170,6 @@ class _StatisticViewState extends State<StatisticView> {
               ),
             ),
             const SizedBox(width: 15),
-            // Dane transferu
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +212,6 @@ class _StatisticViewState extends State<StatisticView> {
                 ],
               ),
             ),
-            // Kwota transferu
             Center(
               child: Text(
                 amountText,
@@ -237,13 +228,11 @@ class _StatisticViewState extends State<StatisticView> {
     );
   }
 
-  // Formatowanie daty, aby wyświetlać tylko dzień
   String _formatDate(String dateTimeString) {
     DateTime parsedDate = DateTime.parse(dateTimeString);
     return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
   }
 
-  // Dane dla wykresu słupkowego na podstawie transferów
   List<BarChartGroupData> createBarGroups() {
     List<double> incomes = _filteredTransfers()
         .where((transfer) => transfer['type'] == 'Income')
@@ -255,13 +244,11 @@ class _StatisticViewState extends State<StatisticView> {
         .map((transfer) => double.parse(transfer['amount']))
         .toList();
 
-    // Obliczamy maksymalną liczbę grup (zakładamy maksymalnie 5 grup na wykresie)
     int maxGroups = 5;
     return List.generate(maxGroups, (index) {
       double incomeValue = index < incomes.length ? incomes[index] : 0;
       double expenseValue = index < expenses.length ? expenses[index] : 0;
 
-      // Jeśli tryb to "General", wyświetl dodatkowy słupek różnicy
       if (isGeneral) {
         double difference = incomeValue - expenseValue;
         return BarChartGroupData(
@@ -286,7 +273,6 @@ class _StatisticViewState extends State<StatisticView> {
           barsSpace: 6,
         );
       } else {
-        // W trybie "Expenses" lub "Income" wyświetl tylko odpowiedni słupek
         return BarChartGroupData(
           x: index,
           barRods: [
@@ -316,7 +302,6 @@ class _StatisticViewState extends State<StatisticView> {
     double maxIncome = incomes.isNotEmpty ? incomes.reduce((a, b) => a > b ? a : b) : 0;
     double maxExpense = expenses.isNotEmpty ? expenses.reduce((a, b) => a > b ? a : b) : 0;
 
-    // Zwracamy maksymalną wartość na wykresie, z lekką nadwyżką
     return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
   }
 
@@ -329,10 +314,9 @@ class _StatisticViewState extends State<StatisticView> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Szary element na górze, z wykresem
             Container(
               width: media.width,
-              height: 400, // zwiększenie wysokości, aby zmieścić tekst i wykres
+              height: 400, 
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -345,7 +329,6 @@ class _StatisticViewState extends State<StatisticView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Wybór okresu: Year, Month, Week, Day
                     Row(
                       children: [
                         _buildPeriodSelector("Year"),
@@ -354,8 +337,7 @@ class _StatisticViewState extends State<StatisticView> {
                         _buildPeriodSelector("Day"),
                       ],
                     ),
-                    const SizedBox(height: 10), // Odstęp między wyborem okresu a datą
-                    // Dodanie strzałki i pola do zmiany daty
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -373,12 +355,11 @@ class _StatisticViewState extends State<StatisticView> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // Wykres słupkowy
                     Expanded(
                       child: BarChart(
                         BarChartData(
                           alignment: BarChartAlignment.spaceAround,
-                          maxY: calculateMaxY(), // dynamiczne ustawienie maksymalnej wartości Y
+                          maxY: calculateMaxY(),
                           barTouchData: BarTouchData(enabled: true),
                           titlesData: FlTitlesData(
                             show: true,
@@ -425,7 +406,6 @@ class _StatisticViewState extends State<StatisticView> {
               ],
             ),
             const SizedBox(height: 20),
-            // Lista transferów
             ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const NeverScrollableScrollPhysics(),
@@ -443,7 +423,6 @@ class _StatisticViewState extends State<StatisticView> {
     );
   }
 
-  // Funkcja tworząca widget do wyboru okresu
   Widget _buildPeriodSelector(String period) {
     return Expanded(
       child: GestureDetector(
@@ -478,7 +457,6 @@ class _StatisticViewState extends State<StatisticView> {
     );
   }
 
-  // Funkcja tworząca widget do wyboru typu (General, Expenses, Income)
   Widget _buildTypeSelector(String type, bool isSelected) {
     return Expanded(
       child: GestureDetector(

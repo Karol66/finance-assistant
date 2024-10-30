@@ -32,7 +32,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Load data asynchronously
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -41,12 +41,9 @@ class _TransfersManageViewState extends State<TransfersManageView> {
       loadCategories(),
     ]);
 
-    // Teraz ładujemy szczegóły transferu
     await _loadTransfer();
 
-    setState(() {
-      // Zaktualizowane dane już wczytane do list rozwijanych
-    });
+    setState(() {});
   }
 
   Future<void> _loadTransfer() async {
@@ -66,7 +63,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         _selectedDate = DateTime.parse(fetchedTransfer['date']);
         _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
 
-        // Ustawienie wybranej kategorii
         if (fetchedCategory != null) {
           _selectedCategory = _categories.firstWhere(
             (category) => category['category_id'] == fetchedCategory['id'],
@@ -74,7 +70,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
           );
         }
 
-        // Ustawienie wybranego konta
         if (fetchedAccount != null) {
           _selectedAccount = _accounts.firstWhere(
             (account) => account['account_id'] == fetchedAccount['id'],
@@ -93,10 +88,8 @@ class _TransfersManageViewState extends State<TransfersManageView> {
             .map((category) => {
                   "category_id": category["id"],
                   "category_name": category["category_name"],
-                  "category_icon":
-                      category["category_icon"], // Pobieranie ikony
-                  "category_color":
-                      category["category_color"], // Pobieranie koloru
+                  "category_icon": category["category_icon"],
+                  "category_color": category["category_color"],
                 })
             .toList();
 
@@ -117,10 +110,9 @@ class _TransfersManageViewState extends State<TransfersManageView> {
             .map((account) => {
                   "account_id": account["id"],
                   "account_name": account["account_name"],
-                  "account_icon": account["account_icon"], // Pobieranie ikony
-                  "account_color":
-                      account["account_color"], // Pobieranie koloru
-                  "account_balance": account["balance"], // Pobieranie salda
+                  "account_icon": account["account_icon"],
+                  "account_color": account["account_color"],
+                  "account_balance": account["balance"],
                 })
             .toList();
 
@@ -131,10 +123,9 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     }
   }
 
-// Funkcja konwertująca kolor HEX na obiekt Color z obsługą null
   Color _parseColor(String? colorString) {
     if (colorString == null || colorString.isEmpty) {
-      return Colors.grey; // Domyślny kolor, jeśli brak danych
+      return Colors.grey;
     }
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
@@ -222,163 +213,159 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     );
   }
 
-// Dropdown for accounts with balance, icon, and dynamic color
-Widget accountDropdown() {
-  return DropdownButtonFormField<Map<String, dynamic>>(
-    value: _selectedAccount,
-    itemHeight: 50, // Ustawienie wysokości każdego elementu dropdown
-    isDense: false, // Zapewnienie większej przestrzeni dla wybranego elementu
-    decoration: InputDecoration(
-      filled: true,
-      fillColor: const Color(0xFF191E29), // Dopasowane tło jak w widoku konta
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0), // Zwiększenie marginesu wewnętrznego
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide.none,
+  Widget accountDropdown() {
+    return DropdownButtonFormField<Map<String, dynamic>>(
+      value: _selectedAccount,
+      itemHeight: 50,
+      isDense: false,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFF191E29),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
       ),
-    ),
-    dropdownColor: const Color(0xFF191E29), // Kolor rozwijanego menu
-    isExpanded: true,
-    icon: const Icon(
-      Icons.arrow_drop_down,
-      color: Colors.grey,
-      size: 30, // Zwiększenie rozmiaru strzałki
-    ), 
-    items: _accounts.map((account) {
-      double balance = double.parse(account['account_balance'].toString());
-      bool isNegative = balance < 0;
-      String balanceText = isNegative
-          ? "- \$${balance.abs().toStringAsFixed(2)}"
-          : "+ \$${balance.toStringAsFixed(2)}";
-      return DropdownMenuItem(
-        value: account,
-        child: SizedBox(
-          height: 60, // Zwiększenie wysokości elementu w menu rozwijanym
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40, // Szerokość ikony
-                    height: 40  , // Wysokość ikony (równa, aby było koło)
-                    decoration: BoxDecoration(
-                      color: _parseColor(account['account_color'] as String?), // Dynamic color for account
-                      borderRadius: BorderRadius.circular(25), // Idealnie zaokrąglona ikona
-                    ),
-                    child: Center(
-                      child: Icon(
-                        IconData(
-                          int.parse(account['account_icon']),
-                          fontFamily: 'MaterialIcons',
+      dropdownColor: const Color(0xFF191E29),
+      isExpanded: true,
+      icon: const Icon(
+        Icons.arrow_drop_down,
+        color: Colors.grey,
+        size: 30,
+      ),
+      items: _accounts.map((account) {
+        double balance = double.parse(account['account_balance'].toString());
+        bool isNegative = balance < 0;
+        String balanceText = isNegative
+            ? "- \$${balance.abs().toStringAsFixed(2)}"
+            : "+ \$${balance.toStringAsFixed(2)}";
+        return DropdownMenuItem(
+          value: account,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _parseColor(account['account_color'] as String?),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          IconData(
+                            int.parse(account['account_icon']),
+                            fontFamily: 'MaterialIcons',
+                          ),
+                          color: Colors.white,
+                          size: 24,
                         ),
-                        color: Colors.white,
-                        size: 24, // Rozmiar ikony
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 20),
-                  Text(
-                    account['account_name'] ?? 'Unknown Account',
-                    style: const TextStyle(
-                      fontSize: 18, // Rozmiar tekstu
-                      color: Colors.white54, // Tekst w stylu widoku konta
+                    const SizedBox(width: 20),
+                    Text(
+                      account['account_name'] ?? 'Unknown Account',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white54,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Text(
-                balanceText,
-                style: TextStyle(
-                  fontSize: 18, // Rozmiar tekstu
-                  fontWeight: FontWeight.bold,
-                  color: isNegative ? Colors.red : Colors.green, // Kolor na podstawie wartości
+                  ],
                 ),
-              ),
-            ],
+                Text(
+                  balanceText,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isNegative ? Colors.red : Colors.green,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }).toList(),
-    onChanged: (newAccount) {
-      setState(() {
-        _selectedAccount = newAccount;
-      });
-    },
-  );
-}
+        );
+      }).toList(),
+      onChanged: (newAccount) {
+        setState(() {
+          _selectedAccount = newAccount;
+        });
+      },
+    );
+  }
 
-// Dropdown for categories with dynamic icon and color
-Widget categoryDropdown() {
-  return DropdownButtonFormField<Map<String, dynamic>>(
-    value: _selectedCategory,
-    itemHeight: 50, // Wysokość każdego elementu dropdown
-    isDense: false, // Zapewnienie większej przestrzeni dla wybranego elementu
-    decoration: InputDecoration(
-      filled: true,
-      fillColor: const Color(0xFF191E29), // Dopasowane tło jak w widoku konta
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0), // Zwiększenie marginesu wewnętrznego
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide.none,
+  Widget categoryDropdown() {
+    return DropdownButtonFormField<Map<String, dynamic>>(
+      value: _selectedCategory,
+      itemHeight: 50,
+      isDense: false,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFF191E29),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
       ),
-    ),
-    dropdownColor: const Color(0xFF191E29), // Kolor rozwijanego menu
-    isExpanded: true,
-    icon: const Icon(
-      Icons.arrow_drop_down,
-      color: Colors.grey,
-      size: 30, // Zwiększenie rozmiaru strzałki
-    ),
-    items: _categories.map((category) {
-      return DropdownMenuItem(
-        value: category,
-        child: SizedBox(
-          height: 60, // Zwiększenie wysokości elementu w menu rozwijanym
-          child: Row(
-            children: [
-              Container(
-                width: 40, // Szerokość ikony
-                height: 40, // Wysokość ikony (równa, aby było koło)
-                decoration: BoxDecoration(
-                  color: _parseColor(category['category_color'] as String?), // Dynamic color for category
-                  borderRadius: BorderRadius.circular(25), // Idealnie zaokrąglona ikona
-                ),
-                child: Center(
-                  child: Icon(
-                    IconData(
-                      int.parse(category['category_icon']),
-                      fontFamily: 'MaterialIcons',
+      dropdownColor: const Color(0xFF191E29),
+      isExpanded: true,
+      icon: const Icon(
+        Icons.arrow_drop_down,
+        color: Colors.grey,
+        size: 30,
+      ),
+      items: _categories.map((category) {
+        return DropdownMenuItem(
+          value: category,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _parseColor(category['category_color'] as String?),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      IconData(
+                        int.parse(category['category_icon']),
+                        fontFamily: 'MaterialIcons',
+                      ),
+                      color: Colors.white,
+                      size: 24,
                     ),
-                    color: Colors.white,
-                    size: 24, // Rozmiar ikony
                   ),
                 ),
-              ),
-              const SizedBox(width: 20),
-              Text(
-                category['category_name'] ?? 'Unknown Category',
-                style: const TextStyle(
-                  fontSize: 18, // Rozmiar tekstu
-                  color: Colors.white54, // Tekst w stylu widoku konta
+                const SizedBox(width: 20),
+                Text(
+                  category['category_name'] ?? 'Unknown Category',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white54,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    }).toList(),
-    onChanged: (newCategory) {
-      setState(() {
-        _selectedCategory = newCategory ?? _categories.first;
-      });
-    },
-  );
-}
-
-
-
-
+        );
+      }).toList(),
+      onChanged: (newCategory) {
+        setState(() {
+          _selectedCategory = newCategory ?? _categories.first;
+        });
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

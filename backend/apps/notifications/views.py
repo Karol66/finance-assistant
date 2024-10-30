@@ -27,18 +27,10 @@ def notification_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def notification_create(request):
-    print("Dane POST:", request.data)  # Wyświetlenie przesyłanych danych
-    print(f"Zalogowany użytkownik: {request.user}")  # Wyświetlenie aktualnie zalogowanego użytkownika
-
     serializer = NotificationSerializer(data=request.data)
-
     if serializer.is_valid():
-        print("Dane są poprawne, zapisujemy...")
-        # Sprawdzamy, czy użytkownik jest poprawnie przypisany
-        serializer.save(user=request.user)  # Przypisanie zalogowanego użytkownika do kategorii
+        serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    print("Błąd walidacji danych:", serializer.errors)  # Wyświetlenie błędów walidacji
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

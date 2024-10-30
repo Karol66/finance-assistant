@@ -55,7 +55,7 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     }
 
     String message = _messageController.text;
-    String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!); // Konwersja daty na String
+    String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!); 
     String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
     String categoryIcon = _selectedIcon != null
         ? _selectedIcon!.codePoint.toString()

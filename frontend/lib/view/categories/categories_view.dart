@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/categories_service.dart';
 import 'package:frontend/view/categories/categories_create_view.dart';
-import 'package:frontend/view/categories/categories_manage_view.dart'; // Import widoku zarządzania kategorią
+import 'package:frontend/view/categories/categories_manage_view.dart';
 
 class CategoriesView extends StatefulWidget {
   const CategoriesView({super.key});
@@ -14,18 +14,17 @@ class _CategoriesViewState extends State<CategoriesView> {
   bool isExpenses = true;
   List<Map<String, dynamic>> categories = [];
 
-  final CategoriesService _categoriesService = CategoriesService(); // Serwis do obsługi kategorii
+  final CategoriesService _categoriesService = CategoriesService();
 
   @override
   void initState() {
     super.initState();
-    loadCategories(isExpenses ? "expense" : "income");  // Załaduj kategorie odpowiedniego typu
+    loadCategories(isExpenses ? "expense" : "income");
   }
 
-  // Funkcja do pobierania kategorii z serwera
   Future<void> loadCategories(String categoryType) async {
     final fetchedCategories = await _categoriesService.fetchCategories();
-    
+
     if (fetchedCategories != null) {
       setState(() {
         categories = fetchedCategories
@@ -35,7 +34,8 @@ class _CategoriesViewState extends State<CategoriesView> {
                   "category_name": category["category_name"],
                   "category_type": category["category_type"],
                   "category_color": _parseColor(category["category_color"]),
-                  "category_icon": _getIconFromString(category["category_icon"]),
+                  "category_icon":
+                      _getIconFromString(category["category_icon"]),
                 })
             .toList();
       });
@@ -44,22 +44,20 @@ class _CategoriesViewState extends State<CategoriesView> {
     }
   }
 
-  // Funkcja do konwersji stringa na ikonę
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
     return IconData(codePoint, fontFamily: 'MaterialIcons');
   }
 
-  // Funkcja do parsowania koloru w formacie hex
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  // Funkcja obsługująca przełączanie pomiędzy Expenses i Income
   void onLinkClick(bool showExpenses) {
     setState(() {
       isExpenses = showExpenses;
-      categories.clear(); // Wyczyść listę kategorii przed załadowaniem nowych
+      categories.clear();
       loadCategories(isExpenses ? "expense" : "income");
     });
   }
@@ -67,24 +65,23 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF132D46), // Tło widoku
+      backgroundColor: const Color(0xFF132D46),
       body: Column(
         children: [
-          // Przełączniki Expenses i Income
           Row(
             children: [
-              const SizedBox(height: 60),  // Dystans dla górnej krawędzi
+              const SizedBox(height: 60),
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    onLinkClick(true); // Ustaw Expenses
+                    onLinkClick(true);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: isExpenses ? Colors.white : Colors.transparent, // Zmienny kolor zależny od wyboru
+                          color: isExpenses ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -93,7 +90,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                     child: Text(
                       "Expenses",
                       style: TextStyle(
-                        color: isExpenses ? Colors.white : Colors.grey[600],  // Kolor tekstu zależny od wyboru
+                        color: isExpenses ? Colors.white : Colors.grey[600],
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -104,14 +101,15 @@ class _CategoriesViewState extends State<CategoriesView> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    onLinkClick(false); // Ustaw Income
+                    onLinkClick(false);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: !isExpenses ? Colors.white : Colors.transparent,  // Zmienny kolor zależny od wyboru
+                          color:
+                              !isExpenses ? Colors.white : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -120,7 +118,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                     child: Text(
                       "Income",
                       style: TextStyle(
-                        color: !isExpenses ? Colors.white : Colors.grey[600],  // Kolor tekstu zależny od wyboru
+                        color: !isExpenses ? Colors.white : Colors.grey[600],
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -130,24 +128,22 @@ class _CategoriesViewState extends State<CategoriesView> {
               ),
             ],
           ),
-          const SizedBox(height: 5),  // Dystans poniżej przełączników
-          // Siatka kategorii
+          const SizedBox(height: 5),
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(10),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4, // Liczba kolumn
+                crossAxisCount: 4,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
-              itemCount:
-                  categories.length + 1, // Dodajemy dodatkowy element dla przycisku dodawania
+              itemCount: categories.length + 1,
               itemBuilder: (context, index) {
                 if (index == categories.length) {
-                  return createAddButton(); // Przycisk dodawania kategorii
+                  return createAddButton();
                 }
                 final category = categories[index];
-                return categoryItem(category); // Wyświetlanie kategorii
+                return categoryItem(category);
               },
             ),
           ),
@@ -156,68 +152,63 @@ class _CategoriesViewState extends State<CategoriesView> {
     );
   }
 
-// Widget dla pojedynczej kategorii z nawigacją do podstrony zarządzania
-Widget categoryItem(Map<String, dynamic> category) {
-  return GestureDetector(
-    onTap: () async {
-      // Nawigacja do ekranu zarządzania kategorią po kliknięciu
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CategoriesManageView(
-            categoryId: category["category_id"], // Przekazujemy ID kategorii
-          ),
-        ),
-      );
-      // Odświeżenie kategorii po powrocie z ekranu zarządzania kategorią
-      if (result == true) {
-        loadCategories(isExpenses ? "expense" : "income");
-      }
-    },
-    child: Container(
-      decoration: BoxDecoration(
-        color: category["category_color"], // Użycie koloru kategorii
-        borderRadius: BorderRadius.circular(15), // Zaokrąglenie rogów
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(category["category_icon"], size: 30, color: Colors.white), // Wyświetlanie ikony kategorii
-          const SizedBox(height: 5),
-          Text(
-            category["category_name"], // Wyświetlanie nazwy kategorii
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-  // Widget przycisku dodawania kategorii
-  Widget createAddButton() {
+  Widget categoryItem(Map<String, dynamic> category) {
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const CategoriesCreateView(), // Przejście do ekranu tworzenia kategorii
+            builder: (context) => CategoriesManageView(
+              categoryId: category["category_id"],
+            ),
           ),
         );
-        // Odświeżenie kategorii po powrocie z ekranu tworzenia kategorii
         if (result == true) {
           loadCategories(isExpenses ? "expense" : "income");
         }
       },
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF01C38D), // Kolor dla przycisku dodawania
-          borderRadius: BorderRadius.circular(15), // Zaokrąglenie rogów
+          color: category["category_color"],
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: const Icon(Icons.add, size: 30, color: Colors.white), // Ikona dodawania
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(category["category_icon"], size: 30, color: Colors.white),
+            const SizedBox(height: 5),
+            Text(
+              category["category_name"],
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget createAddButton() {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CategoriesCreateView(),
+          ),
+        );
+        if (result == true) {
+          loadCategories(isExpenses ? "expense" : "income");
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF01C38D),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: const Icon(Icons.add, size: 30, color: Colors.white),
       ),
     );
   }

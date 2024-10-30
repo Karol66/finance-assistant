@@ -31,8 +31,8 @@ def transfer_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transfer_create(request):
-    print("Dane POST:", request.data)  # Wyświetlenie przesyłanych danych
-    print(f"Zalogowany użytkownik: {request.user}")  # Wyświetlenie aktualnie zalogowanego użytkownika
+    print("Dane POST:", request.data)
+    print(f"Zalogowany użytkownik: {request.user}")
 
     account = get_object_or_404(Account, id=request.data.get('account'), user=request.user)
 
@@ -41,7 +41,7 @@ def transfer_create(request):
         serializer.save(account=account)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    print("Błąd walidacji danych:", serializer.errors)  # Wyświetlenie błędów walidacji
+    print("Błąd walidacji danych:", serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -65,7 +65,6 @@ def transfer_delete(request, pk):
     return Response({'message': 'Transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
-# Endpoint do pobierania kategorii powiązanej z danym transferem
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_category_from_transfer(request, transfer_id):
@@ -76,7 +75,6 @@ def get_category_from_transfer(request, transfer_id):
     return Response({'error': 'No category associated with this transfer'}, status=status.HTTP_404_NOT_FOUND)
 
 
-# Endpoint do pobierania konta powiązanego z danym transferem
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_account_from_transfer(request, transfer_id):

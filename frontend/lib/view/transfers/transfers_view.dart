@@ -19,7 +19,7 @@ class _TransfersViewState extends State<TransfersView> {
   @override
   void initState() {
     super.initState();
-    loadTransfers(); // Pobieranie transferów z serwisu
+    loadTransfers();
   }
 
   Future<void> loadTransfers() async {
@@ -48,7 +48,6 @@ class _TransfersViewState extends State<TransfersView> {
     }
   }
 
-  // Funkcja konwertująca kolor HEX na obiekt Color
   Color _parseColor(String colorString) {
     return Color(
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
@@ -74,7 +73,6 @@ class _TransfersViewState extends State<TransfersView> {
       ),
       body: Column(
         children: [
-          // Dodany wybór trybu General/Expenses/Income
           Row(
             children: [
               const SizedBox(height: 60),
@@ -197,7 +195,6 @@ class _TransfersViewState extends State<TransfersView> {
     );
   }
 
-  // Filtrowanie danych w zależności od wybranego trybu (General, Expenses, Income)
   List<Map<String, dynamic>> _filteredTransfers() {
     if (isGeneral) {
       return transfers;

@@ -113,7 +113,6 @@ class _GoalsViewState extends State<GoalsView> {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               child: Column(
                 children: [
-                  // Place the buttons at the top
                   GridView.count(
                     shrinkWrap: true,
                     crossAxisCount: 2,
@@ -133,15 +132,6 @@ class _GoalsViewState extends State<GoalsView> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Space for future widgets (like a chart or other info)
-                  // Container(
-                  //   width: 300,
-                  //   height: 200,
-                  //   decoration: BoxDecoration(
-                  //     color: const Color(0xFF191E29),
-                  //     borderRadius: BorderRadius.circular(15),
-                  //   ),
-                  // ),
                 ],
               ),
             ),
