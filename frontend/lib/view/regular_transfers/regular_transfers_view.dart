@@ -142,6 +142,16 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
+      appBar: AppBar(
+        title: const Text('Regular Transfers'),
+        backgroundColor: const Color(0xFF0B6B3A),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/accounts_service.dart';
 import 'package:frontend/view/accounts/accounts_create_view.dart';
 import 'package:frontend/view/accounts/accounts_manage_view.dart';
+import 'package:frontend/view/regular_transfers/regular_transfers_view.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:frontend/view/transfers/transfers_view.dart';
 
@@ -89,7 +90,7 @@ class _AccountViewState extends State<AccountView> {
       ),
     );
     if (result == true) {
-      loadAccounts(); 
+      loadAccounts();
     }
   }
 
@@ -98,6 +99,18 @@ class _AccountViewState extends State<AccountView> {
       context,
       MaterialPageRoute(
         builder: (context) => const TransfersCreateView(),
+      ),
+    );
+    if (result == true) {
+      loadAccounts();
+    }
+  }
+
+  void regularTransferClick() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RegularTransfersView(),
       ),
     );
     if (result == true) {
@@ -145,7 +158,7 @@ class _AccountViewState extends State<AccountView> {
                   const SizedBox(height: 20),
                   GridView.count(
                     shrinkWrap: true,
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                     children: [
@@ -158,6 +171,11 @@ class _AccountViewState extends State<AccountView> {
                         icon: Icons.sync,
                         label: "New transfer",
                         onTap: newTransferClick,
+                      ),
+                      _buildButton(
+                        icon: Icons.repeat,
+                        label: "Regular Transfers",
+                        onTap: regularTransferClick,
                       ),
                     ],
                   ),
@@ -190,10 +208,11 @@ class _AccountViewState extends State<AccountView> {
     );
   }
 
-  Widget _buildButton(
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
+  Widget _buildButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -209,17 +228,19 @@ class _AccountViewState extends State<AccountView> {
               height: 60,
               decoration: BoxDecoration(
                 color: const Color(0xFF1EB980),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(icon, size: 40, color: Colors.white),
+              child: Icon(icon,
+                  size: 40, color: Colors.white),
             ),
             const SizedBox(height: 10),
             Text(
-              label,
+              label.replaceAll(" ", "\n"),
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 color: Colors.white,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

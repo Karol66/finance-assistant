@@ -131,7 +131,6 @@ class _GoalsViewState extends State<GoalsView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),

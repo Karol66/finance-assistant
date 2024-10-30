@@ -5,7 +5,6 @@ import 'package:frontend/view/categories/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
 import 'package:frontend/view/goals/goals_view.dart';
 import 'package:frontend/view/notifications/notifications_view.dart';
-import 'package:frontend/view/regular_transfers/regular_transfers_view.dart';
 import 'package:frontend/view/users/login_view.dart';
 import 'package:frontend/view/users/settings_view.dart';
 import 'package:frontend/view/statistic/statistic_view.dart';
@@ -31,7 +30,6 @@ class _DrawerNavigationControllerState
     const GoalsView(),
     const StatisticView(),
     const CategoriesView(),
-    const RegularTransfersView(),
     const NotificationsView(),
     const SettingsView(),
   ];
@@ -42,7 +40,6 @@ class _DrawerNavigationControllerState
     'Goals',
     'Statistic',
     'Categories',
-    'Regular Transfers',
     'Notifications',
     'Settings',
   ];
@@ -149,26 +146,21 @@ class _DrawerNavigationControllerState
                     style: TextStyle(color: Color(0xFFFFFFFF))),
                 onTap: () => _onItemTapped(4),
               ),
-              ListTile(
-                leading:
-                    const Icon(Icons.attach_money, color: Color(0xFFFFFFFF)),
-                title: const Text('Regular transfers',
-                    style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(5),
-              ),
+              const Divider(color: Colors.grey),
               ListTile(
                 leading:
                     const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
                 title: const Text('Notifications',
                     style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(6),
+                onTap: () => _onItemTapped(5),
               ),
               ListTile(
                 leading: const Icon(Icons.settings, color: Color(0xFFFFFFFF)),
                 title: const Text('Settings',
                     style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: () => _onItemTapped(7),
+                onTap: () => _onItemTapped(6),
               ),
+              const Divider(color: Colors.grey),
               ListTile(
                 leading: const Icon(Icons.logout, color: Color(0xFFFFFFFF)),
                 title: const Text('Logout',
