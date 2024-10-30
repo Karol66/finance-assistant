@@ -81,22 +81,28 @@ class _AccountViewState extends State<AccountView> {
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  void transferHistoryClick() {
-    Navigator.push(
+  void transferHistoryClick() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const TransfersView(),
       ),
     );
+    if (result == true) {
+      loadAccounts(); 
+    }
   }
 
-  void newTransferClick() {
-    Navigator.push(
+  void newTransferClick() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const TransfersCreateView(),
       ),
     );
+    if (result == true) {
+      loadAccounts();
+    }
   }
 
   @override
@@ -131,8 +137,7 @@ class _AccountViewState extends State<AccountView> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color:
-                              _getBalanceColor(), 
+                          color: _getBalanceColor(),
                         ),
                       ),
                     ],
