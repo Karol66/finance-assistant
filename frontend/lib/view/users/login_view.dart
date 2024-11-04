@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/view/navigation/drawer_navigation_view.dart';
+import 'package:frontend/view/users/password_change_view.dart';
 import 'package:frontend/view/users/registration_view.dart';
 import 'package:frontend/services/users_service.dart';
 
@@ -111,7 +112,7 @@ class _UserWidgetState extends State<UserWidget> {
             const SizedBox(height: 20),
             Center(
               child: Image.asset(
-                'assets/img/test2.png',
+                'assets/img/logo.png',
                 height: 150,
                 fit: BoxFit.contain,
               ),
@@ -166,7 +167,14 @@ class _UserWidgetState extends State<UserWidget> {
                         ],
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChangePasswordView(),
+                            ),
+                          );
+                        },
                         child: Text(
                           widget.forgotPassword,
                           style: const TextStyle(

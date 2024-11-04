@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:frontend/services/transfers_service.dart'; 
+import 'package:frontend/services/transfers_service.dart';
 import 'package:intl/intl.dart';
 
 class StatisticView extends StatefulWidget {
@@ -22,7 +22,7 @@ class _StatisticViewState extends State<StatisticView> {
   @override
   void initState() {
     super.initState();
-    loadTransfers(); 
+    loadTransfers();
   }
 
   Future<void> loadTransfers() async {
@@ -42,7 +42,8 @@ class _StatisticViewState extends State<StatisticView> {
             "category_name": transfer['category_name'],
             "category_icon": transfer['category_icon'],
             "category_color": _parseColor(transfer['category_color']),
-            "type": transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+            "type":
+                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
           };
         }).toList();
       });
@@ -66,7 +67,8 @@ class _StatisticViewState extends State<StatisticView> {
         return transferDate.year == now.year && transferDate.month == now.month;
       } else if (selectedPeriod == 'Week') {
         DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        return transferDate.isAfter(startOfWeek) && transferDate.isBefore(now.add(const Duration(days: 1)));
+        return transferDate.isAfter(startOfWeek) &&
+            transferDate.isBefore(now.add(const Duration(days: 1)));
       } else if (selectedPeriod == 'Day') {
         return transferDate.year == now.year &&
             transferDate.month == now.month &&
@@ -76,27 +78,28 @@ class _StatisticViewState extends State<StatisticView> {
     }).toList();
 
     if (isGeneral) {
-      return filteredTransfers; 
+      return filteredTransfers;
     } else if (isExpanses) {
       return filteredTransfers
           .where((transfer) => transfer['type'] == 'Expenses')
-          .toList(); 
+          .toList();
     } else {
       return filteredTransfers
           .where((transfer) => transfer['type'] == 'Income')
-          .toList(); 
+          .toList();
     }
   }
 
   String getFormattedPeriod() {
     if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);  
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
     } else if (selectedPeriod == 'Week') {
-      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
       DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}"; 
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
     } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy').format(selectedDate);  
+      return DateFormat('MMMM yyyy').format(selectedDate);
     } else {
       return DateFormat('yyyy').format(selectedDate);
     }
@@ -109,9 +112,11 @@ class _StatisticViewState extends State<StatisticView> {
       } else if (selectedPeriod == 'Week') {
         selectedDate = selectedDate.subtract(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
       } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
   }
@@ -299,10 +304,27 @@ class _StatisticViewState extends State<StatisticView> {
         .map((transfer) => double.parse(transfer['amount']))
         .toList();
 
-    double maxIncome = incomes.isNotEmpty ? incomes.reduce((a, b) => a > b ? a : b) : 0;
-    double maxExpense = expenses.isNotEmpty ? expenses.reduce((a, b) => a > b ? a : b) : 0;
+    double maxIncome =
+        incomes.isNotEmpty ? incomes.reduce((a, b) => a > b ? a : b) : 0;
+    double maxExpense =
+        expenses.isNotEmpty ? expenses.reduce((a, b) => a > b ? a : b) : 0;
 
     return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
+  }
+
+  String getXAxisLabel(double value) {
+    int index = value.toInt();
+    if (selectedPeriod == 'Day') {
+      return 'Day ${index + 1}';
+    } else if (selectedPeriod == 'Week') {
+      return 'Week ${index + 1}';
+    } else if (selectedPeriod == 'Month') {
+      return 'Month ${index + 1}';
+    } else if (selectedPeriod == 'Year') {
+      return 'Year ${index + 1}';
+    } else {
+      return '';
+    }
   }
 
   @override
@@ -316,7 +338,7 @@ class _StatisticViewState extends State<StatisticView> {
           children: [
             Container(
               width: media.width,
-              height: 400, 
+              height: 400,
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -342,7 +364,8 @@ class _StatisticViewState extends State<StatisticView> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.white),
                           onPressed: goToPreviousPeriod,
                         ),
                         Text(
@@ -366,14 +389,14 @@ class _StatisticViewState extends State<StatisticView> {
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                getTitlesWidget: (double value, TitleMeta meta) {
-                                  const style = TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  );
+                                getTitlesWidget:
+                                    (double value, TitleMeta meta) {
                                   return Text(
-                                    'Day ${value.toInt() + 1}',
-                                    style: style,
+                                    getXAxisLabel(value),
+                                    style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
                                   );
                                 },
                               ),

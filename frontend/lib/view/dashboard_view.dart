@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:intl/intl.dart';
+import 'package:frontend/view/transfers/transfers_manage_view.dart';
+
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -112,87 +114,101 @@ class _DashboardViewState extends State<DashboardView> {
 
     String formattedDate = _formatDate(transfer['transfer_date']);
 
-    return Card(
-      color: const Color(0xFF191E29),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: transfer['category_color'],
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  IconData(int.parse(transfer['category_icon']),
-                      fontFamily: 'MaterialIcons'),
-                  color: Colors.white,
-                  size: 28,
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                TransfersManageView(transferId: transfer["id"]),
+          ),
+        );
+        if (result == true) {
+          loadTransfers();
+        }
+      },
+      child: Card(
+        color: const Color(0xFF191E29),
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: transfer['category_color'],
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(
+                    IconData(int.parse(transfer['category_icon']),
+                        fontFamily: 'MaterialIcons'),
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Date: $formattedDate",
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    transfer['description'],
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Account: ${transfer['account_name']} (${transfer['account_type']})",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Date: $formattedDate",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
                       ),
-                      Text(
-                        "Category: ${transfer['category_name']}",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      transfer['description'],
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 16,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Center(
-              child: Text(
-                amountText,
-                style: TextStyle(
-                  color: isExpense ? Colors.red : Colors.green,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 5),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Account: ${transfer['account_name']} (${transfer['account_type']})",
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          "Category: ${transfer['category_name']}",
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Center(
+                child: Text(
+                  amountText,
+                  style: TextStyle(
+                    color: isExpense ? Colors.red : Colors.green,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

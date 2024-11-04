@@ -106,7 +106,7 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
             const SizedBox(height: 20),
             Center(
               child: Image.asset(
-                'assets/img/test2.png',
+                'assets/img/logo.png',
                 height: 150,
                 fit: BoxFit.contain,
               ),
