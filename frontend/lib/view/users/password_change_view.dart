@@ -12,8 +12,7 @@ class ChangePasswordView extends StatefulWidget {
 class _ChangePasswordViewState extends State<ChangePasswordView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
 
   @override
@@ -29,9 +28,11 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     if (token != null) {
       await _authService.getUserDetail(token);
 
-      setState(() {
-        _emailController.text = prefs.getString('email') ?? '';
-      });
+      if (mounted) { // Check if widget is still mounted
+        setState(() {
+          _emailController.text = prefs.getString('email') ?? '';
+        });
+      }
     } else {
       print('Token not found, user not authenticated');
     }
@@ -41,7 +42,33 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    // await _authService.updateProfile(email, password);
+    try {
+      await _authService.changePassword(email, password);
+
+      if (mounted) { // Check if widget is still mounted before navigating back
+        Navigator.pop(context); // Navigate back to the previous screen on success
+      }
+    } catch (error) {
+      if (mounted) { // Check if widget is still mounted before showing error dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: Text("Failed to update password: $error"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
   void _savePasswordData() {
@@ -49,26 +76,27 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (password != confirmPassword) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: const Text("Passwords do not match!"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+      if (mounted) { // Check if widget is still mounted before showing error dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: const Text("Passwords do not match!"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } else {
       _updatePassword();
-      Navigator.pop(context);
     }
   }
 
@@ -87,6 +115,14 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -130,8 +166,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                   const SizedBox(height: 20),
                   inputTextField('New Password', true, _passwordController),
                   const SizedBox(height: 20),
-                  inputTextField(
-                      'Confirm New Password', true, _confirmPasswordController),
+                  inputTextField('Confirm New Password', true, _confirmPasswordController),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,

@@ -114,4 +114,21 @@ class AuthService {
       print('Failed to update profile: ${response.body}');
     }
   }
+
+  Future<void> changePassword(String email, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/change_password/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'new_password': newPassword,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Password changed successfully');
+    } else {
+      print('Failed to change password: ${response.body}');
+    }
+  }
 }

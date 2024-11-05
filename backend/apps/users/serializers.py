@@ -28,3 +28,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_new_password(self, value):
+        # Można dodać dowolną walidację hasła
+        if len(value) < 8:
+            raise serializers.ValidationError("Hasło musi mieć co najmniej 8 znaków.")
+        return value
+
+    def update_password(self, user, new_password):
+        user.password = make_password(new_password)
+        user.save()
+        return user

@@ -1,6 +1,5 @@
 from decimal import Decimal
 import joblib
-import numpy as np
 import pandas as pd
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -62,9 +61,7 @@ def get_predicted_savings(user):
     predicted_future_df['Month'] = predicted_future_df['Date'].dt.to_period('M')
     monthly_predicted_savings = predicted_future_df.groupby('Month')['Predicted Daily Savings'].sum().reset_index()
 
-    divided_savings = (monthly_predicted_savings['Predicted Daily Savings'] / 20).tolist()
-
-    return divided_savings, None
+    return monthly_predicted_savings['Predicted Daily Savings'].tolist(), None
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

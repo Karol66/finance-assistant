@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import UserRegisterSerializer, UserLoginSerializer, User
+from .serializers import UserRegisterSerializer, UserLoginSerializer, User, ChangePasswordSerializer
 
 
 @api_view(['POST'])
@@ -72,3 +72,21 @@ def update_profile(request):
 
     return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_password(request):
+    serializer = ChangePasswordSerializer(data=request.data)
+
+    if serializer.is_valid():
+        email = serializer.validated_data['email']
+        new_password = serializer.validated_data['new_password']
+
+        try:
+            user = User.objects.get(email=email)
+            serializer.update_password(user, new_password)
+            return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
