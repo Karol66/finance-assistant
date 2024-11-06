@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:frontend/view/transfers/transfers_manage_view.dart';
+import 'package:intl/intl.dart';
 
 class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
@@ -12,9 +13,11 @@ class TransfersView extends StatefulWidget {
 
 class _TransfersViewState extends State<TransfersView> {
   bool isGeneral = true;
-  bool isExpenses = true;
+  bool isExpenses = false;
   List<Map<String, dynamic>> transfers = [];
   final TransfersService _transfersService = TransfersService();
+  String selectedPeriod = 'Year';
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -23,7 +26,20 @@ class _TransfersViewState extends State<TransfersView> {
   }
 
   Future<void> loadTransfers() async {
-    final fetchedTransfers = await _transfersService.fetchTransfers();
+    String? type;
+    if (isGeneral) {
+      type = null;
+    } else if (isExpenses) {
+      type = 'expense';
+    } else {
+      type = 'income';
+    }
+
+    final fetchedTransfers = await _transfersService.fetchTransfers(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: type, // dodane filtrowanie po typie
+    );
     if (fetchedTransfers != null) {
       setState(() {
         transfers = fetchedTransfers.map((transfer) {
@@ -57,8 +73,73 @@ class _TransfersViewState extends State<TransfersView> {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);
+    } else {
+      return DateFormat('yyyy').format(selectedDate);
+    }
+  }
+
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+    loadTransfers();
+  }
+
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.add(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
+      }
+    });
+    loadTransfers();
+  }
+
+  List<Map<String, dynamic>> _filteredTransfers() {
+    if (isGeneral) {
+      return transfers;
+    } else if (isExpenses) {
+      return transfers
+          .where((transfer) => transfer['type'] == 'Expenses')
+          .toList();
+    } else {
+      return transfers
+          .where((transfer) => transfer['type'] == 'Income')
+          .toList();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    var media = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
       appBar: AppBar(
@@ -73,9 +154,56 @@ class _TransfersViewState extends State<TransfersView> {
       ),
       body: Column(
         children: [
+          Container(
+            width: media.width,
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF191E29),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildPeriodSelector("Year"),
+                    _buildPeriodSelector("Month"),
+                    _buildPeriodSelector("Week"),
+                    _buildPeriodSelector("Day"),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon:
+                          const Icon(Icons.arrow_back_ios, color: Colors.white),
+                      onPressed: goToPreviousPeriod,
+                    ),
+                    Text(
+                      getFormattedPeriod(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white),
+                      onPressed: goToNextPeriod,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           Row(
             children: [
-              const SizedBox(height: 60),
               Expanded(
                 child: GestureDetector(
                   onTap: () {
@@ -83,6 +211,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = true;
                       isExpenses = false;
                     });
+                    loadTransfers(); // dodane
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -113,6 +242,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = false;
                       isExpenses = true;
                     });
+                    loadTransfers(); // dodane
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -147,6 +277,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = false;
                       isExpenses = false;
                     });
+                    loadTransfers(); // dodane
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -176,6 +307,7 @@ class _TransfersViewState extends State<TransfersView> {
               ),
             ],
           ),
+          const SizedBox(height: 15),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(10),
@@ -195,18 +327,39 @@ class _TransfersViewState extends State<TransfersView> {
     );
   }
 
-  List<Map<String, dynamic>> _filteredTransfers() {
-    if (isGeneral) {
-      return transfers;
-    } else if (isExpenses) {
-      return transfers
-          .where((transfer) => transfer['type'] == 'Expenses')
-          .toList();
-    } else {
-      return transfers
-          .where((transfer) => transfer['type'] == 'Income')
-          .toList();
-    }
+  Widget _buildPeriodSelector(String period) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedPeriod = period;
+          });
+          loadTransfers();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selectedPeriod == period
+                    ? Colors.white
+                    : Colors.transparent,
+                width: 2.0,
+              ),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            period,
+            style: TextStyle(
+              color: selectedPeriod == period ? Colors.white : Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget transferItem(Map<String, dynamic> transfer) {
@@ -295,9 +448,10 @@ class _TransfersViewState extends State<TransfersView> {
                 child: Text(
                   amountText,
                   style: TextStyle(
-                      color: isExpense ? Colors.red : Colors.green,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                    color: isExpense ? Colors.red : Colors.green,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +11,11 @@ class TransfersService {
     return prefs.getString('jwtToken');
   }
 
-  Future<List<dynamic>?> fetchTransfers() async {
+  Future<List<dynamic>?> fetchTransfers({
+    String period = 'day',
+    DateTime? date,
+    String? type,
+  }) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -19,8 +24,12 @@ class TransfersService {
     }
 
     try {
+      final dateString =
+          date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+      final typeQuery = type != null ? '&type=$type' : '';
       final response = await http.get(
-        Uri.parse('$baseUrl/transfers/'),
+        Uri.parse(
+            '$baseUrl/transfers/?period=$period&date=$dateString$typeQuery'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -239,7 +248,11 @@ class TransfersService {
     }
   }
 
-  Future<List<dynamic>?> fetchRegularTransfers() async {
+  Future<List<dynamic>?> fetchRegularTransfers({
+    String period = 'day',
+    DateTime? date,
+    String? type,
+  }) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -248,8 +261,13 @@ class TransfersService {
     }
 
     try {
+      final dateString =
+          date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+      final typeQuery =
+          type != null ? '&type=$type' : '';
       final response = await http.get(
-        Uri.parse('$baseUrl/transfers/regular/'),
+        Uri.parse(
+            '$baseUrl/transfers/regular/?period=$period&date=$dateString$typeQuery'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

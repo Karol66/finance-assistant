@@ -12,6 +12,8 @@ class RegularTransfersView extends StatefulWidget {
 }
 
 class _RegularTransfersViewState extends State<RegularTransfersView> {
+  bool isGeneral = true;
+  bool isExpenses = true;
   List<Map<String, dynamic>> regularTransfers = [];
   final TransfersService _transfersService = TransfersService();
   String selectedPeriod = 'Year';
@@ -24,7 +26,20 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
   }
 
   Future<void> loadRegularTransfers() async {
-    final fetchedTransfers = await _transfersService.fetchRegularTransfers();
+    String? type;
+    if (isGeneral) {
+      type = null;
+    } else if (isExpenses) {
+      type = 'expense';
+    } else {
+      type = 'income';
+    }
+
+    final fetchedTransfers = await _transfersService.fetchRegularTransfers(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: type,
+    );
     if (fetchedTransfers != null) {
       setState(() {
         regularTransfers = fetchedTransfers.map((transfer) {
@@ -105,6 +120,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
             selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
+    loadRegularTransfers();
   }
 
   void goToNextPeriod() {
@@ -121,6 +137,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
             selectedDate.year + 1, selectedDate.month, selectedDate.day);
       }
     });
+    loadRegularTransfers();
   }
 
   void createRegularTransferClick() {
@@ -203,6 +220,113 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
               ),
             ),
             const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = true;
+                        isExpenses = false;
+                      });
+                      loadRegularTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                isGeneral ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "General",
+                        style: TextStyle(
+                          color: isGeneral ? Colors.white : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = true;
+                      });
+                      loadRegularTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Expenses",
+                        style: TextStyle(
+                          color: !isGeneral && isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = false;
+                      });
+                      loadRegularTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && !isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Income",
+                        style: TextStyle(
+                          color: !isGeneral && !isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -236,6 +360,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
           setState(() {
             selectedPeriod = period;
           });
+          loadRegularTransfers(); 
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -271,76 +396,77 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
         ? "-\$${amount.abs().toStringAsFixed(2)}"
         : "+\$${amount.toStringAsFixed(2)}";
     return GestureDetector(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RegularTransfersManageView(
-                transferId: transfer["transfer_id"],
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RegularTransfersManageView(
+              transferId: transfer["transfer_id"],
+            ),
+          ),
+        );
+        if (result == true) {
+          loadRegularTransfers();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF191E29),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: transfer['category_color'],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                IconData(int.parse(transfer['category_icon']),
+                    fontFamily: 'MaterialIcons'),
+                color: Colors.white,
+                size: 20,
               ),
             ),
-          );
-          if (result == true) {
-            loadRegularTransfers();
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF191E29),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: transfer['category_color'],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  IconData(int.parse(transfer['category_icon']),
-                      fontFamily: 'MaterialIcons'),
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      transfer['description'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transfer['description'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatDate(transferDate),
-                      style: const TextStyle(
-                        color: Colors.white54,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(transferDate),
+                    style: const TextStyle(
+                      color: Colors.white54,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Text(
-                formattedAmount,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isExpense ? Colors.red : Colors.green,
-                ),
+            ),
+            Text(
+              formattedAmount,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isExpense ? Colors.red : Colors.green,
               ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCreateNewRegularTransferButton() {

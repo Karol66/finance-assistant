@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -5,7 +7,6 @@ from rest_framework import status
 from .models import Transfer
 from .serializers import TransferSerializer
 from django.shortcuts import get_object_or_404
-
 from .models import Account
 from ..accounts.serializers import AccountSerializer
 from ..categories.serializers import CategorySerializer
@@ -14,7 +15,36 @@ from ..categories.serializers import CategorySerializer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def transfer_list(request):
+    date_param = request.query_params.get('date')
+    period = request.query_params.get('period', 'day')
+    transfer_type = request.query_params.get('type')
+
     transfers = Transfer.objects.filter(account__user=request.user, is_deleted=False)
+
+    if transfer_type == 'income':
+        transfers = transfers.filter(category__category_type='income')
+    elif transfer_type == 'expense':
+        transfers = transfers.filter(category__category_type='expense')
+
+    if date_param:
+        date = datetime.strptime(date_param, '%Y-%m-%d')
+        if period == 'year':
+            transfers = transfers.filter(date__year=date.year)
+        elif period == 'month':
+            transfers = transfers.filter(date__year=date.year, date__month=date.month)
+        elif period == 'week':
+            start_of_week = date - timedelta(days=date.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+
+            start_of_week = timezone.make_aware(start_of_week)
+            end_of_week = timezone.make_aware(end_of_week)
+
+            transfers = transfers.filter(date__range=(start_of_week, end_of_week))
+        elif period == 'day':
+            transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+
+    transfers = transfers.order_by('-date')
+
     serializer = TransferSerializer(transfers, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -61,7 +91,6 @@ def transfer_create(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def transfer_update(request, pk):
@@ -100,7 +129,6 @@ def transfer_update(request, pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def transfer_delete(request, pk):
@@ -131,7 +159,33 @@ def get_account_from_transfer(request, transfer_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def regular_transfer_list(request):
+    date_param = request.query_params.get('date')
+    period = request.query_params.get('period', 'day')
+    transfer_type = request.query_params.get('type')
+
     transfers = Transfer.objects.filter(account__user=request.user, is_regular=True, is_deleted=False)
+
+    if transfer_type == 'income':
+        transfers = transfers.filter(category__category_type='income')
+    elif transfer_type == 'expense':
+        transfers = transfers.filter(category__category_type='expense')
+
+    if date_param:
+        date = datetime.strptime(date_param, '%Y-%m-%d')
+        if period == 'year':
+            transfers = transfers.filter(date__year=date.year)
+        elif period == 'month':
+            transfers = transfers.filter(date__year=date.year, date__month=date.month)
+        elif period == 'week':
+            start_of_week = date - timedelta(days=date.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            start_of_week = timezone.make_aware(start_of_week)
+            end_of_week = timezone.make_aware(end_of_week)
+            transfers = transfers.filter(date__range=(start_of_week, end_of_week))
+        elif period == 'day':
+            transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+
+    transfers = transfers.order_by('-date')
     serializer = TransferSerializer(transfers, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

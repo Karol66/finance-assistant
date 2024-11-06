@@ -365,7 +365,7 @@ class _DashboardViewState extends State<DashboardView> {
                 _buildTypeSelector("Income", !isGeneral && !isExpenses),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const NeverScrollableScrollPhysics(),

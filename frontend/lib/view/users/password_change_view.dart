@@ -28,7 +28,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     if (token != null) {
       await _authService.getUserDetail(token);
 
-      if (mounted) { // Check if widget is still mounted
+      if (mounted) { 
         setState(() {
           _emailController.text = prefs.getString('email') ?? '';
         });
@@ -45,11 +45,11 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     try {
       await _authService.changePassword(email, password);
 
-      if (mounted) { // Check if widget is still mounted before navigating back
-        Navigator.pop(context); // Navigate back to the previous screen on success
+      if (mounted) { 
+        Navigator.pop(context); 
       }
     } catch (error) {
-      if (mounted) { // Check if widget is still mounted before showing error dialog
+      if (mounted) { 
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -76,7 +76,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (password != confirmPassword) {
-      if (mounted) { // Check if widget is still mounted before showing error dialog
+      if (mounted) { 
         showDialog(
           context: context,
           builder: (BuildContext context) {

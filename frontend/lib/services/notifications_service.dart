@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +11,8 @@ class NotificationsService {
     return prefs.getString('jwtToken');
   }
 
-  Future<List<Map<String, dynamic>>?> fetchNotifications() async {
+  Future<List<Map<String, dynamic>>?> fetchNotifications(
+      {String period = 'day', DateTime? date}) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -18,8 +20,10 @@ class NotificationsService {
       return null;
     }
 
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
     final response = await http.get(
-      Uri.parse('$baseUrl/notifications/'),
+      Uri.parse('$baseUrl/notifications/?period=$period&date=$dateString'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -28,22 +32,25 @@ class NotificationsService {
 
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
-      return data.map((notification) => {
-            "id": notification["id"],
-            "message": notification["message"],
-            "created_at": DateTime.parse(notification["created_at"]),
-            "send_at": DateTime.parse(notification["send_at"]),
-            "category_color": notification["category_color"],
-            "category_icon": notification["category_icon"],
-            "is_deleted": notification["is_deleted"]
-          }).toList();
+      return data
+          .map((notification) => {
+                "id": notification["id"],
+                "message": notification["message"],
+                "created_at": DateTime.parse(notification["created_at"]),
+                "send_at": DateTime.parse(notification["send_at"]),
+                "category_color": notification["category_color"],
+                "category_icon": notification["category_icon"],
+                "is_deleted": notification["is_deleted"]
+              })
+          .toList();
     } else {
       print('Failed to fetch notifications: ${response.body}');
       return null;
     }
   }
 
-  Future<Map<String, dynamic>?> fetchNotificationById(int notificationId) async {
+  Future<Map<String, dynamic>?> fetchNotificationById(
+      int notificationId) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -67,11 +74,8 @@ class NotificationsService {
     }
   }
 
-  Future<void> createNotification(
-      String message,
-      String sendAt,
-      String categoryColor,
-      String categoryIcon) async {
+  Future<void> createNotification(String message, String sendAt,
+      String categoryColor, String categoryIcon) async {
     String? token = await _getToken();
 
     if (token == null) {

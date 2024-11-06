@@ -24,22 +24,27 @@ class _NotificationsViewState extends State<NotificationsView> {
     loadNotifications();
   }
 
-  Future<void> loadNotifications() async {
-    final fetchedNotifications = await _notificationsService.fetchNotifications();
-    if (fetchedNotifications != null) {
-      setState(() {
-        notifications = fetchedNotifications.map((notification) => {
-          "notification_id": notification["id"],
-          "message": notification["message"],
-          "send_at": notification["send_at"],
-          "icon": _getIconFromString(notification["category_icon"]),
-          "color": _parseColor(notification["category_color"]),
-        }).toList();
-      });
-    } else {
-      print("Failed to load notifications.");
-    }
+Future<void> loadNotifications() async {
+  final fetchedNotifications = await _notificationsService.fetchNotifications(
+    period: selectedPeriod.toLowerCase(),  
+    date: selectedDate,
+  );
+  
+  if (fetchedNotifications != null) {
+    setState(() {
+      notifications = fetchedNotifications.map((notification) => {
+        "notification_id": notification["id"],
+        "message": notification["message"],
+        "send_at": notification["send_at"],
+        "icon": _getIconFromString(notification["category_icon"]),
+        "color": _parseColor(notification["category_color"]),
+      }).toList();
+    });
+  } else {
+    print("Failed to load notifications.");
   }
+}
+
 
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
@@ -48,25 +53,6 @@ class _NotificationsViewState extends State<NotificationsView> {
 
   Color _parseColor(String colorString) {
     return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
-  }
-
-  List<Map<String, dynamic>> _filteredNotifications() {
-    DateTime now = DateTime.now();
-    return notifications.where((notification) {
-      DateTime sendDate = notification["send_at"];
-      if (selectedPeriod == 'Year') {
-        return sendDate.year == now.year;
-      } else if (selectedPeriod == 'Month') {
-        return sendDate.year == now.year && sendDate.month == now.month;
-      } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
-        return sendDate.isAfter(startOfWeek) && sendDate.isBefore(endOfWeek);
-      } else if (selectedPeriod == 'Day') {
-        return sendDate.year == now.year && sendDate.month == now.month && sendDate.day == now.day;
-      }
-      return true;
-    }).toList();
   }
 
   String getFormattedPeriod() {
@@ -95,6 +81,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
+    loadNotifications();
   }
 
   void goToNextPeriod() {
@@ -109,6 +96,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         selectedDate = DateTime(selectedDate.year + 1, selectedDate.month, selectedDate.day);
       }
     });
+    loadNotifications();
   }
 
   void createNotificationClick() {
@@ -186,12 +174,12 @@ class _NotificationsViewState extends State<NotificationsView> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _filteredNotifications().length + 1,
+                    itemCount: notifications.length + 1,
                     itemBuilder: (context, index) {
-                      if (index == _filteredNotifications().length) {
+                      if (index == notifications.length) {
                         return _buildCreateNewNotificationButton();
                       }
-                      final notification = _filteredNotifications()[index];
+                      final notification = notifications[index];
                       return notificationItem(notification);
                     },
                   ),
@@ -211,6 +199,7 @@ class _NotificationsViewState extends State<NotificationsView> {
           setState(() {
             selectedPeriod = period;
           });
+          loadNotifications(); 
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
