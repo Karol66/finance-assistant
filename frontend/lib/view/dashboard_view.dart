@@ -5,7 +5,6 @@ import 'package:frontend/view/transfers/transfers_create_view.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/view/transfers/transfers_manage_view.dart';
 
-
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
@@ -29,7 +28,20 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Future<void> loadTransfers() async {
-    final fetchedTransfers = await _transfersService.fetchTransfers();
+    String? type;
+    if (isGeneral) {
+      type = null;
+    } else if (isExpenses) {
+      type = 'expense';
+    } else {
+      type = 'income';
+    }
+
+    final fetchedTransfers = await _transfersService.fetchTransfers(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: type,
+    );
 
     if (fetchedTransfers != null) {
       setState(() {
@@ -38,7 +50,8 @@ class _DashboardViewState extends State<DashboardView> {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
             "amount": transfer['amount'],
-            "transfer_date": transfer['date'],
+            "transfer_date":
+                DateTime.parse(transfer['date']), 
             "description": transfer['description'],
             "account_name": transfer['account_name'],
             "account_type": transfer['account_type'],
@@ -103,6 +116,24 @@ class _DashboardViewState extends State<DashboardView> {
             selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
+    loadTransfers();
+  }
+
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.add(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
+      }
+    });
+    loadTransfers();
   }
 
   Widget transferItem(Map<String, dynamic> transfer) {
@@ -130,9 +161,7 @@ class _DashboardViewState extends State<DashboardView> {
       child: Card(
         color: const Color(0xFF191E29),
         margin: const EdgeInsets.symmetric(vertical: 10),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -161,18 +190,14 @@ class _DashboardViewState extends State<DashboardView> {
                   children: [
                     Text(
                       "Date: $formattedDate",
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       transfer['description'],
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 16,
-                      ),
+                      style:
+                          const TextStyle(color: Colors.white54, fontSize: 16),
                     ),
                     const SizedBox(height: 5),
                     Column(
@@ -181,16 +206,12 @@ class _DashboardViewState extends State<DashboardView> {
                         Text(
                           "Account: ${transfer['account_name']} (${transfer['account_type']})",
                           style: const TextStyle(
-                            color: Colors.white38,
-                            fontSize: 12,
-                          ),
+                              color: Colors.white38, fontSize: 12),
                         ),
                         Text(
                           "Category: ${transfer['category_name']}",
                           style: const TextStyle(
-                            color: Colors.white38,
-                            fontSize: 12,
-                          ),
+                              color: Colors.white38, fontSize: 12),
                         ),
                       ],
                     ),
@@ -214,9 +235,8 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  String _formatDate(String dateTimeString) {
-    DateTime parsedDate = DateTime.parse(dateTimeString);
-    return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+  String _formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
   double _getTotalAmount() {
@@ -267,7 +287,6 @@ class _DashboardViewState extends State<DashboardView> {
     }).toList();
   }
 
-  @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
 
@@ -287,7 +306,7 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(15.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -314,6 +333,11 @@ class _DashboardViewState extends State<DashboardView> {
                             color: Colors.white,
                             fontSize: 16,
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios,
+                              color: Colors.white),
+                          onPressed: goToNextPeriod,
                         ),
                       ],
                     ),
@@ -360,9 +384,108 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildTypeSelector("General", isGeneral),
-                _buildTypeSelector("Expenses", isExpenses),
-                _buildTypeSelector("Income", !isGeneral && !isExpenses),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = true;
+                        isExpenses = false;
+                      });
+                      loadTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                isGeneral ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "General",
+                        style: TextStyle(
+                          color: isGeneral ? Colors.white : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = true;
+                      });
+                      loadTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Expenses",
+                        style: TextStyle(
+                          color: !isGeneral && isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = false;
+                      });
+                      loadTransfers(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && !isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Income",
+                        style: TextStyle(
+                          color: !isGeneral && !isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 15),
@@ -412,47 +535,6 @@ class _DashboardViewState extends State<DashboardView> {
             period,
             style: TextStyle(
               color: selectedPeriod == period ? Colors.white : Colors.grey,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTypeSelector(String type, bool isSelected) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            if (type == "General") {
-              isGeneral = true;
-              isExpenses = false;
-            } else if (type == "Expenses") {
-              isGeneral = false;
-              isExpenses = true;
-            } else {
-              isGeneral = false;
-              isExpenses = false;
-            }
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? Colors.white : Colors.transparent,
-                width: 2.0,
-              ),
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            type,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),

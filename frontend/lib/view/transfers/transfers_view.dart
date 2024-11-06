@@ -38,8 +38,9 @@ class _TransfersViewState extends State<TransfersView> {
     final fetchedTransfers = await _transfersService.fetchTransfers(
       period: selectedPeriod.toLowerCase(),
       date: selectedDate,
-      type: type, // dodane filtrowanie po typie
+      type: type,
     );
+
     if (fetchedTransfers != null) {
       setState(() {
         transfers = fetchedTransfers.map((transfer) {
@@ -47,7 +48,8 @@ class _TransfersViewState extends State<TransfersView> {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
             "amount": transfer['amount'],
-            "transfer_date": DateTime.parse(transfer['date']),
+            "transfer_date":
+                DateTime.parse(transfer['date']),
             "description": transfer['description'],
             "account_name": transfer['account_name'],
             "account_type": transfer['account_type'],
@@ -211,7 +213,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = true;
                       isExpenses = false;
                     });
-                    loadTransfers(); // dodane
+                    loadTransfers();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -242,7 +244,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = false;
                       isExpenses = true;
                     });
-                    loadTransfers(); // dodane
+                    loadTransfers(); 
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -277,7 +279,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = false;
                       isExpenses = false;
                     });
-                    loadTransfers(); // dodane
+                    loadTransfers();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
