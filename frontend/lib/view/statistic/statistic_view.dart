@@ -12,7 +12,7 @@ class StatisticView extends StatefulWidget {
 
 class _StatisticViewState extends State<StatisticView> {
   bool isGeneral = true;
-  bool isExpanses = false;
+  bool isExpenses = false;
   String selectedPeriod = 'Year';
   DateTime selectedDate = DateTime.now();
 
@@ -26,16 +26,32 @@ class _StatisticViewState extends State<StatisticView> {
   }
 
   Future<void> loadTransfers() async {
-    final fetchedTransfers = await _transfersService.fetchTransfers();
+    String? type;
+    if (isGeneral) {
+      type = null;
+    } else if (isExpenses) {
+      type = 'expense';
+    } else {
+      type = 'income';
+    }
 
-    if (fetchedTransfers != null) {
-      setState(() {
-        transfers = fetchedTransfers.map((transfer) {
+    List<Map<String, dynamic>> allTransfers = [];
+    DateTime date = selectedDate;
+
+    for (int i = 0; i < 5; i++) {
+      final fetchedTransfers = await _transfersService.fetchTransfers(
+        period: selectedPeriod.toLowerCase(),
+        date: date,
+        type: type,
+      );
+
+      if (fetchedTransfers != null) {
+        allTransfers.addAll(fetchedTransfers.map((transfer) {
           return {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
             "amount": transfer['amount'],
-            "transfer_date": transfer['date'],
+            "transfer_date": DateTime.parse(transfer['date']),
             "description": transfer['description'],
             "account_name": transfer['account_name'],
             "account_type": transfer['account_type'],
@@ -45,10 +61,26 @@ class _StatisticViewState extends State<StatisticView> {
             "type":
                 transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
           };
-        }).toList();
-      });
+        }).toList());
+      }
+
+      date = _getPreviousPeriod(date);
+    }
+
+    setState(() {
+      transfers = allTransfers;
+    });
+  }
+
+  DateTime _getPreviousPeriod(DateTime date) {
+    if (selectedPeriod == 'Day') {
+      return date.subtract(const Duration(days: 1));
+    } else if (selectedPeriod == 'Week') {
+      return date.subtract(const Duration(days: 7));
+    } else if (selectedPeriod == 'Month') {
+      return DateTime(date.year, date.month - 1, date.day);
     } else {
-      print("Failed to load transfers.");
+      return DateTime(date.year - 1, date.month, date.day);
     }
   }
 
@@ -57,273 +89,154 @@ class _StatisticViewState extends State<StatisticView> {
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  List<Map<String, dynamic>> _filteredTransfers() {
-    DateTime now = DateTime.now();
-    List<Map<String, dynamic>> filteredTransfers = transfers.where((transfer) {
-      DateTime transferDate = DateTime.parse(transfer['transfer_date']);
-      if (selectedPeriod == 'Year') {
-        return transferDate.year == now.year;
-      } else if (selectedPeriod == 'Month') {
-        return transferDate.year == now.year && transferDate.month == now.month;
-      } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        return transferDate.isAfter(startOfWeek) &&
-            transferDate.isBefore(now.add(const Duration(days: 1)));
-      } else if (selectedPeriod == 'Day') {
-        return transferDate.year == now.year &&
-            transferDate.month == now.month &&
-            transferDate.day == now.day;
-      }
-      return true;
-    }).toList();
+  Map<String, List<Map<String, dynamic>>> groupTransfersByDate() {
+    Map<String, List<Map<String, dynamic>>> groupedTransfers = {};
 
-    if (isGeneral) {
-      return filteredTransfers;
-    } else if (isExpanses) {
-      return filteredTransfers
-          .where((transfer) => transfer['type'] == 'Expenses')
-          .toList();
-    } else {
-      return filteredTransfers
-          .where((transfer) => transfer['type'] == 'Income')
-          .toList();
-    }
-  }
+    for (var transfer in _filteredTransfers()) {
+      DateTime transferDate = transfer['transfer_date'];
+      String dateKey;
 
-  String getFormattedPeriod() {
-    if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
-    } else if (selectedPeriod == 'Week') {
-      DateTime firstDayOfWeek =
-          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
-    } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy').format(selectedDate);
-    } else {
-      return DateFormat('yyyy').format(selectedDate);
-    }
-  }
-
-  void goToPreviousPeriod() {
-    setState(() {
       if (selectedPeriod == 'Day') {
-        selectedDate = selectedDate.subtract(const Duration(days: 1));
+        dateKey = DateFormat('yyyy-MM-dd').format(transferDate);
       } else if (selectedPeriod == 'Week') {
-        selectedDate = selectedDate.subtract(const Duration(days: 7));
+        DateTime startOfWeek =
+            transferDate.subtract(Duration(days: transferDate.weekday - 1));
+        dateKey = DateFormat('yyyy-MM-dd').format(startOfWeek);
       } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(
-            selectedDate.year, selectedDate.month - 1, selectedDate.day);
-      } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(
-            selectedDate.year - 1, selectedDate.month, selectedDate.day);
+        dateKey = DateFormat('yyyy-MM').format(transferDate);
+      } else {
+        dateKey = DateFormat('yyyy').format(transferDate);
       }
-    });
-  }
 
-  double getTotalAmount() {
-    double totalIncome = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Income')
-        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
-    double totalExpenses = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Expenses')
-        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
-
-    if (isGeneral) {
-      return totalIncome - totalExpenses;
-    } else if (isExpanses) {
-      return totalExpenses;
-    } else {
-      return totalIncome;
+      groupedTransfers[dateKey] ??= [];
+      groupedTransfers[dateKey]!.add(transfer);
     }
-  }
 
-  Widget transferItem(Map<String, dynamic> transfer) {
-    double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
-    final isExpense = transfer['type'] == 'Expenses';
-    final amountText = isExpense
-        ? '-\$${amount.abs().toStringAsFixed(2)}'
-        : '+\$${amount.toStringAsFixed(2)}';
-
-    String formattedDate = _formatDate(transfer['transfer_date']);
-
-    return Card(
-      color: const Color(0xFF191E29),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: transfer['category_color'],
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  IconData(int.parse(transfer['category_icon']),
-                      fontFamily: 'MaterialIcons'),
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Date: $formattedDate",
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    transfer['description'],
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Account: ${transfer['account_name']} (${transfer['account_type']})",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        "Category: ${transfer['category_name']}",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Center(
-              child: Text(
-                amountText,
-                style: TextStyle(
-                  color: isExpense ? Colors.red : Colors.green,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(String dateTimeString) {
-    DateTime parsedDate = DateTime.parse(dateTimeString);
-    return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+    return groupedTransfers;
   }
 
   List<BarChartGroupData> createBarGroups() {
-    List<double> incomes = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Income')
-        .map((transfer) => double.parse(transfer['amount']))
-        .toList();
+    List<String> periods = [];
+    DateTime date = selectedDate;
 
-    List<double> expenses = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Expenses')
-        .map((transfer) => double.parse(transfer['amount']))
-        .toList();
-
-    int maxGroups = 5;
-    return List.generate(maxGroups, (index) {
-      double incomeValue = index < incomes.length ? incomes[index] : 0;
-      double expenseValue = index < expenses.length ? expenses[index] : 0;
-
-      if (isGeneral) {
-        double difference = incomeValue - expenseValue;
-        return BarChartGroupData(
-          x: index,
-          barRods: [
-            BarChartRodData(
-              toY: incomeValue,
-              color: Colors.green,
-              width: 11,
-            ),
-            BarChartRodData(
-              toY: expenseValue,
-              color: Colors.red,
-              width: 11,
-            ),
-            BarChartRodData(
-              toY: difference,
-              color: difference >= 0 ? Colors.blue : Colors.orange,
-              width: 11,
-            ),
-          ],
-          barsSpace: 6,
-        );
+    for (int i = 0; i < 5; i++) {
+      if (selectedPeriod == 'Year') {
+        periods.add(DateFormat('yyyy').format(date));
+        date = DateTime(date.year - 1, date.month, date.day);
+      } else if (selectedPeriod == 'Month') {
+        periods.add(DateFormat('yyyy-MM').format(date));
+        date = DateTime(date.year, date.month - 1, date.day);
+      } else if (selectedPeriod == 'Week') {
+        DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
+        periods.add(DateFormat('MMM d').format(startOfWeek));
+        date = date.subtract(const Duration(days: 7));
       } else {
-        return BarChartGroupData(
-          x: index,
-          barRods: [
-            BarChartRodData(
-              toY: isExpanses ? expenseValue : incomeValue,
-              color: isExpanses ? Colors.red : Colors.green,
-              width: 11,
-            ),
-          ],
-          barsSpace: 6,
-        );
+        periods.add(DateFormat('MMM d').format(date));
+        date = date.subtract(const Duration(days: 1));
       }
-    });
+    }
+
+    periods = periods.reversed.toList();
+
+    Map<String, List<Map<String, dynamic>>> groupedTransfers =
+        groupTransfersByDate();
+    List<BarChartGroupData> barGroups = [];
+
+    for (int i = 0; i < periods.length; i++) {
+      String period = periods[i];
+      List<Map<String, dynamic>> transfersForDate =
+          groupedTransfers[period] ?? [];
+
+      double incomeTotal = transfersForDate
+          .where((t) => t['type'] == 'Income')
+          .fold(0.0, (sum, t) => sum + double.parse(t['amount']));
+      double expenseTotal = transfersForDate
+          .where((t) => t['type'] == 'Expenses')
+          .fold(0.0, (sum, t) => sum + double.parse(t['amount']));
+      double netTotal = incomeTotal - expenseTotal;
+
+      List<BarChartRodData> barRods = [];
+
+      // Only add relevant bars based on the selected type
+      if (isGeneral) {
+        barRods.add(
+            BarChartRodData(toY: incomeTotal, color: Colors.green, width: 11));
+        barRods.add(
+            BarChartRodData(toY: expenseTotal, color: Colors.red, width: 11));
+        barRods.add(BarChartRodData(
+          toY: netTotal,
+          color: netTotal >= 0 ? Colors.blue : Colors.orange,
+          width: 11,
+        ));
+      } else if (isExpenses) {
+        barRods.add(
+            BarChartRodData(toY: expenseTotal, color: Colors.red, width: 11));
+      } else {
+        barRods.add(
+            BarChartRodData(toY: incomeTotal, color: Colors.green, width: 11));
+      }
+
+      barGroups.add(BarChartGroupData(
+        x: i,
+        barRods: barRods,
+        barsSpace: 6,
+      ));
+    }
+
+    return barGroups;
   }
 
   double calculateMaxY() {
-    List<double> incomes = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Income')
+    List<double> allValues = _filteredTransfers()
         .map((transfer) => double.parse(transfer['amount']))
         .toList();
-
-    List<double> expenses = _filteredTransfers()
-        .where((transfer) => transfer['type'] == 'Expenses')
-        .map((transfer) => double.parse(transfer['amount']))
-        .toList();
-
-    double maxIncome =
-        incomes.isNotEmpty ? incomes.reduce((a, b) => a > b ? a : b) : 0;
-    double maxExpense =
-        expenses.isNotEmpty ? expenses.reduce((a, b) => a > b ? a : b) : 0;
-
-    return (maxIncome > maxExpense ? maxIncome : maxExpense) + 10;
+    return allValues.isNotEmpty
+        ? allValues.reduce((a, b) => a > b ? a : b) + 10
+        : 10;
   }
 
   String getXAxisLabel(double value) {
     int index = value.toInt();
-    if (selectedPeriod == 'Day') {
-      return 'Day ${index + 1}';
-    } else if (selectedPeriod == 'Week') {
-      return 'Week ${index + 1}';
-    } else if (selectedPeriod == 'Month') {
-      return 'Month ${index + 1}';
-    } else if (selectedPeriod == 'Year') {
-      return 'Year ${index + 1}';
+
+    List<String> periods = [];
+    DateTime date = selectedDate;
+    for (int i = 0; i < 5; i++) {
+      if (selectedPeriod == 'Year') {
+        periods.add(DateFormat('yyyy').format(date));
+        date = DateTime(date.year - 1, date.month, date.day);
+      } else if (selectedPeriod == 'Month') {
+        periods.add(DateFormat('MMM yyyy').format(date));
+        date = DateTime(date.year, date.month - 1, date.day);
+      } else if (selectedPeriod == 'Week') {
+        DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
+        DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
+        periods.add(
+            "${DateFormat('d').format(startOfWeek)} - ${DateFormat('d').format(endOfWeek)}");
+        date = date.subtract(const Duration(days: 7));
+      } else {
+        periods.add(DateFormat('MMM d').format(date));
+        date = date.subtract(const Duration(days: 1));
+      }
+    }
+    periods = periods.reversed.toList();
+
+    if (index >= 0 && index < periods.length) {
+      return periods[index];
+    }
+    return '';
+  }
+
+  List<Map<String, dynamic>> _filteredTransfers() {
+    if (isGeneral) {
+      return transfers;
+    } else if (isExpenses) {
+      return transfers
+          .where((transfer) => transfer['type'] == 'Expenses')
+          .toList();
     } else {
-      return '';
+      return transfers
+          .where((transfer) => transfer['type'] == 'Income')
+          .toList();
     }
   }
 
@@ -339,6 +252,7 @@ class _StatisticViewState extends State<StatisticView> {
             Container(
               width: media.width,
               height: 400,
+              padding: const EdgeInsets.all(20.0),
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -346,100 +260,98 @@ class _StatisticViewState extends State<StatisticView> {
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _buildPeriodSelector("Year"),
-                        _buildPeriodSelector("Month"),
-                        _buildPeriodSelector("Week"),
-                        _buildPeriodSelector("Day"),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios,
-                              color: Colors.white),
-                          onPressed: goToPreviousPeriod,
-                        ),
-                        Text(
-                          getFormattedPeriod(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: BarChart(
-                        BarChartData(
-                          alignment: BarChartAlignment.spaceAround,
-                          maxY: calculateMaxY(),
-                          barTouchData: BarTouchData(enabled: true),
-                          titlesData: FlTitlesData(
-                            show: true,
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget:
-                                    (double value, TitleMeta meta) {
-                                  return Text(
-                                    getXAxisLabel(value),
-                                    style: const TextStyle(
-                                      color: Colors.white54,
-                                      fontSize: 12,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            leftTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
-                          barGroups: createBarGroups(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _buildPeriodSelector("Year"),
+                      _buildPeriodSelector("Month"),
+                      _buildPeriodSelector("Week"),
+                      _buildPeriodSelector("Day"),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.white),
+                        onPressed: goToPreviousPeriod,
+                      ),
+                      Text(
+                        getFormattedPeriod(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
                         ),
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.white),
+                        onPressed: goToNextPeriod,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: calculateMaxY(),
+                        barTouchData: BarTouchData(enabled: true),
+                        titlesData: FlTitlesData(
+                          show: true,
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (double value, TitleMeta meta) {
+                                return Text(
+                                  getXAxisLabel(value),
+                                  style: const TextStyle(
+                                      color: Colors.white54, fontSize: 12),
+                                );
+                              },
+                            ),
+                          ),
+                          leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        barGroups: createBarGroups(),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 _buildTypeSelector("General", isGeneral),
-                _buildTypeSelector("Expenses", isExpanses),
-                _buildTypeSelector("Income", !isGeneral && !isExpanses),
+                _buildTypeSelector("Expenses", isExpenses),
+                _buildTypeSelector("Income", !isGeneral && !isExpenses),
               ],
             ),
             const SizedBox(height: 20),
             ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(10),
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: _filteredTransfers().length,
               itemBuilder: (context, index) {
-                var transfer = _filteredTransfers()[index];
+                final transfer = _filteredTransfers()[index];
                 return transferItem(transfer);
               },
             ),
-            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -453,6 +365,7 @@ class _StatisticViewState extends State<StatisticView> {
           setState(() {
             selectedPeriod = period;
           });
+          loadTransfers();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -487,15 +400,16 @@ class _StatisticViewState extends State<StatisticView> {
           setState(() {
             if (type == "General") {
               isGeneral = true;
-              isExpanses = false;
+              isExpenses = false;
             } else if (type == "Expenses") {
               isGeneral = false;
-              isExpanses = true;
+              isExpenses = true;
             } else {
               isGeneral = false;
-              isExpanses = false;
+              isExpenses = false;
             }
           });
+          loadTransfers();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -519,5 +433,141 @@ class _StatisticViewState extends State<StatisticView> {
         ),
       ),
     );
+  }
+
+  Widget transferItem(Map<String, dynamic> transfer) {
+    double amount = double.tryParse(transfer['amount'].toString()) ?? 0.0;
+    final isExpense = transfer['type'] == 'Expenses';
+    final amountText = isExpense
+        ? '-\$${amount.abs().toStringAsFixed(2)}'
+        : '+\$${amount.toStringAsFixed(2)}';
+
+    String formattedDate = _formatDate(transfer['transfer_date']);
+
+    return Card(
+      color: const Color(0xFF191E29),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: transfer['category_color'],
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  IconData(int.parse(transfer['category_icon']),
+                      fontFamily: 'MaterialIcons'),
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Date: $formattedDate",
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    transfer['description'],
+                    style: const TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                  const SizedBox(height: 5),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Account: ${transfer['account_name']} (${transfer['account_type']})",
+                        style: const TextStyle(
+                            color: Colors.white38, fontSize: 12),
+                      ),
+                      Text(
+                        "Category: ${transfer['category_name']}",
+                        style: const TextStyle(
+                            color: Colors.white38, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: Text(
+                amountText,
+                style: TextStyle(
+                  color: isExpense ? Colors.red : Colors.green,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);
+    } else {
+      return DateFormat('yyyy').format(selectedDate);
+    }
+  }
+
+  void goToPreviousPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
+      }
+    });
+    loadTransfers();
+  }
+
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
+      } else if (selectedPeriod == 'Week') {
+        selectedDate = selectedDate.add(const Duration(days: 7));
+      } else if (selectedPeriod == 'Month') {
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
+      }
+    });
+    loadTransfers();
   }
 }

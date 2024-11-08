@@ -330,7 +330,7 @@ class _DashboardViewState extends State<DashboardView> {
                           getFormattedPeriod(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
                         IconButton(
