@@ -8,10 +8,13 @@ class RegularTransfersCreateView extends StatefulWidget {
   const RegularTransfersCreateView({super.key});
 
   @override
-  _RegularTransfersCreateViewState createState() => _RegularTransfersCreateViewState();
+  _RegularTransfersCreateViewState createState() =>
+      _RegularTransfersCreateViewState();
 }
 
-class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView> {
+class _RegularTransfersCreateViewState
+    extends State<RegularTransfersCreateView> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _transferNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -32,38 +35,6 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
 
   final List<String> _intervals = ['daily', 'weekly', 'monthly', 'yearly'];
 
-  Future<void> _submitRegularTransfer() async {
-    if (_transferNameController.text.isEmpty ||
-        _amountController.text.isEmpty ||
-        _selectedAccount == null ||
-        _selectedCategory == null ||
-        _selectedDate == null ||
-        _selectedInterval == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill in all fields.")));
-      return;
-    }
-
-    String transferName = _transferNameController.text;
-    String amount = _amountController.text;
-    String description = _descriptionController.text;
-    String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-    int accountId = _selectedAccount!['account_id'];
-    int categoryId = _selectedCategory!['category_id'];
-
-    await _transfersService.createRegularTransfer(
-      transferName,
-      amount,
-      description,
-      date,
-      accountId,
-      categoryId,
-      _selectedInterval!, 
-    );
-
-    Navigator.pop(context, true);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -73,7 +44,6 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
 
   Future<void> loadCategories() async {
     final fetchedCategories = await _categoriesService.fetchCategories();
-
     if (fetchedCategories != null) {
       setState(() {
         _categories = fetchedCategories
@@ -89,14 +59,11 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
                 })
             .toList();
       });
-    } else {
-      print("Failed to load categories.");
     }
   }
 
   Future<void> loadAccounts() async {
     final fetchedAccounts = await _accountsService.fetchAccounts();
-
     if (fetchedAccounts != null) {
       setState(() {
         _accounts = fetchedAccounts
@@ -109,8 +76,58 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
                 })
             .toList();
       });
+    }
+  }
+
+  Future<void> _submitRegularTransfer() async {
+    if (_formKey.currentState!.validate()) {
+      if (_selectedAccount == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an account.")),
+        );
+        return;
+      }
+      if (_selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a category.")),
+        );
+        return;
+      }
+      if (_selectedDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a date.")),
+        );
+        return;
+      }
+      if (_selectedInterval == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an interval.")),
+        );
+        return;
+      }
+
+      String transferName = _transferNameController.text;
+      String amount = _amountController.text;
+      String description = _descriptionController.text;
+      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      int accountId = _selectedAccount!['account_id'];
+      int categoryId = _selectedCategory!['category_id'];
+
+      await _transfersService.createRegularTransfer(
+        transferName,
+        amount,
+        description,
+        date,
+        accountId,
+        categoryId,
+        _selectedInterval!,
+      );
+
+      Navigator.pop(context, true);
     } else {
-      print("Failed to load accounts.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields correctly.")),
+      );
     }
   }
 
@@ -120,7 +137,8 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
   }
 
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -140,7 +158,7 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
 
   Widget inputTextField(String hintText, TextEditingController controller,
       {bool isNumeric = false}) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
@@ -152,11 +170,17 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 
   Widget datePickerField(String hintText, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
@@ -173,6 +197,12 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
         ),
       ),
       onTap: () => _selectDate(context),
+      validator: (value) {
+        if (_selectedDate == null) {
+          return 'Please select a date';
+        }
+        return null;
+      },
     );
   }
 
@@ -251,39 +281,12 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
           _selectedAccount = newAccount;
         });
       },
-    );
-  }
-
-  Widget categoryItem(Map<String, dynamic> category) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCategory = category;
-        });
+      validator: (value) {
+        if (value == null) {
+          return 'Please select an account';
+        }
+        return null;
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: category["category_color"],
-          borderRadius: BorderRadius.circular(15),
-          border: _selectedCategory == category
-              ? Border.all(color: Colors.white, width: 3)
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(category["category_icon"], size: 30, color: Colors.white),
-            const SizedBox(height: 5),
-            Text(
-              category["category_name"],
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -299,7 +302,36 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
       itemCount: _categories.length,
       itemBuilder: (context, index) {
         final category = _categories[index];
-        return categoryItem(category);
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedCategory = category;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: category["category_color"],
+              borderRadius: BorderRadius.circular(15),
+              border: _selectedCategory == category
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(category["category_icon"], size: 30, color: Colors.white),
+                const SizedBox(height: 5),
+                Text(
+                  category["category_name"],
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
@@ -414,65 +446,68 @@ class _RegularTransfersCreateViewState extends State<RegularTransfersCreateView>
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              inputTextField('Name', _transferNameController),
-              const SizedBox(height: 20),
-              inputTextField('Amount', _amountController, isNumeric: true),
-              const SizedBox(height: 20),
-              datePickerField('Select Date', _dateController),
-              const SizedBox(height: 20),
-              inputTextField('Description', _descriptionController),
-              const SizedBox(height: 20),
-              intervalDropdown(),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Account:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              accountDropdown(),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Category:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              expenseIncomeSwitch(),
-              const SizedBox(height: 10),
-              categoryGrid(),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitRegularTransfer,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF01C38D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Add Regular Transfer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inputTextField('Name', _transferNameController),
+                const SizedBox(height: 20),
+                inputTextField('Amount', _amountController, isNumeric: true),
+                const SizedBox(height: 20),
+                datePickerField('Select Date', _dateController),
+                const SizedBox(height: 20),
+                inputTextField('Description', _descriptionController),
+                const SizedBox(height: 20),
+                intervalDropdown(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Account:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                accountDropdown(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Category:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                expenseIncomeSwitch(),
+                const SizedBox(height: 10),
+                categoryGrid(),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submitRegularTransfer,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFF01C38D),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Regular Transfer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

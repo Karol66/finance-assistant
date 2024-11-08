@@ -11,6 +11,7 @@ class AccountsManageView extends StatefulWidget {
 }
 
 class _AccountsManageViewState extends State<AccountsManageView> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountNameController = TextEditingController();
   final TextEditingController _balanceController = TextEditingController();
   final AccountsService _accountsService = AccountsService();
@@ -77,24 +78,41 @@ class _AccountsManageViewState extends State<AccountsManageView> {
   }
 
   Future<void> _updateAccount() async {
-    String accountName = _accountNameController.text;
-    String balance = double.parse(_balanceController.text).toStringAsFixed(2);
-    String accountColor =
-        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
-    String accountIcon = _selectedIcon != null
-        ? _selectedIcon!.codePoint.toString()
-        : 'default_icon';
+    if (_formKey.currentState!.validate()) {
+      if (_selectedColor == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a color.")),
+        );
+        return;
+      }
+      if (_selectedIcon == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an icon.")),
+        );
+        return;
+      }
 
-    await _accountsService.updateAccount(
-      widget.accountId,
-      accountName,
-      _accountType,
-      balance,
-      accountColor,
-      accountIcon,
-    );
+      String accountName = _accountNameController.text;
+      String balance = double.parse(_balanceController.text).toStringAsFixed(2);
+      String accountColor =
+          '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String accountIcon = _selectedIcon!.codePoint.toString();
 
-    Navigator.pop(context, true);
+      await _accountsService.updateAccount(
+        widget.accountId,
+        accountName,
+        _accountType,
+        balance,
+        accountColor,
+        accountIcon,
+      );
+
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields correctly.")),
+      );
+    }
   }
 
   Future<void> _deleteAccount() async {
@@ -129,124 +147,127 @@ class _AccountsManageViewState extends State<AccountsManageView> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              inputTextField('Account Name', false, _accountNameController),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: _accountType,
-                items: _accountTypes.map((type) {
-                  return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _accountType = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inputTextField('Account Name', false, _accountNameController),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: _accountType,
+                  items: _accountTypes.map((type) {
+                    return DropdownMenuItem<String>(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _accountType = value!;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey.shade200,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Account Type',
                   ),
-                  hintText: 'Account Type',
                 ),
-              ),
-              const SizedBox(height: 20),
-              inputTextField('Balance', false, _balanceController),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Account Color:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 20),
+                inputTextField('Balance', false, _balanceController),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Account Color:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              colorPicker(),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Account Icon:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 10),
+                colorPicker(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Account Icon:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: 4,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                physics: const NeverScrollableScrollPhysics(),
-                children: _iconOptions.map((iconData) {
-                  return GestureDetector(
-                    onTap: () => _onIconSelected(iconData),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _selectedIcon == iconData
-                            ? (_selectedColor ?? const Color(0xFF191E29))
-                            : const Color(0xFF191E29),
-                        borderRadius: BorderRadius.circular(15),
-                        border: _selectedIcon == iconData
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
+                const SizedBox(height: 10),
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: _iconOptions.map((iconData) {
+                    return GestureDetector(
+                      onTap: () => _onIconSelected(iconData),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _selectedIcon == iconData
+                              ? (_selectedColor ?? const Color(0xFF191E29))
+                              : const Color(0xFF191E29),
+                          borderRadius: BorderRadius.circular(15),
+                          border: _selectedIcon == iconData
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                        ),
+                        child: Icon(iconData, size: 40, color: Colors.white),
                       ),
-                      child: Icon(iconData, size: 40, color: Colors.white),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _updateAccount,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFF4CAF50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateAccount,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF4CAF50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    child: const Text(
+                      'Update Account',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
-                  ),
-                  child: const Text(
-                    'Update Account',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _deleteAccount,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFFF44336),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _deleteAccount,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFFF44336),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Delete Account',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                   ),
-                  child: const Text(
-                    'Delete Account',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -255,7 +276,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
 
   Widget inputTextField(
       String hintText, bool obscureText, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
@@ -267,6 +288,12 @@ class _AccountsManageViewState extends State<AccountsManageView> {
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 

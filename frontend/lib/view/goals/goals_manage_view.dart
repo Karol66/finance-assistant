@@ -13,6 +13,7 @@ class GoalsManageView extends StatefulWidget {
 }
 
 class _GoalsManageViewState extends State<GoalsManageView> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _goalNameController = TextEditingController();
   final TextEditingController _targetAmountController = TextEditingController();
   final TextEditingController _currentAmountController = TextEditingController();
@@ -133,34 +134,51 @@ class _GoalsManageViewState extends State<GoalsManageView> {
   }
 
   Future<void> _updateGoal() async {
-    if (_goalNameController.text.isEmpty ||
-        _targetAmountController.text.isEmpty ||
-        _currentAmountController.text.isEmpty ||
-        _endDateController.text.isEmpty ||
-        _selectedStatus == null ||
-        _selectedAccount == null ||
-        _selectedColor == null ||
-        _selectedIcon == null ||
-        _priorityController.text.isEmpty) {
+    if (_formKey.currentState!.validate()) {
+      if (_selectedColor == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a color.")),
+        );
+        return;
+      }
+      if (_selectedIcon == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an icon.")),
+        );
+        return;
+      }
+      if (_selectedAccount == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an account.")),
+        );
+        return;
+      }
+      if (_selectedStatus == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a goal status.")),
+        );
+        return;
+      }
+
+      await _goalsService.updateGoal(
+        widget.goalId,
+        _goalNameController.text,
+        _targetAmountController.text,
+        _currentAmountController.text,
+        _endDateController.text,
+        _selectedStatus!,
+        int.parse(_priorityController.text),
+        _selectedAccount!['account_id'],
+        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}',
+        _selectedIcon!.codePoint.toString(),
+      );
+
+      Navigator.pop(context, true);
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill in all fields.")));
-      return;
+        const SnackBar(content: Text("Please fill in all fields correctly.")),
+      );
     }
-
-    await _goalsService.updateGoal(
-      widget.goalId,
-      _goalNameController.text,
-      _targetAmountController.text,
-      _currentAmountController.text,
-      _endDateController.text,
-      _selectedStatus!,
-      int.parse(_priorityController.text),
-      _selectedAccount!['account_id'],
-      '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}',
-      _selectedIcon!.codePoint.toString(),
-    );
-
-    Navigator.pop(context, true);
   }
 
   Future<void> _deleteGoal() async {
@@ -170,7 +188,7 @@ class _GoalsManageViewState extends State<GoalsManageView> {
 
   Widget inputTextField(String hintText, TextEditingController controller,
       {bool isNumeric = false}) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
@@ -180,6 +198,147 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF132D46),
+      appBar: AppBar(
+        title: const Text('Manage Goal'),
+        backgroundColor: const Color(0xFF0B6B3A),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inputTextField('Goal Name', _goalNameController),
+                const SizedBox(height: 20),
+                inputTextField('Target Amount', _targetAmountController, isNumeric: true),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Account:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                accountDropdown(),
+                const SizedBox(height: 20),
+                inputTextField('Current Amount', _currentAmountController, isNumeric: true),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _endDateController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    hintText: 'Select End Date',
+                    filled: true,
+                    fillColor: Colors.grey.shade200,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    suffixIcon: const Icon(
+                      Icons.calendar_today,
+                      color: Color(0xFF494E59),
+                    ),
+                  ),
+                  onTap: () => _selectEndDate(context),
+                ),
+                const SizedBox(height: 20),
+                goalStatusDropdown(),
+                const SizedBox(height: 20),
+                inputTextField('Priority (1-5)', _priorityController, isNumeric: true),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Goal Color:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                colorPicker(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Goal Icon:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                goalIconGrid(),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _updateGoal,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFF4CAF50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Update Goal',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _deleteGoal,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFFF44336),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Delete Goal',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -354,141 +513,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF132D46),
-      appBar: AppBar(
-        title: const Text('Manage Goal'),
-        backgroundColor: const Color(0xFF0B6B3A),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              inputTextField('Goal Name', _goalNameController),
-              const SizedBox(height: 20),
-              inputTextField('Target Amount', _targetAmountController,
-                  isNumeric: true),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Account:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              accountDropdown(),
-              const SizedBox(height: 20),
-              inputTextField('Current Amount', _currentAmountController,
-                  isNumeric: true),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _endDateController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  hintText: 'Select End Date',
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: const Icon(
-                    Icons.calendar_today,
-                    color: Color(0xFF494E59),
-                  ),
-                ),
-                onTap: () => _selectEndDate(context),
-              ),
-              const SizedBox(height: 20),
-              goalStatusDropdown(),
-              const SizedBox(height: 20),
-              inputTextField('Priority (1-5)', _priorityController,
-                  isNumeric: true),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Goal Color:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              colorPicker(),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Goal Icon:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              goalIconGrid(),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateGoal,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF4CAF50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Update Goal',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _deleteGoal,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFFF44336),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Delete Goal',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

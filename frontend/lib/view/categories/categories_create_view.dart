@@ -9,12 +9,13 @@ class CategoriesCreateView extends StatefulWidget {
 }
 
 class _CategoriesCreateViewState extends State<CategoriesCreateView> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _categoryNameController = TextEditingController();
-  final CategoriesService _categoriesService = CategoriesService(); 
+  final CategoriesService _categoriesService = CategoriesService();
 
-  String _categoryType ='expense'; 
-  Color? _selectedColor; 
-  IconData? _selectedIcon; 
+  String _categoryType = 'expense';
+  Color? _selectedColor;
+  IconData? _selectedIcon;
 
   final List<Color> _colorOptions = [
     Colors.red,
@@ -47,22 +48,37 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   ];
 
   Future<void> _addCategory() async {
-    String categoryName = _categoryNameController.text;
-    String categoryColor =
-        '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}'; 
+    if (_formKey.currentState!.validate()) {
+      if (_selectedColor == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a color.")),
+        );
+        return;
+      }
+      if (_selectedIcon == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select an icon.")),
+        );
+        return;
+      }
 
-    String categoryIcon = _selectedIcon != null
-        ? _selectedIcon!.codePoint.toString()
-        : 'default_icon'; 
+      String categoryName = _categoryNameController.text;
+      String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String categoryIcon = _selectedIcon!.codePoint.toString();
 
-    await _categoriesService.createCategory(
-      categoryName,
-      _categoryType,
-      categoryColor,
-      categoryIcon, 
-    );
+      await _categoriesService.createCategory(
+        categoryName,
+        _categoryType,
+        categoryColor,
+        categoryIcon,
+      );
 
-    Navigator.pop(context, true);
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields correctly.")),
+      );
+    }
   }
 
   void _onColorSelected(Color color) {
@@ -74,8 +90,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
-      _selectedColor ??= const Color(
-          0xFF191E29); 
+      _selectedColor ??= const Color(0xFF191E29);
     });
   }
 
@@ -96,140 +111,134 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              inputTextField('Category Name', false, _categoryNameController),
-              const SizedBox(height: 20),
-
-              const Text(
-                'Select Category Type:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inputTextField('Category Name', false, _categoryNameController),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Category Type:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.left,
                 ),
-                textAlign: TextAlign.left,
-              ),
-              const SizedBox(height: 10),
-
-              Row(
-                children: [
-                  Radio<String>(
-                    value: 'expense', 
-                    groupValue: _categoryType,
-                    onChanged: (value) {
-                      setState(() {
-                        _categoryType = value!;
-                      });
-                    },
-                    fillColor: WidgetStateProperty.all(Colors.white),
-                  ),
-                  const Text(
-                    'Expenses',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(width: 20),
-                  Radio<String>(
-                    value: 'income', 
-                    groupValue: _categoryType,
-                    onChanged: (value) {
-                      setState(() {
-                        _categoryType = value!;
-                      });
-                    },
-                    fillColor: WidgetStateProperty.all(Colors.white),
-                  ),
-                  const Text(
-                    'Income',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              const Text(
-                'Select Category Color:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Radio<String>(
+                      value: 'expense',
+                      groupValue: _categoryType,
+                      onChanged: (value) {
+                        setState(() {
+                          _categoryType = value!;
+                        });
+                      },
+                      fillColor: MaterialStateProperty.all(Colors.white),
+                    ),
+                    const Text(
+                      'Expenses',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(width: 20),
+                    Radio<String>(
+                      value: 'income',
+                      groupValue: _categoryType,
+                      onChanged: (value) {
+                        setState(() {
+                          _categoryType = value!;
+                        });
+                      },
+                      fillColor: MaterialStateProperty.all(Colors.white),
+                    ),
+                    const Text(
+                      'Income',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.left,
-              ),
-              const SizedBox(height: 10),
-
-              colorPicker(), 
-              const SizedBox(height: 20),
-
-              const Text(
-                'Select Category Icon:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Category Color:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.left,
                 ),
-                textAlign: TextAlign.left,
-              ),
-              const SizedBox(height: 20),
-
-              GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: 4,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  ..._iconOptions.map((iconData) {
-                    return GestureDetector(
-                      onTap: () => _onIconSelected(
-                          iconData), 
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _selectedIcon == iconData
-                              ? (_selectedColor ?? const Color(0xFF191E29))
-                              : const Color(0xFF191E29),
-                          borderRadius: BorderRadius.circular(15),
-                          border: _selectedIcon == iconData
-                              ? Border.all(color: Colors.white, width: 3)
-                              : null,
+                const SizedBox(height: 10),
+                colorPicker(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Category Icon:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+                const SizedBox(height: 10),
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    ..._iconOptions.map((iconData) {
+                      return GestureDetector(
+                        onTap: () => _onIconSelected(iconData),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _selectedIcon == iconData
+                                ? (_selectedColor ?? const Color(0xFF191E29))
+                                : const Color(0xFF191E29),
+                            borderRadius: BorderRadius.circular(15),
+                            border: _selectedIcon == iconData
+                                ? Border.all(color: Colors.white, width: 3)
+                                : null,
+                          ),
+                          child: Icon(
+                            iconData,
+                            size: 40,
+                            color: Colors.white,
+                          ),
                         ),
-                        child: Icon(
-                          iconData,
-                          size: 40,
-                          color: Colors.white,
-                        ),
+                      );
+                    }),
+                    moreButton(),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _addCategory,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFF01C38D),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    );
-                  }),
-                  moreButton(),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed:
-                      _addCategory, 
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF01C38D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  child: const Text(
-                    'Add Category',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    child: const Text(
+                      'Add Category',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -238,7 +247,7 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
 
   Widget inputTextField(
       String hintText, bool obscureText, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
@@ -250,38 +259,37 @@ class _CategoriesCreateViewState extends State<CategoriesCreateView> {
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 
   Widget colorPicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _colorOptions.map((color) {
-              return GestureDetector(
-                onTap: () => _onColorSelected(
-                    color), 
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  margin: const EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(15),
-                    border: _selectedColor == color
-                        ? Border.all(color: Colors.white, width: 3)
-                        : null,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _colorOptions.map((color) {
+          return GestureDetector(
+            onTap: () => _onColorSelected(color),
+            child: Container(
+              width: 30,
+              height: 30,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(15),
+                border: _selectedColor == color
+                    ? Border.all(color: Colors.white, width: 3)
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/transfers_service.dart';
+import 'package:intl/intl.dart';
 import 'package:frontend/services/categories_service.dart';
 import 'package:frontend/services/accounts_service.dart';
-import 'package:intl/intl.dart';
 
 class TransfersManageView extends StatefulWidget {
   final int transferId;
@@ -14,6 +14,7 @@ class TransfersManageView extends StatefulWidget {
 }
 
 class _TransfersManageViewState extends State<TransfersManageView> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _transferNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -97,8 +98,6 @@ class _TransfersManageViewState extends State<TransfersManageView> {
           _selectedCategory = _categories.first;
         }
       });
-    } else {
-      print('Failed to load categories');
     }
   }
 
@@ -132,27 +131,19 @@ class _TransfersManageViewState extends State<TransfersManageView> {
   }
 
   Future<void> _updateTransfer() async {
-    if (_transferNameController.text.isEmpty ||
-        _amountController.text.isEmpty ||
-        _selectedAccount == null ||
-        _selectedCategory == null ||
-        _selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill in all fields.")));
-      return;
+    if (_formKey.currentState!.validate()) {
+      String transferName = _transferNameController.text;
+      String amount = _amountController.text;
+      String description = _descriptionController.text;
+      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      int accountId = _selectedAccount!['account_id'];
+      int categoryId = _selectedCategory!['category_id'];
+
+      await _transfersService.updateTransfer(widget.transferId, transferName,
+          amount, description, date, accountId, categoryId);
+
+      Navigator.pop(context, true);
     }
-
-    String transferName = _transferNameController.text;
-    String amount = _amountController.text;
-    String description = _descriptionController.text;
-    String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-    int accountId = _selectedAccount!['account_id'];
-    int categoryId = _selectedCategory!['category_id'];
-
-    await _transfersService.updateTransfer(widget.transferId, transferName,
-        amount, description, date, accountId, categoryId);
-
-    Navigator.pop(context, true);
   }
 
   Future<void> _deleteTransfer() async {
@@ -177,7 +168,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
 
   Widget inputTextField(String hintText, TextEditingController controller,
       {bool isNumeric = false}) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
@@ -189,11 +180,17 @@ class _TransfersManageViewState extends State<TransfersManageView> {
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        return null;
+      },
     );
   }
 
   Widget datePickerField(String hintText, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
@@ -210,6 +207,12 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         ),
       ),
       onTap: () => _selectDate(context),
+      validator: (value) {
+        if (_selectedDate == null) {
+          return 'Please select a date';
+        }
+        return null;
+      },
     );
   }
 
@@ -296,6 +299,12 @@ class _TransfersManageViewState extends State<TransfersManageView> {
           _selectedAccount = newAccount;
         });
       },
+      validator: (value) {
+        if (_selectedAccount == null) {
+          return 'Please select an account';
+        }
+        return null;
+      },
     );
   }
 
@@ -364,6 +373,12 @@ class _TransfersManageViewState extends State<TransfersManageView> {
           _selectedCategory = newCategory ?? _categories.first;
         });
       },
+      validator: (value) {
+        if (_selectedCategory == null) {
+          return 'Please select a category';
+        }
+        return null;
+      },
     );
   }
 
@@ -384,83 +399,86 @@ class _TransfersManageViewState extends State<TransfersManageView> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              inputTextField('Transfer Name', _transferNameController),
-              const SizedBox(height: 20),
-              inputTextField('Amount', _amountController, isNumeric: true),
-              const SizedBox(height: 20),
-              datePickerField('Select Date', _dateController),
-              const SizedBox(height: 20),
-              inputTextField('Description', _descriptionController),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Account:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              accountDropdown(),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Category:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              categoryDropdown(),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateTransfer,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFF4CAF50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Update Transfer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inputTextField('Transfer Name', _transferNameController),
+                const SizedBox(height: 20),
+                inputTextField('Amount', _amountController, isNumeric: true),
+                const SizedBox(height: 20),
+                datePickerField('Select Date', _dateController),
+                const SizedBox(height: 20),
+                inputTextField('Description', _descriptionController),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Account:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _deleteTransfer,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size.fromHeight(58),
-                    backgroundColor: const Color(0xFFF44336),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                const SizedBox(height: 10),
+                accountDropdown(),
+                const SizedBox(height: 20),
+                const Text(
+                  'Select Category:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: const Text(
-                    'Delete Transfer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                ),
+                const SizedBox(height: 10),
+                categoryDropdown(),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _updateTransfer,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFF4CAF50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Update Transfer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _deleteTransfer,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size.fromHeight(58),
+                      backgroundColor: const Color(0xFFF44336),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Delete Transfer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

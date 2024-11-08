@@ -50,8 +50,7 @@ class _DashboardViewState extends State<DashboardView> {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
             "amount": transfer['amount'],
-            "transfer_date":
-                DateTime.parse(transfer['date']), 
+            "transfer_date": DateTime.parse(transfer['date']),
             "description": transfer['description'],
             "account_name": transfer['account_name'],
             "account_type": transfer['account_type'],
@@ -391,7 +390,7 @@ class _DashboardViewState extends State<DashboardView> {
                         isGeneral = true;
                         isExpenses = false;
                       });
-                      loadTransfers(); 
+                      loadTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -423,7 +422,7 @@ class _DashboardViewState extends State<DashboardView> {
                         isGeneral = false;
                         isExpenses = true;
                       });
-                      loadTransfers(); 
+                      loadTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -458,7 +457,7 @@ class _DashboardViewState extends State<DashboardView> {
                         isGeneral = false;
                         isExpenses = false;
                       });
-                      loadTransfers(); 
+                      loadTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
