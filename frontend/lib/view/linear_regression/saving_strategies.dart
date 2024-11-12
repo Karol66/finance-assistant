@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/linear_regression.dart';
+import 'package:intl/intl.dart';
 
 class SavingStrategies extends StatefulWidget {
   const SavingStrategies({Key? key}) : super(key: key);
@@ -11,7 +12,6 @@ class SavingStrategies extends StatefulWidget {
 class _SavingStrategiesState extends State<SavingStrategies> {
   final LinearRegressionService _service = LinearRegressionService();
   List<dynamic> strategy = [];
-  bool isLoading = true;
 
   @override
   void initState() {
@@ -20,19 +20,10 @@ class _SavingStrategiesState extends State<SavingStrategies> {
   }
 
   Future<void> fetchStrategy() async {
-    final fetchedStrategy = await _service.fetchSavingStrategy();
-
-    if (fetchedStrategy != null) {
-      setState(() {
-        strategy = fetchedStrategy;
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      print("Failed to load strategy.");
-    }
+    final fetchedStrategy = await _service.fetchPredictedAndAllocatedSavings();
+    setState(() {
+      strategy = fetchedStrategy ?? [];
+    });
   }
 
   IconData _getIconFromString(String iconString) {
@@ -54,22 +45,26 @@ class _SavingStrategiesState extends State<SavingStrategies> {
           },
         ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: strategy.length,
-              itemBuilder: (context, index) {
-                final goal = strategy[index];
-                return _buildStrategyItem(goal);
-              },
-            ),
+      body: ListView.builder(
+        itemCount: strategy.length,
+        itemBuilder: (context, index) {
+          final goal = strategy[index];
+          return _buildStrategyItem(goal);
+        },
+      ),
     );
   }
 
   Widget _buildStrategyItem(Map<String, dynamic> goal) {
-    List<double> allocations = goal['monthly_allocation']
-        .map<double>((amount) => double.parse(amount.toStringAsFixed(2)))
-        .toList();
+    double goalAmount = goal['target_amount'];
+    bool isUnachievable = goal['unachievable'] ?? false;
+    double missingAmount = (goal['missing_amount'] ?? 0).toDouble();
+
+    String estimatedDateText = isUnachievable
+        ? "Currently Unachievable"
+        : "Estimated Achievement Date: ${DateFormat('yyyy-MM-dd').format(DateFormat('yyyy-MM-dd').parse(goal['estimated_end_date']))}";
+
+    List<dynamic> allocations = goal['monthly_allocations'] ?? [];
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -93,7 +88,7 @@ class _SavingStrategiesState extends State<SavingStrategies> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    goal['goal'] ?? "No Goal Name",
+                    goal['goal_name'] ?? "No Goal Name",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -103,7 +98,7 @@ class _SavingStrategiesState extends State<SavingStrategies> {
                 ],
               ),
               Text(
-                "\$${goal['target_amount'] ?? 0.0}",
+                "\$${goalAmount.toStringAsFixed(2)}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -114,70 +109,109 @@ class _SavingStrategiesState extends State<SavingStrategies> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Estimated Achievement Date: ${goal['estimated_achievement_date'] ?? 'Unknown'}",
-            style: const TextStyle(
-              color: Colors.white54,
+            estimatedDateText,
+            style: TextStyle(
+              color: isUnachievable ? Colors.redAccent : Colors.white54,
               fontSize: 14,
+              fontWeight: isUnachievable ? FontWeight.bold : FontWeight.normal,
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              ...allocations.asMap().entries.map((entry) {
+                int index = entry.key;
+                Map<String, dynamic> allocation = entry.value;
+                double allocationFraction = (allocation['amount'] / goalAmount * 1000).toInt().toDouble();
+                Color allocationColor = _getAllocationColor(allocation['month']);
+                
+                BorderRadius borderRadius = BorderRadius.zero;
+                if (index == 0) {
+                  borderRadius = const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                  );
+                } else if (index == allocations.length - 1 && !isUnachievable) {
+                  borderRadius = const BorderRadius.only(
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(8),
+                  );
+                }
+
+                return Expanded(
+                  flex: allocationFraction.toInt(),
+                  child: Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: allocationColor,
+                      borderRadius: borderRadius,
+                    ),
+                  ),
+                );
+              }).toList(),
+              if (isUnachievable)
+                Expanded(
+                  flex: ((missingAmount / goalAmount) * 1000).toInt(),
+                  child: Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[800],
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: allocations
-                .map((allocation) => Text(
-                      "Monthly Allocation: \$${allocation.toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 14,
-                      ),
-                    ))
-                .toList(),
-          ),
-          const SizedBox(height: 8),
-          Stack(
-            children: [
-              Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              Row(
-                children: allocations.asMap().entries.map((entry) {
-                  int idx = entry.key;
-                  double allocation = entry.value;
-                  double widthFraction =
-                      allocation / (goal['target_amount'] ?? 1);
-
-                  Color color = [
-                    Colors.blueAccent,
-                    Colors.orangeAccent,
-                    Colors.greenAccent,
-                    Colors.redAccent,
-                    Colors.purpleAccent,
-                  ][idx % 5]; 
-
-                  return Expanded(
-                    flex: (widthFraction * 1000).toInt(),
-                    child: Container(
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(idx == 0 ? 10 : 0),
-                          right: Radius.circular(
-                              idx == allocations.length - 1 ? 10 : 0),
-                        ),
-                      ),
+            children: allocations.map((allocation) {
+              Color allocationColor = _getAllocationColor(allocation['month']);
+              return Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: allocationColor,
+                      shape: BoxShape.circle,
                     ),
-                  );
-                }).toList(),
-              ),
-            ],
+                  ),
+                  Text(
+                    allocation['month'],
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    "\$${allocation['amount'].toStringAsFixed(2)}",
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
+              );
+            }).toList(),
           ),
         ],
       ),
     );
+  }
+
+  Color _getAllocationColor(String month) {
+    final colors = [
+      Colors.greenAccent,
+      Colors.lightBlueAccent,
+      Colors.orangeAccent,
+      Colors.purpleAccent,
+      Colors.pinkAccent,
+      Colors.yellowAccent,
+    ];
+    int monthIndex = DateFormat('yyyy-MM').parse(month).month % colors.length;
+    return colors[monthIndex];
   }
 }

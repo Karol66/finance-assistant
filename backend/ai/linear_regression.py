@@ -1,127 +1,162 @@
 import joblib
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+import numpy as np
 
-df = pd.read_csv('aug_personal_transactions_with_UserId.csv')
-df['Date'] = pd.to_datetime(df['Date'])
+# Wczytanie danych
+data = pd.read_csv('data.csv')
 
-df['Amount'] = np.where(df['Transaction Type'] == 'credit', df['Amount'], -df['Amount'])
+# Konwersja daty na liczbę dni od najwcześniejszej daty
+data['Data operacji'] = pd.to_datetime(data['Data operacji'], format='%Y-%m-%d')
+data['Days'] = (data['Data operacji'] - data['Data operacji'].min()).dt.days
 
-daily_net_income = df.groupby('Date')['Amount'].sum().reset_index()
-daily_net_income.columns = ['Date', 'Net Income']
+# Podział danych na przychody i wydatki
+income_data = data[data['Kwota'] > 0]
+expense_data = data[data['Kwota'] < 0]
 
-daily_net_income['Cumulative Savings'] = daily_net_income['Net Income'].cumsum()
 
-daily_net_income['Month'] = daily_net_income['Date'].dt.month
-daily_net_income['DayOfYear'] = daily_net_income['Date'].dt.dayofyear
+# Funkcja do trenowania modelu regresji liniowej
+def train_model(data, model_filename, scaler_filename):
+    X = data[['Days']]
+    y = data['Kwota']
 
-daily_net_income['Target_Savings'] = daily_net_income['Cumulative Savings'].shift(-1)
-daily_net_income = daily_net_income.dropna()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-X = daily_net_income[['Month', 'DayOfYear', 'Cumulative Savings']]
-y = daily_net_income['Target_Savings']
+    model = LinearRegression()
+    model.fit(X_train_scaled, y_train)
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+    y_pred = model.predict(X_test_scaled)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Tworzenie DataFrame z wynikami testowymi
+    results_df = pd.DataFrame({
+        'Data operacji': X_test['Days'].apply(lambda x: data['Data operacji'].min() + pd.Timedelta(days=x)),
+        'Rzeczywiste kwoty': y_test.values,
+        'Przewidywane kwoty': y_pred
+    })
+    results_df['Miesiąc'] = results_df['Data operacji'].dt.to_period('M')
 
-model = LinearRegression()
-model.fit(X_train, y_train)
+    # Sumy rzeczywistych i przewidywanych kwot miesięcznych
+    monthly_real = results_df.groupby('Miesiąc')['Rzeczywiste kwoty'].sum()
+    monthly_predicted = results_df.groupby('Miesiąc')['Przewidywane kwoty'].sum()
 
-y_pred = model.predict(X_test)
+    # Zapis modelu i skalera do plików
+    joblib.dump(model, model_filename)
+    joblib.dump(scaler, scaler_filename)
 
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-rmse = np.sqrt(mse)
+    return model, scaler, monthly_real, monthly_predicted, results_df
 
-print("Evaluation Metrics:")
-print(f"Mean Absolute Error (MAE): {mae}")
-print(f"Mean Squared Error (MSE): {mse}")
-print(f"Root Mean Squared Error (RMSE): {rmse}")
 
-comparison_df = pd.DataFrame({'Date': X_test.index, 'Actual Savings': y_test.values, 'Predicted Savings': y_pred})
-print("\nSample Comparison (Actual vs Predicted Savings):")
-print(comparison_df.head(10))
+# Trenowanie modeli dla przychodów i wydatków i zapis do plików
+income_model, income_scaler, monthly_income_real, monthly_income_predicted, income_results_df = train_model(
+    income_data, 'model_regresji_liniowej_income.pkl', 'scaler_income.pkl'
+)
+expense_model, expense_scaler, monthly_expense_real, monthly_expense_predicted, expense_results_df = train_model(
+    expense_data, 'model_regresji_liniowej_expense.pkl', 'scaler_expense.pkl'
+)
 
+print("Model i skaler dla przychodów oraz wydatków zostały zapisane.")
+
+# Wyświetlenie wyników przychodów: rzeczywiste vs przewidywane
+income_comparison = pd.DataFrame({
+    'Rzeczywiste przychody': monthly_income_real,
+    'Przewidywane przychody': monthly_income_predicted
+})
+print("\nRzeczywiste i przewidywane miesięczne przychody:")
+print(income_comparison)
+
+# Wykresy dla przychodów
 plt.figure(figsize=(10, 6))
-plt.plot(y_test.values, label='Actual Savings')
-plt.plot(y_pred, label='Predicted Savings', linestyle='--')
-plt.xlabel('Sample')
-plt.ylabel('Cumulative Savings')
-plt.title('Actual vs. Predicted Cumulative Savings')
+monthly_income_predicted.plot(kind='bar', color='skyblue', label='Przewidywane przychody')
+plt.title('Przewidywane miesięczne przychody')
+plt.xlabel('Miesiąc')
+plt.ylabel('Kwota przychodu')
 plt.legend()
 plt.show()
 
-plt.figure(figsize=(8, 6))
-plt.scatter(daily_net_income['Cumulative Savings'], daily_net_income['Target_Savings'], color='black', alpha=0.6)
-plt.plot(daily_net_income['Cumulative Savings'], model.predict(X), color='blue', linewidth=2)
-plt.xlabel('Cumulative Savings (Previous Day)')
-plt.ylabel('Target Savings (Next Day)')
-plt.title('Linear Regression: Cumulative Savings vs. Target Savings')
-plt.show()
-
-X_test_with_dates = X_test.copy()
-X_test_with_dates['Date'] = daily_net_income['Date'].iloc[X_test.index]
-X_test_with_dates['Actual Savings'] = y_test.values
-X_test_with_dates['Predicted Savings'] = y_pred
-X_test_with_dates['Month'] = X_test_with_dates['Date'].dt.to_period('M')
-monthly_actual_savings = X_test_with_dates.groupby('Month')['Actual Savings'].sum().reset_index()
-monthly_predicted_savings = X_test_with_dates.groupby('Month')['Predicted Savings'].sum().reset_index()
-
 plt.figure(figsize=(10, 6))
-plt.plot(monthly_actual_savings['Month'].dt.to_timestamp(), monthly_actual_savings['Actual Savings'], marker='o',
-         label='Actual Monthly Savings')
-plt.plot(monthly_predicted_savings['Month'].dt.to_timestamp(), monthly_predicted_savings['Predicted Savings'],
-         marker='x', linestyle='--', label='Predicted Monthly Savings')
-plt.xlabel('Date')
-plt.ylabel('Monthly Savings')
-plt.title('Actual vs Predicted Monthly Savings (Test Set)')
+plt.scatter(income_results_df['Data operacji'], income_results_df['Rzeczywiste kwoty'], color='black', alpha=0.5,
+            label='Rzeczywiste przychody')
+income_sorted = income_results_df.sort_values(by='Data operacji')
+plt.plot(income_sorted['Data operacji'], income_sorted['Przewidywane kwoty'], color='blue', linewidth=2,
+         label='Linia regresji - przychody')
+plt.title('Regresja liniowa: Rzeczywiste vs Przewidywane przychody dzienne')
+plt.xlabel('Data operacji')
+plt.ylabel('Kwota przychodu')
 plt.legend()
-plt.grid()
 plt.show()
 
-future_dates = []
-future_savings = []
-last_date = daily_net_income['Date'].iloc[-1]
-last_savings = daily_net_income['Cumulative Savings'].iloc[-1]
+# Wyświetlenie wyników wydatków: rzeczywiste vs przewidywane
+expense_comparison = pd.DataFrame({
+    'Rzeczywiste wydatki': monthly_expense_real,
+    'Przewidywane wydatki': monthly_expense_predicted
+})
+print("\nRzeczywiste i przewidywane miesięczne wydatki:")
+print(expense_comparison)
 
-for day in range(1, 366):
-    next_date = last_date + pd.Timedelta(days=1)
-    month = next_date.month
-    day_of_year = next_date.dayofyear
-
-    features = pd.DataFrame([[month, day_of_year, last_savings]], columns=['Month', 'DayOfYear', 'Cumulative Savings'])
-    predicted_savings = model.predict(features)[0]
-
-    future_dates.append(next_date)
-    future_savings.append(predicted_savings)
-    last_savings = predicted_savings
-    last_date = next_date
-
-predicted_future_df = pd.DataFrame({'Date': future_dates, 'Predicted Daily Savings': future_savings})
-
-predicted_future_df['Month'] = predicted_future_df['Date'].dt.to_period('M')
-monthly_predicted_future_savings = predicted_future_df.groupby('Month')['Predicted Daily Savings'].sum().reset_index()
-
-print("\nPredicted Savings for the Next 12 Months:")
-print(monthly_predicted_future_savings.head(12))
+# Wykresy dla wydatków
+plt.figure(figsize=(10, 6))
+monthly_expense_predicted.plot(kind='bar', color='salmon', label='Przewidywane wydatki')
+plt.title('Przewidywane miesięczne wydatki')
+plt.xlabel('Miesiąc')
+plt.ylabel('Kwota wydatku')
+plt.legend()
+plt.show()
 
 plt.figure(figsize=(10, 6))
-plt.plot(monthly_predicted_future_savings['Month'].dt.to_timestamp(),
-         monthly_predicted_future_savings['Predicted Daily Savings'], marker='o', linestyle='-')
-plt.xlabel('Date')
-plt.ylabel('Predicted Monthly Savings')
-plt.title('Predicted Monthly Savings for the Next 12 Months')
-plt.grid()
+plt.scatter(expense_results_df['Data operacji'], expense_results_df['Rzeczywiste kwoty'], color='black', alpha=0.5,
+            label='Rzeczywiste wydatki')
+expense_sorted = expense_results_df.sort_values(by='Data operacji')
+plt.plot(expense_sorted['Data operacji'], expense_sorted['Przewidywane kwoty'], color='red', linewidth=2,
+         label='Linia regresji - wydatki')
+plt.title('Regresja liniowa: Rzeczywiste vs Przewidywane wydatki dzienne')
+plt.xlabel('Data operacji')
+plt.ylabel('Kwota wydatku')
+plt.legend()
 plt.show()
 
-joblib.dump(model, 'model_regresji_liniowej.pkl')
-joblib.dump(scaler, 'scaler.pkl')
 
-print("Model i skaler zostały zapisane.")
+# Dodanie prognozy na następne 6 miesięcy
+def forecast_next_6_months(model, scaler, start_date):
+    future_dates = pd.date_range(start=start_date, periods=6, freq='ME')  # Forecasting 6 months now
+    future_days = (future_dates - data['Data operacji'].min()).days.values.reshape(-1, 1)
+    future_days_df = pd.DataFrame(future_days, columns=['Days'])  # Keep column name for consistency
+    future_days_scaled = scaler.transform(future_days_df)  # Transform with column name
+
+    future_predictions = model.predict(future_days_scaled)
+    forecast_df = pd.DataFrame({
+        'Data operacji': future_dates,
+        'Przewidywana kwota': future_predictions
+    })
+    return forecast_df
+
+
+# Prognozy dla przychodów i wydatków na 6 miesięcy
+last_date = data['Data operacji'].max()
+income_forecast = forecast_next_6_months(income_model, income_scaler, last_date)
+expense_forecast = forecast_next_6_months(expense_model, expense_scaler, last_date)
+
+# Wyświetlenie prognoz przychodów i wydatków na następne 6 miesięcy
+print("\nPrognoza miesięcznych przychodów na następne 6 miesięcy:")
+print(income_forecast)
+
+print("\nPrognoza miesięcznych wydatków na następne 6 miesięcy:")
+print(expense_forecast)
+
+# Obliczenie prognozowanego bilansu (przychody - wydatki) na następne 6 miesięcy
+net_forecast = income_forecast['Przewidywana kwota'] + expense_forecast['Przewidywana kwota']
+
+# Utworzenie DataFrame do wyświetlenia bilansu
+net_forecast_df = pd.DataFrame({
+    'Data operacji': income_forecast['Data operacji'],
+    'Prognozowany bilans (przychody - wydatki)': net_forecast
+})
+
+# Wyświetlenie prognoz bilansu na następne 6 miesięcy
+print("\nPrognoza bilansu (przychody - wydatki) na następne 6 miesięcy:")
+print(net_forecast_df)

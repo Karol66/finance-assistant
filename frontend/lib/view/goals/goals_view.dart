@@ -146,7 +146,7 @@ class _GoalsViewState extends State<GoalsView> {
                     return _buildCreateNewGoalButton();
                   }
                   final goal = goals[index];
-                  return _buildGoalItem(goal);
+                  return goalItem(goal);
                 },
               ),
             ),
@@ -222,7 +222,7 @@ class _GoalsViewState extends State<GoalsView> {
     );
   }
 
-  Widget _buildGoalItem(Map<String, dynamic> goal) {
+  Widget goalItem(Map<String, dynamic> goal) {
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
