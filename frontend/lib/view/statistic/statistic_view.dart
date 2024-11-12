@@ -190,9 +190,11 @@ class _StatisticViewState extends State<StatisticView> {
     List<double> allValues = _filteredTransfers()
         .map((transfer) => double.parse(transfer['amount']))
         .toList();
-    return allValues.isNotEmpty
-        ? allValues.reduce((a, b) => a > b ? a : b) + 10
-        : 10;
+
+    double maxY =
+        allValues.isNotEmpty ? allValues.reduce((a, b) => a > b ? a : b) : 0;
+
+    return maxY > 0 ? maxY + 10 : 10;
   }
 
   String getXAxisLabel(double value) {
