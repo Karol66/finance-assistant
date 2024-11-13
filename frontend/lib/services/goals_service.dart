@@ -59,10 +59,8 @@ class GoalsService {
       String goalName,
       String targetAmount,
       String currentAmount,
-      String endDate,
       String status,
       int priority,
-      int accountId,
       String goalColor,
       String goalIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -83,10 +81,8 @@ class GoalsService {
         'goal_name': goalName,
         'target_amount': targetAmount,
         'current_amount': currentAmount,
-        'end_date': endDate,
         'status': status,
         'priority': priority,
-        'account': accountId,
         'goal_color': goalColor,
         'goal_icon': goalIcon,
       }),
@@ -104,10 +100,8 @@ class GoalsService {
       String goalName,
       String targetAmount,
       String currentAmount,
-      String endDate,
       String status,
       int priority,
-      int accountId,
       String goalColor,
       String goalIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -128,10 +122,8 @@ class GoalsService {
         'goal_name': goalName,
         'target_amount': targetAmount,
         'current_amount': currentAmount,
-        'end_date': endDate,
         'status': status,
         'priority': priority,
-        'account': accountId,
         'goal_color': goalColor,
         'goal_icon': goalIcon,
       }),

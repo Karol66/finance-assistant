@@ -133,9 +133,23 @@ def transfer_update(request, pk):
 @permission_classes([IsAuthenticated])
 def transfer_delete(request, pk):
     transfer = get_object_or_404(Transfer, pk=pk, account__user=request.user)
-    transfer.is_deleted = True
-    transfer.save()
-    return Response({'message': 'Transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+    account = transfer.account
+    account.refresh_from_db()
+
+    if transfer.category.category_type == 'income':
+        account.balance -= transfer.amount
+    elif transfer.category.category_type == 'expense':
+        account.balance += transfer.amount
+
+    try:
+        account.save()
+        transfer.is_deleted = True
+        transfer.save()
+        print("Saldo konta po usunięciu transferu:", account.balance)
+        return Response({'message': 'Transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        print("Błąd przy zapisie konta:", e)
+        return Response({'error': 'Problem z zapisem konta'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

@@ -229,7 +229,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
                         isGeneral = true;
                         isExpenses = false;
                       });
-                      loadRegularTransfers(); 
+                      loadRegularTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -261,7 +261,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
                         isGeneral = false;
                         isExpenses = true;
                       });
-                      loadRegularTransfers(); 
+                      loadRegularTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -296,7 +296,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
                         isGeneral = false;
                         isExpenses = false;
                       });
-                      loadRegularTransfers(); 
+                      loadRegularTransfers();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -360,7 +360,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
           setState(() {
             selectedPeriod = period;
           });
-          loadRegularTransfers(); 
+          loadRegularTransfers();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),

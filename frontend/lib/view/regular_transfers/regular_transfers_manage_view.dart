@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/services/categories_service.dart';
 import 'package:frontend/services/accounts_service.dart';
@@ -10,10 +11,12 @@ class RegularTransfersManageView extends StatefulWidget {
   const RegularTransfersManageView({super.key, required this.transferId});
 
   @override
-  _RegularTransfersManageViewState createState() => _RegularTransfersManageViewState();
+  _RegularTransfersManageViewState createState() =>
+      _RegularTransfersManageViewState();
 }
 
-class _RegularTransfersManageViewState extends State<RegularTransfersManageView> {
+class _RegularTransfersManageViewState
+    extends State<RegularTransfersManageView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _transferNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -51,11 +54,14 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
   }
 
   Future<void> _loadTransfer() async {
-    final fetchedTransfer = await _transfersService.fetchTransferById(widget.transferId);
+    final fetchedTransfer =
+        await _transfersService.fetchTransferById(widget.transferId);
 
     if (fetchedTransfer != null) {
-      final fetchedCategory = await _transfersService.fetchCategoryFromTransfer(widget.transferId);
-      final fetchedAccount = await _transfersService.fetchAccountFromTransfer(widget.transferId);
+      final fetchedCategory =
+          await _transfersService.fetchCategoryFromTransfer(widget.transferId);
+      final fetchedAccount =
+          await _transfersService.fetchAccountFromTransfer(widget.transferId);
 
       setState(() {
         _transferNameController.text = fetchedTransfer['transfer_name'];
@@ -129,7 +135,8 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
     if (colorString == null || colorString.isEmpty) {
       return Colors.grey;
     }
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Future<void> _updateTransfer() async {
@@ -236,6 +243,8 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
     return TextFormField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      inputFormatters:
+          isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -248,6 +257,9 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter some text';
+        }
+        if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
+          return 'Please enter a valid number';
         }
         return null;
       },
@@ -289,7 +301,8 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
       decoration: InputDecoration(
         filled: true,
         fillColor: const Color(0xFF191E29),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -301,7 +314,7 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
         Icons.arrow_drop_down,
         color: Colors.grey,
         size: 30,
-      ), 
+      ),
       items: _accounts.map((account) {
         double balance = double.parse(account['account_balance'].toString());
         bool isNegative = balance < 0;
@@ -380,7 +393,8 @@ class _RegularTransfersManageViewState extends State<RegularTransfersManageView>
       decoration: InputDecoration(
         filled: true,
         fillColor: const Color(0xFF191E29),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,

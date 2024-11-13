@@ -137,8 +137,7 @@ class _UserWidgetState extends State<UserWidget> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  inputTextField(
-                      'Email or Username', false, identifierController),
+                  inputTextField('Username', false, identifierController),
                   const SizedBox(height: 10),
                   inputTextField('Password', true, passwordController),
                   const SizedBox(height: 10),

@@ -274,7 +274,7 @@ Future<void> loadNotifications() async {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${sendAt.day}/${sendAt.month}/${sendAt.year} ${sendAt.hour}:${sendAt.minute.toString().padLeft(2, '0')}",
+                    "${sendAt.day}/${sendAt.month}/${sendAt.year}",
                     style: const TextStyle(
                       color: Colors.white54,
                     ),

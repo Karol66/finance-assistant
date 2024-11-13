@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:frontend/services/accounts_service.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/services/goals_service.dart';
 
 class GoalsCreateView extends StatefulWidget {
@@ -16,17 +15,13 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
   final TextEditingController _targetAmountController = TextEditingController();
   final TextEditingController _currentAmountController =
       TextEditingController();
-  final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _priorityController = TextEditingController();
 
   IconData? _selectedGoalIcon;
   Color? _selectedGoalColor;
   String? _selectedStatus;
-  Map<String, dynamic>? _selectedAccount;
 
-  final AccountsService _accountsService = AccountsService();
   final GoalsService _goalsService = GoalsService();
-  List<Map<String, dynamic>> _accounts = [];
 
   final List<IconData> _goalIconOptions = [
     Icons.directions_car,
@@ -62,24 +57,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
   @override
   void initState() {
     super.initState();
-    loadAccounts();
-  }
-
-  Future<void> loadAccounts() async {
-    final fetchedAccounts = await _accountsService.fetchAccounts();
-    if (fetchedAccounts != null) {
-      setState(() {
-        _accounts = fetchedAccounts
-            .map((account) => {
-                  "account_id": account["id"],
-                  "account_name": account["account_name"],
-                  "account_balance": account["balance"],
-                  "account_color": _parseColor(account["account_color"]),
-                  "account_icon": _getIconFromString(account["account_icon"]),
-                })
-            .toList();
-      });
-    }
   }
 
   Future<void> _addGoal() async {
@@ -96,12 +73,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
         );
         return;
       }
-      if (_selectedAccount == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select an account.")),
-        );
-        return;
-      }
       if (_selectedStatus == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please select a goal status.")),
@@ -113,10 +84,8 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
         _goalNameController.text,
         _targetAmountController.text,
         _currentAmountController.text,
-        _endDateController.text,
         _selectedStatus!,
         int.parse(_priorityController.text),
-        _selectedAccount!['account_id'],
         '#${_selectedGoalColor?.value.toRadixString(16).substring(2, 8)}',
         _selectedGoalIcon!.codePoint.toString(),
       );
@@ -151,25 +120,13 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
     });
   }
 
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (pickedDate != null) {
-      setState(() {
-        _endDateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-      });
-    }
-  }
-
   Widget inputTextField(String hintText, TextEditingController controller,
       {bool isNumeric = false}) {
     return TextFormField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      inputFormatters:
+          isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -182,6 +139,9 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter some text';
+        }
+        if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
+          return 'Please enter a valid number';
         }
         return null;
       },
@@ -215,38 +175,8 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
                 inputTextField('Target Amount', _targetAmountController,
                     isNumeric: true),
                 const SizedBox(height: 20),
-                const Text(
-                  'Select Account:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                accountDropdown(),
-                const SizedBox(height: 20),
                 inputTextField('Current Amount', _currentAmountController,
                     isNumeric: true),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _endDateController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    hintText: 'Select End Date',
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: const Icon(
-                      Icons.calendar_today,
-                      color: Color(0xFF494E59),
-                    ),
-                  ),
-                  onTap: () => _selectEndDate(context),
-                ),
                 const SizedBox(height: 20),
                 goalStatusDropdown(),
                 const SizedBox(height: 20),
@@ -362,90 +292,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
         }).toList(),
         moreButton(),
       ],
-    );
-  }
-
-  Widget accountDropdown() {
-    return DropdownButtonFormField<Map<String, dynamic>>(
-      value: _selectedAccount,
-      itemHeight: 50,
-      isDense: false,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFF191E29),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      dropdownColor: const Color(0xFF191E29),
-      isExpanded: true,
-      icon: const Icon(
-        Icons.arrow_drop_down,
-        color: Colors.grey,
-        size: 30,
-      ),
-      items: _accounts.map((account) {
-        double balance = double.parse(account['account_balance'].toString());
-        bool isNegative = balance < 0;
-        String balanceText = isNegative
-            ? "- \$${balance.abs().toStringAsFixed(2)}"
-            : "+ \$${balance.toStringAsFixed(2)}";
-        return DropdownMenuItem(
-          value: account,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: account['account_color'],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon(
-                      account['account_icon'],
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Text(
-                    account['account_name'] ?? 'Unknown Account',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white54,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                balanceText,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isNegative ? Colors.red : Colors.green,
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: (newAccount) {
-        setState(() {
-          _selectedAccount = newAccount;
-        });
-      },
-      validator: (value) {
-        if (value == null) {
-          return 'Please select an account';
-        }
-        return null;
-      },
     );
   }
 

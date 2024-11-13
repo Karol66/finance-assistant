@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/services/categories_service.dart';
@@ -156,28 +157,32 @@ class _RegularTransfersCreateViewState
     }
   }
 
-  Widget inputTextField(String hintText, TextEditingController controller,
-      {bool isNumeric = false}) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
+Widget inputTextField(String hintText, TextEditingController controller,
+    {bool isNumeric = false}) {
+  return TextFormField(
+    controller: controller,
+    keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+    inputFormatters: isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
+    decoration: InputDecoration(
+      hintText: hintText,
+      filled: true,
+      fillColor: Colors.grey.shade200,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter some text';
-        }
-        return null;
-      },
-    );
-  }
+    ),
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'Please enter some text';
+      }
+      if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
+        return 'Please enter a valid number';
+      }
+      return null;
+    },
+  );
+}
 
   Widget datePickerField(String hintText, TextEditingController controller) {
     return TextFormField(

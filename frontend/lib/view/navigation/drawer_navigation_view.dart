@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/users_service.dart';
+import 'package:frontend/services/notifications_service.dart';
 import 'package:frontend/view/accounts/accounts_view.dart';
 import 'package:frontend/view/categories/categories_view.dart';
 import 'package:frontend/view/dashboard_view.dart';
@@ -23,6 +24,7 @@ class _DrawerNavigationControllerState
   int _selectedIndex = 0;
   String _username = 'Loading...';
   String _email = 'Loading...';
+  int _todayNotificationsCount = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
     const DashboardView(),
@@ -47,7 +49,8 @@ class _DrawerNavigationControllerState
   @override
   void initState() {
     super.initState();
-    _loadUserData(); 
+    _loadUserData();
+    _loadTodayNotificationsCount();
   }
 
   Future<void> _loadUserData() async {
@@ -66,6 +69,13 @@ class _DrawerNavigationControllerState
     }
   }
 
+  Future<void> _loadTodayNotificationsCount() async {
+    int count = await NotificationsService().fetchTodayNotificationsCount();
+    setState(() {
+      _todayNotificationsCount = count;
+    });
+  }
+
   void _logout() async {
     await AuthService().logout();
 
@@ -80,6 +90,11 @@ class _DrawerNavigationControllerState
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+
+      if (index == 5) {
+        _todayNotificationsCount = 0;
+      }
+
       Navigator.pop(context);
     });
   }
@@ -150,8 +165,33 @@ class _DrawerNavigationControllerState
               ListTile(
                 leading:
                     const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
-                title: const Text('Notifications',
-                    style: TextStyle(color: Color(0xFFFFFFFF))),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Notifications',
+                        style: TextStyle(color: Color(0xFFFFFFFF))),
+                    if (_todayNotificationsCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 24,
+                          minHeight: 24,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$_todayNotificationsCount',
+                            style: const TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 onTap: () => _onItemTapped(5),
               ),
               ListTile(
@@ -165,7 +205,7 @@ class _DrawerNavigationControllerState
                 leading: const Icon(Icons.logout, color: Color(0xFFFFFFFF)),
                 title: const Text('Logout',
                     style: TextStyle(color: Color(0xFFFFFFFF))),
-                onTap: _logout, 
+                onTap: _logout,
               ),
             ],
           ),

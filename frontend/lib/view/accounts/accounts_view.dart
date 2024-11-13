@@ -230,8 +230,7 @@ class _AccountViewState extends State<AccountView> {
                 color: const Color(0xFF1EB980),
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(icon,
-                  size: 40, color: Colors.white),
+              child: Icon(icon, size: 40, color: Colors.white),
             ),
             const SizedBox(height: 10),
             Text(

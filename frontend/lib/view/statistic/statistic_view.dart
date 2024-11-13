@@ -157,7 +157,6 @@ class _StatisticViewState extends State<StatisticView> {
 
       List<BarChartRodData> barRods = [];
 
-      // Only add relevant bars based on the selected type
       if (isGeneral) {
         barRods.add(
             BarChartRodData(toY: incomeTotal, color: Colors.green, width: 11));
@@ -186,16 +185,18 @@ class _StatisticViewState extends State<StatisticView> {
     return barGroups;
   }
 
-  double calculateMaxY() {
-    List<double> allValues = _filteredTransfers()
-        .map((transfer) => double.parse(transfer['amount']))
-        .toList();
+double calculateMaxY() {
+  List<double> allValues = _filteredTransfers()
+      .map((transfer) => double.parse(transfer['amount']))
+      .toList();
 
-    double maxY =
-        allValues.isNotEmpty ? allValues.reduce((a, b) => a > b ? a : b) : 0;
+  double maxY =
+      allValues.isNotEmpty ? allValues.reduce((a, b) => a > b ? a : b) : 0;
 
-    return maxY > 0 ? maxY + 10 : 10;
-  }
+  double buffer = maxY * 0.5;
+  return maxY > 0 ? maxY + buffer : 10;
+}
+
 
   String getXAxisLabel(double value) {
     int index = value.toInt();

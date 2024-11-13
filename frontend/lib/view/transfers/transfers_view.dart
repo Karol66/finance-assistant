@@ -18,6 +18,7 @@ class _TransfersViewState extends State<TransfersView> {
   final TransfersService _transfersService = TransfersService();
   String selectedPeriod = 'Year';
   DateTime selectedDate = DateTime.now();
+  bool isUpdated = false;
 
   @override
   void initState() {
@@ -48,8 +49,7 @@ class _TransfersViewState extends State<TransfersView> {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
             "amount": transfer['amount'],
-            "transfer_date":
-                DateTime.parse(transfer['date']),
+            "transfer_date": DateTime.parse(transfer['date']),
             "description": transfer['description'],
             "account_name": transfer['account_name'],
             "account_type": transfer['account_type'],
@@ -150,7 +150,7 @@ class _TransfersViewState extends State<TransfersView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+             Navigator.pop(context, isUpdated); 
           },
         ),
       ),
@@ -244,7 +244,7 @@ class _TransfersViewState extends State<TransfersView> {
                       isGeneral = false;
                       isExpenses = true;
                     });
-                    loadTransfers(); 
+                    loadTransfers();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -383,6 +383,7 @@ class _TransfersViewState extends State<TransfersView> {
           ),
         );
         if (result == true) {
+          isUpdated = true;
           loadTransfers();
         }
       },

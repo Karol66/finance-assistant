@@ -163,4 +163,29 @@ class NotificationsService {
       print('Failed to delete notification: ${response.body}');
     }
   }
+
+  Future<int> fetchTodayNotificationsCount() async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return 0;
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/notifications/today_count/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['count'] ?? 0;
+    } else {
+      print('Failed to fetch today\'s notification count: ${response.body}');
+      return 0;
+    }
+  }
 }

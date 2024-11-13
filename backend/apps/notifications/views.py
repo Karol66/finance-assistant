@@ -31,7 +31,8 @@ def notification_list(request):
 
             notifications = notifications.filter(created_at__range=(start_of_week, end_of_week))
         elif period == 'day':
-            notifications = notifications.filter(created_at__year=date.year, created_at__month=date.month, created_at__day=date.day)
+            notifications = notifications.filter(created_at__year=date.year, created_at__month=date.month,
+                                                 created_at__day=date.day)
 
     notifications = notifications.order_by('-created_at')
 
@@ -75,3 +76,18 @@ def notification_delete(request, pk):
     notification.is_deleted = True
     notification.save()
     return Response({'message': 'Notification soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def today_notifications_count(request):
+    today = timezone.now().date()
+    count = Notification.objects.filter(
+        user=request.user,
+        is_deleted=False,
+        created_at__year=today.year,
+        created_at__month=today.month,
+        created_at__day=today.day
+    ).count()
+
+    return Response({'count': count}, status=status.HTTP_200_OK)
