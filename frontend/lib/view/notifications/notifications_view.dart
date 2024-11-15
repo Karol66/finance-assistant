@@ -14,8 +14,10 @@ class NotificationsView extends StatefulWidget {
 class _NotificationsViewState extends State<NotificationsView> {
   List<Map<String, dynamic>> notifications = [];
   final NotificationsService _notificationsService = NotificationsService();
+  int currentPage = 1;
+  bool hasNextPage = true;
 
-  String selectedPeriod = 'Year';
+  String selectedPeriod = 'Day';
   DateTime selectedDate = DateTime.now();
 
   @override
@@ -24,27 +26,32 @@ class _NotificationsViewState extends State<NotificationsView> {
     loadNotifications();
   }
 
-Future<void> loadNotifications() async {
-  final fetchedNotifications = await _notificationsService.fetchNotifications(
-    period: selectedPeriod.toLowerCase(),  
-    date: selectedDate,
-  );
-  
-  if (fetchedNotifications != null) {
-    setState(() {
-      notifications = fetchedNotifications.map((notification) => {
-        "notification_id": notification["id"],
-        "message": notification["message"],
-        "send_at": notification["send_at"],
-        "icon": _getIconFromString(notification["category_icon"]),
-        "color": _parseColor(notification["category_color"]),
-      }).toList();
-    });
-  } else {
-    print("Failed to load notifications.");
-  }
-}
+  Future<void> loadNotifications({int page = 1}) async {
+    final fetchedNotifications = await _notificationsService.fetchNotifications(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      page: page,
+    );
 
+    if (fetchedNotifications != null) {
+      setState(() {
+        notifications = fetchedNotifications
+            .map((notification) => {
+                  "notification_id": notification["id"],
+                  "message": notification["message"],
+                  "send_at": notification["send_at"],
+                  "icon": _getIconFromString(notification["category_icon"]),
+                  "color": _parseColor(notification["category_color"]),
+                })
+            .toList();
+        currentPage = page;
+        hasNextPage =
+            fetchedNotifications.length == 5; 
+      });
+    } else {
+      print("Failed to load notifications.");
+    }
+  }
 
   IconData _getIconFromString(String iconString) {
     int codePoint = int.tryParse(iconString) ?? 0;
@@ -52,14 +59,16 @@ Future<void> loadNotifications() async {
   }
 
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   String getFormattedPeriod() {
     if (selectedPeriod == 'Day') {
       return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
     } else if (selectedPeriod == 'Week') {
-      DateTime firstDayOfWeek = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
       DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
       return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
     } else if (selectedPeriod == 'Month') {
@@ -76,9 +85,11 @@ Future<void> loadNotifications() async {
       } else if (selectedPeriod == 'Week') {
         selectedDate = selectedDate.subtract(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
       } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(selectedDate.year - 1, selectedDate.month, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
     });
     loadNotifications();
@@ -91,9 +102,11 @@ Future<void> loadNotifications() async {
       } else if (selectedPeriod == 'Week') {
         selectedDate = selectedDate.add(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
       } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(selectedDate.year + 1, selectedDate.month, selectedDate.day);
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
       }
     });
     loadNotifications();
@@ -110,6 +123,18 @@ Future<void> loadNotifications() async {
         loadNotifications();
       }
     });
+  }
+
+  void goToNextPage() {
+    if (hasNextPage) {
+      loadNotifications(page: currentPage + 1);
+    }
+  }
+
+  void goToPreviousPage() {
+    if (currentPage > 1) {
+      loadNotifications(page: currentPage - 1);
+    }
   }
 
   @override
@@ -147,7 +172,8 @@ Future<void> loadNotifications() async {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.white),
                         onPressed: goToPreviousPeriod,
                       ),
                       Text(
@@ -158,7 +184,8 @@ Future<void> loadNotifications() async {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.white),
                         onPressed: goToNextPeriod,
                       ),
                     ],
@@ -183,12 +210,77 @@ Future<void> loadNotifications() async {
                       return notificationItem(notification);
                     },
                   ),
+                  _buildPaginationControls(),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    int visiblePages = 5; 
+    int startPage = 1;
+
+    if (currentPage > visiblePages) {
+      startPage = currentPage - visiblePages + 1;
+    }
+
+    int endPage = startPage + visiblePages - 1;
+
+    if (!hasNextPage && endPage > currentPage) {
+      endPage = currentPage;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: currentPage > 1 ? goToPreviousPage : null,
+        ),
+        ...List.generate(
+          (endPage - startPage + 1).clamp(0, visiblePages),
+          (index) {
+            int pageNumber = startPage + index;
+            return GestureDetector(
+              onTap: () {
+                if (pageNumber != currentPage) {
+                  loadNotifications(page: pageNumber);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pageNumber == currentPage
+                      ? Colors.white
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  '$pageNumber',
+                  style: TextStyle(
+                    color:
+                        pageNumber == currentPage ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          onPressed: hasNextPage ? goToNextPage : null,
+        ),
+      ],
     );
   }
 
@@ -199,14 +291,16 @@ Future<void> loadNotifications() async {
           setState(() {
             selectedPeriod = period;
           });
-          loadNotifications(); 
+          loadNotifications();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: selectedPeriod == period ? Colors.white : Colors.transparent,
+                color: selectedPeriod == period
+                    ? Colors.white
+                    : Colors.transparent,
                 width: 2.0,
               ),
             ),

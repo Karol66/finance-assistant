@@ -10,7 +10,6 @@ class Transfer(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
-
     is_regular = models.BooleanField(default=False)
     interval = models.CharField(
         max_length=50,

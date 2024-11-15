@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +9,9 @@ from .models import Notification
 from django.shortcuts import get_object_or_404
 from .serializers import NotificationSerializer
 
+
+class NotificationPagination(PageNumberPagination):
+    page_size = 5
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -36,8 +40,12 @@ def notification_list(request):
 
     notifications = notifications.order_by('-created_at')
 
-    serializer = NotificationSerializer(notifications, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    # Paginate notifications
+    paginator = NotificationPagination()
+    paginated_notifications = paginator.paginate_queryset(notifications, request)
+
+    serializer = NotificationSerializer(paginated_notifications, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(['GET'])

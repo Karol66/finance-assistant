@@ -11,8 +11,11 @@ class NotificationsService {
     return prefs.getString('jwtToken');
   }
 
-  Future<List<Map<String, dynamic>>?> fetchNotifications(
-      {String period = 'day', DateTime? date}) async {
+  Future<List<Map<String, dynamic>>?> fetchNotifications({
+    String period = 'day',
+    DateTime? date,
+    int page = 1, // Add page parameter with a default value of 1
+  }) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -20,10 +23,10 @@ class NotificationsService {
       return null;
     }
 
-    final dateString =
-        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+    final dateString = date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
     final response = await http.get(
-      Uri.parse('$baseUrl/notifications/?period=$period&date=$dateString'),
+      Uri.parse(
+          '$baseUrl/notifications/?period=$period&date=$dateString&page=$page'), // Include page parameter in URL
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -31,8 +34,12 @@ class NotificationsService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data
+      Map<String, dynamic> data = jsonDecode(response.body);
+
+      // Extract results from the paginated response
+      List<dynamic> results = data['results'];
+
+      return results
           .map((notification) => {
                 "id": notification["id"],
                 "message": notification["message"],
