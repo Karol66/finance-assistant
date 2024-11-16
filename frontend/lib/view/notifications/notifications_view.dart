@@ -35,7 +35,7 @@ class _NotificationsViewState extends State<NotificationsView> {
 
     if (fetchedNotifications != null) {
       setState(() {
-        notifications = fetchedNotifications
+        notifications = (fetchedNotifications['results'] as List)
             .map((notification) => {
                   "notification_id": notification["id"],
                   "message": notification["message"],
@@ -45,8 +45,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                 })
             .toList();
         currentPage = page;
-        hasNextPage =
-            fetchedNotifications.length == 5; 
+        hasNextPage = page < fetchedNotifications['total_pages'];
       });
     } else {
       print("Failed to load notifications.");
@@ -210,6 +209,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                       return notificationItem(notification);
                     },
                   ),
+                  const SizedBox(height: 10),
                   _buildPaginationControls(),
                 ],
               ),
@@ -221,28 +221,28 @@ class _NotificationsViewState extends State<NotificationsView> {
   }
 
   Widget _buildPaginationControls() {
-    int visiblePages = 5;
-    int startPage = 1;
+    int totalPages = hasNextPage ? currentPage + 1 : currentPage;
 
-    if (currentPage > visiblePages) {
-      startPage = currentPage - visiblePages + 1;
-    }
+    // Określamy startową i końcową stronę do wyświetlenia
+    int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
+    int endPage = startPage + 4;
 
-    int endPage = startPage + visiblePages - 1;
-
-    if (!hasNextPage && endPage > currentPage) {
-      endPage = currentPage;
+    // Upewniamy się, że nie przekroczymy liczby dostępnych stron
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = endPage - 4 > 0 ? endPage - 4 : 1;
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // Przycisk "poprzednia strona"
         IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: currentPage > 1 ? goToPreviousPage : null,
         ),
         ...List.generate(
-          (endPage - startPage + 1).clamp(0, visiblePages),
+          (endPage - startPage + 1),
           (index) {
             int pageNumber = startPage + index;
             return GestureDetector(
@@ -276,6 +276,7 @@ class _NotificationsViewState extends State<NotificationsView> {
             );
           },
         ),
+        // Przycisk "następna strona"
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
           onPressed: hasNextPage ? goToNextPage : null,

@@ -157,7 +157,7 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                           _categoryType = value!;
                         });
                       },
-                      fillColor: MaterialStateProperty.all(Colors.white),
+                      fillColor: WidgetStateProperty.all(Colors.white),
                     ),
                     const Text('Expenses', style: TextStyle(color: Colors.white)),
                     const SizedBox(width: 20),
@@ -169,7 +169,7 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                           _categoryType = value!;
                         });
                       },
-                      fillColor: MaterialStateProperty.all(Colors.white),
+                      fillColor: WidgetStateProperty.all(Colors.white),
                     ),
                     const Text('Income', style: TextStyle(color: Colors.white)),
                   ],

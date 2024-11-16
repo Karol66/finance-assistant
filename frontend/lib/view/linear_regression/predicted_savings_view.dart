@@ -109,9 +109,9 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
                         vertical: 20, horizontal: 16),
                     child: Column(
                       children: [
-                        Text(
+                        const Text(
                           "Forecast for Next 6 Months",
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Colors.white, fontSize: 18),
                         ),
                         const SizedBox(height: 20),
@@ -124,7 +124,7 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
                                 maxY: calculateMaxY(),
                                 barTouchData: BarTouchData(enabled: true),
                                 titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
+                                  leftTitles: const AxisTitles(
                                     sideTitles: SideTitles(showTitles: false),
                                   ),
                                   bottomTitles: AxisTitles(

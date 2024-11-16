@@ -3,7 +3,7 @@ import 'package:frontend/services/linear_regression.dart';
 import 'package:intl/intl.dart';
 
 class SavingStrategies extends StatefulWidget {
-  const SavingStrategies({Key? key}) : super(key: key);
+  const SavingStrategies({super.key});
 
   @override
   _SavingStrategiesState createState() => _SavingStrategiesState();
@@ -148,7 +148,7 @@ class _SavingStrategiesState extends State<SavingStrategies> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
               if (isUnachievable)
                 Expanded(
                   flex: ((missingAmount / goalAmount) * 1000).toInt(),

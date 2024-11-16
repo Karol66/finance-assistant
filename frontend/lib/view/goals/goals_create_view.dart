@@ -278,7 +278,7 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
               ),
             ),
           );
-        }).toList(),
+        }),
         moreButton(),
       ],
     );

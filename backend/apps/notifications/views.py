@@ -13,6 +13,7 @@ from .serializers import NotificationSerializer
 class NotificationPagination(PageNumberPagination):
     page_size = 5
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def notification_list(request):
@@ -40,12 +41,14 @@ def notification_list(request):
 
     notifications = notifications.order_by('-created_at')
 
-    # Paginate notifications
     paginator = NotificationPagination()
     paginated_notifications = paginator.paginate_queryset(notifications, request)
 
     serializer = NotificationSerializer(paginated_notifications, many=True)
-    return paginator.get_paginated_response(serializer.data)
+    response = paginator.get_paginated_response(serializer.data)
+
+    response.data['total_pages'] = paginator.page.paginator.num_pages
+    return response
 
 
 @api_view(['GET'])

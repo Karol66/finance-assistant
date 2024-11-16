@@ -161,12 +161,12 @@ def predict_and_allocate_savings(request):
     if expense_data.empty or income_data.empty:
         return Response({"error": "Insufficient data for prediction."}, status=400)
 
-    # Prognozy
     last_date = max(expense_data['date'].max(), income_data['date'].max())
     expense_model, expense_scaler = train_model(expense_data)
     income_model, income_scaler = train_model(income_data)
 
-    expense_forecast = forecast_next_6_months(expense_model, expense_scaler, last_date, expense_data['date'].min(), is_expense=True)
+    expense_forecast = forecast_next_6_months(expense_model, expense_scaler, last_date, expense_data['date'].min(),
+                                              is_expense=True)
     income_forecast = forecast_next_6_months(income_model, income_scaler, last_date, income_data['date'].min())
 
     income_forecast.set_index('Data operacji', inplace=True)

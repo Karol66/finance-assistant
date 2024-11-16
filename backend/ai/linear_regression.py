@@ -4,21 +4,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Wczytanie danych
 data = pd.read_csv('data.csv')
 
-# Konwersja daty na liczbę dni od najwcześniejszej daty
 data['Data operacji'] = pd.to_datetime(data['Data operacji'], format='%Y-%m-%d')
 data['Days'] = (data['Data operacji'] - data['Data operacji'].min()).dt.days
 
-# Podział danych na przychody i wydatki
 income_data = data[data['Kwota'] > 0]
 expense_data = data[data['Kwota'] < 0]
 
 
-# Funkcja do trenowania modelu regresji liniowej
 def train_model(data, model_filename, scaler_filename):
     X = data[['Days']]
     y = data['Kwota']
@@ -33,7 +28,6 @@ def train_model(data, model_filename, scaler_filename):
 
     y_pred = model.predict(X_test_scaled)
 
-    # Tworzenie DataFrame z wynikami testowymi
     results_df = pd.DataFrame({
         'Data operacji': X_test['Days'].apply(lambda x: data['Data operacji'].min() + pd.Timedelta(days=x)),
         'Rzeczywiste kwoty': y_test.values,
@@ -41,18 +35,15 @@ def train_model(data, model_filename, scaler_filename):
     })
     results_df['Miesiąc'] = results_df['Data operacji'].dt.to_period('M')
 
-    # Sumy rzeczywistych i przewidywanych kwot miesięcznych
     monthly_real = results_df.groupby('Miesiąc')['Rzeczywiste kwoty'].sum()
     monthly_predicted = results_df.groupby('Miesiąc')['Przewidywane kwoty'].sum()
 
-    # Zapis modelu i skalera do plików
     joblib.dump(model, model_filename)
     joblib.dump(scaler, scaler_filename)
 
     return model, scaler, monthly_real, monthly_predicted, results_df
 
 
-# Trenowanie modeli dla przychodów i wydatków i zapis do plików
 income_model, income_scaler, monthly_income_real, monthly_income_predicted, income_results_df = train_model(
     income_data, 'model_regresji_liniowej_income.pkl', 'scaler_income.pkl'
 )
@@ -62,7 +53,6 @@ expense_model, expense_scaler, monthly_expense_real, monthly_expense_predicted, 
 
 print("Model i skaler dla przychodów oraz wydatków zostały zapisane.")
 
-# Wyświetlenie wyników przychodów: rzeczywiste vs przewidywane
 income_comparison = pd.DataFrame({
     'Rzeczywiste przychody': monthly_income_real,
     'Przewidywane przychody': monthly_income_predicted
@@ -70,7 +60,6 @@ income_comparison = pd.DataFrame({
 print("\nRzeczywiste i przewidywane miesięczne przychody:")
 print(income_comparison)
 
-# Wykresy dla przychodów
 plt.figure(figsize=(10, 6))
 monthly_income_predicted.plot(kind='bar', color='skyblue', label='Przewidywane przychody')
 plt.title('Przewidywane miesięczne przychody')
@@ -91,7 +80,6 @@ plt.ylabel('Kwota przychodu')
 plt.legend()
 plt.show()
 
-# Wyświetlenie wyników wydatków: rzeczywiste vs przewidywane
 expense_comparison = pd.DataFrame({
     'Rzeczywiste wydatki': monthly_expense_real,
     'Przewidywane wydatki': monthly_expense_predicted
@@ -99,7 +87,6 @@ expense_comparison = pd.DataFrame({
 print("\nRzeczywiste i przewidywane miesięczne wydatki:")
 print(expense_comparison)
 
-# Wykresy dla wydatków
 plt.figure(figsize=(10, 6))
 monthly_expense_predicted.plot(kind='bar', color='salmon', label='Przewidywane wydatki')
 plt.title('Przewidywane miesięczne wydatki')
@@ -121,12 +108,11 @@ plt.legend()
 plt.show()
 
 
-# Dodanie prognozy na następne 6 miesięcy
 def forecast_next_6_months(model, scaler, start_date):
-    future_dates = pd.date_range(start=start_date, periods=6, freq='ME')  # Forecasting 6 months now
+    future_dates = pd.date_range(start=start_date, periods=6, freq='ME')
     future_days = (future_dates - data['Data operacji'].min()).days.values.reshape(-1, 1)
-    future_days_df = pd.DataFrame(future_days, columns=['Days'])  # Keep column name for consistency
-    future_days_scaled = scaler.transform(future_days_df)  # Transform with column name
+    future_days_df = pd.DataFrame(future_days, columns=['Days'])
+    future_days_scaled = scaler.transform(future_days_df)
 
     future_predictions = model.predict(future_days_scaled)
     forecast_df = pd.DataFrame({
@@ -136,27 +122,22 @@ def forecast_next_6_months(model, scaler, start_date):
     return forecast_df
 
 
-# Prognozy dla przychodów i wydatków na 6 miesięcy
 last_date = data['Data operacji'].max()
 income_forecast = forecast_next_6_months(income_model, income_scaler, last_date)
 expense_forecast = forecast_next_6_months(expense_model, expense_scaler, last_date)
 
-# Wyświetlenie prognoz przychodów i wydatków na następne 6 miesięcy
 print("\nPrognoza miesięcznych przychodów na następne 6 miesięcy:")
 print(income_forecast)
 
 print("\nPrognoza miesięcznych wydatków na następne 6 miesięcy:")
 print(expense_forecast)
 
-# Obliczenie prognozowanego bilansu (przychody - wydatki) na następne 6 miesięcy
 net_forecast = income_forecast['Przewidywana kwota'] + expense_forecast['Przewidywana kwota']
 
-# Utworzenie DataFrame do wyświetlenia bilansu
 net_forecast_df = pd.DataFrame({
     'Data operacji': income_forecast['Data operacji'],
     'Prognozowany bilans (przychody - wydatki)': net_forecast
 })
 
-# Wyświetlenie prognoz bilansu na następne 6 miesięcy
 print("\nPrognoza bilansu (przychody - wydatki) na następne 6 miesięcy:")
 print(net_forecast_df)

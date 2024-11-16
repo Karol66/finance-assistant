@@ -328,7 +328,7 @@ class _GoalsManageViewState extends State<GoalsManageView> {
               ),
             ),
           );
-        }).toList(),
+        }),
         moreButton(),
       ],
     );

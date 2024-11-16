@@ -286,6 +286,7 @@ class _DashboardViewState extends State<DashboardView> {
     }).toList();
   }
 
+  @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
 
