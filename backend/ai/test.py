@@ -16,8 +16,13 @@ data = data.rename(columns={
 data['is_deleted'] = 0
 data['is_regular'] = 0
 data['account_id'] = 1
-data['category_id'] = 1
 data['description'] = 'Automated Entry'  # Placeholder description
+
+# Assign category_id based on amount (1 for negative, 2 for positive)
+data['category_id'] = data['amount'].apply(lambda x: 1 if x < 0 else 2)
+
+# Convert all amounts to positive values for database insertion
+data['amount'] = data['amount'].abs()
 
 # Prepare SQL insert statements
 sql_statements = []
