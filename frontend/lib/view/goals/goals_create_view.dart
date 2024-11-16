@@ -19,7 +19,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
 
   IconData? _selectedGoalIcon;
   Color? _selectedGoalColor;
-  String? _selectedStatus;
 
   final GoalsService _goalsService = GoalsService();
 
@@ -41,7 +40,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
     Icons.travel_explore,
   ];
 
-  final List<String> _goalStatusOptions = ['active', 'completed', 'cancelled'];
   final List<Color> _goalColorOptions = [
     Colors.green,
     Colors.red,
@@ -73,18 +71,11 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
         );
         return;
       }
-      if (_selectedStatus == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a goal status.")),
-        );
-        return;
-      }
 
       await _goalsService.createGoal(
         _goalNameController.text,
         _targetAmountController.text,
         _currentAmountController.text,
-        _selectedStatus!,
         int.parse(_priorityController.text),
         '#${_selectedGoalColor?.value.toRadixString(16).substring(2, 8)}',
         _selectedGoalIcon!.codePoint.toString(),
@@ -177,8 +168,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
                 const SizedBox(height: 20),
                 inputTextField('Current Amount', _currentAmountController,
                     isNumeric: true),
-                const SizedBox(height: 20),
-                goalStatusDropdown(),
                 const SizedBox(height: 20),
                 inputTextField('Priority (1-5)', _priorityController,
                     isNumeric: true),
@@ -292,32 +281,6 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
         }).toList(),
         moreButton(),
       ],
-    );
-  }
-
-  Widget goalStatusDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedStatus,
-      items: _goalStatusOptions.map((status) {
-        return DropdownMenuItem(
-          value: status,
-          child: Text(status[0].toUpperCase() + status.substring(1)),
-        );
-      }).toList(),
-      onChanged: (newValue) {
-        setState(() {
-          _selectedStatus = newValue;
-        });
-      },
-      decoration: InputDecoration(
-        labelText: 'Goal Status',
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
     );
   }
 

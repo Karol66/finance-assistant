@@ -13,20 +13,22 @@ class GoalsView extends StatefulWidget {
 }
 
 class _GoalsViewState extends State<GoalsView> {
+  bool isActive = true;
   List<Map<String, dynamic>> goals = [];
   final GoalsService _goalsService = GoalsService();
 
   @override
   void initState() {
     super.initState();
-    loadGoals();
+    loadGoals(isActive ? "active" : "completed");
   }
 
-  Future<void> loadGoals() async {
+  Future<void> loadGoals(String status) async {
     final fetchedGoals = await _goalsService.fetchGoals();
     if (fetchedGoals != null) {
       setState(() {
         goals = fetchedGoals
+            .where((goal) => goal["status"] == status)
             .map((goal) => {
                   "goal_id": goal['id'],
                   "icon": _getIconFromString(goal["goal_icon"]),
@@ -62,7 +64,7 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-        loadGoals();
+        loadGoals(isActive ? "active" : "completed");
       }
     });
   }
@@ -75,7 +77,7 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-        loadGoals();
+        loadGoals(isActive ? "active" : "completed");
       }
     });
   }
@@ -88,8 +90,15 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-        loadGoals();
+       loadGoals(isActive ? "active" : "completed");
       }
+    });
+  }
+
+  void onLinkClick(bool showActive) {
+    setState(() {
+      isActive = showActive;
+      loadGoals(isActive ? "active" : "completed");
     });
   }
 
@@ -135,6 +144,66 @@ class _GoalsViewState extends State<GoalsView> {
               ),
             ),
             const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      onLinkClick(true);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isActive ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Active",
+                        style: TextStyle(
+                          color: isActive ? Colors.white : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      onLinkClick(false);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                !isActive ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Completed",
+                        style: TextStyle(
+                          color: !isActive ? Colors.white : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView.builder(
@@ -234,7 +303,7 @@ class _GoalsViewState extends State<GoalsView> {
           ),
         );
         if (result == true) {
-          loadGoals();
+          loadGoals(isActive ? "active" : "completed");
         }
       },
       child: Container(

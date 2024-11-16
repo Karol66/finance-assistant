@@ -59,7 +59,6 @@ class GoalsService {
       String goalName,
       String targetAmount,
       String currentAmount,
-      String status,
       int priority,
       String goalColor,
       String goalIcon) async {
@@ -81,7 +80,6 @@ class GoalsService {
         'goal_name': goalName,
         'target_amount': targetAmount,
         'current_amount': currentAmount,
-        'status': status,
         'priority': priority,
         'goal_color': goalColor,
         'goal_icon': goalIcon,
@@ -100,7 +98,6 @@ class GoalsService {
       String goalName,
       String targetAmount,
       String currentAmount,
-      String status,
       int priority,
       String goalColor,
       String goalIcon) async {
@@ -122,7 +119,6 @@ class GoalsService {
         'goal_name': goalName,
         'target_amount': targetAmount,
         'current_amount': currentAmount,
-        'status': status,
         'priority': priority,
         'goal_color': goalColor,
         'goal_icon': goalIcon,

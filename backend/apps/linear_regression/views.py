@@ -151,10 +151,10 @@ def predict_and_allocate_savings(request):
 
     net_forecast = income_forecast['Predicted Amount'] - expense_forecast['Predicted Amount']
 
-    user_goals = Goal.objects.filter(user_id=request.user.id, is_deleted=False)
+    user_goals = Goal.objects.filter(user_id=request.user.id, is_deleted=False, status="active")
     if not user_goals.exists():
         print("No goals found for user.")
-        return Response({"message": "No goals found for this user"}, status=400)
+        return Response({"message": "No active goals found for this user"}, status=400)
 
     total_priority = sum(goal.priority for goal in user_goals)
     if total_priority == 0:

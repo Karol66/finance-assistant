@@ -221,7 +221,7 @@ class _NotificationsViewState extends State<NotificationsView> {
   }
 
   Widget _buildPaginationControls() {
-    int visiblePages = 5; 
+    int visiblePages = 5;
     int startPage = 1;
 
     if (currentPage > visiblePages) {

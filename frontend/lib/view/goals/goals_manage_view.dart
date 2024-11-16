@@ -21,7 +21,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
 
   IconData? _selectedIcon;
   Color? _selectedColor;
-  String? _selectedStatus;
 
   final GoalsService _goalsService = GoalsService();
 
@@ -42,8 +41,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
     Icons.forest,
     Icons.travel_explore,
   ];
-
-  final List<String> _goalStatusOptions = ['active', 'completed', 'cancelled'];
 
   final List<Color> _colorOptions = [
     Colors.green,
@@ -73,7 +70,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         _currentAmountController.text =
             fetchedGoal['current_amount'].toString();
         _priorityController.text = fetchedGoal['priority'].toString();
-        _selectedStatus = fetchedGoal['status'];
         _selectedColor = _parseColor(fetchedGoal['goal_color']);
         _selectedIcon = _getIconFromString(fetchedGoal['goal_icon']);
       });
@@ -110,19 +106,12 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         );
         return;
       }
-      if (_selectedStatus == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a goal status.")),
-        );
-        return;
-      }
 
       await _goalsService.updateGoal(
         widget.goalId,
         _goalNameController.text,
         _targetAmountController.text,
         _currentAmountController.text,
-        _selectedStatus!,
         int.parse(_priorityController.text),
         '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}',
         _selectedIcon!.codePoint.toString(),
@@ -198,8 +187,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
                 const SizedBox(height: 20),
                 inputTextField('Current Amount', _currentAmountController,
                     isNumeric: true),
-                const SizedBox(height: 20),
-                goalStatusDropdown(),
                 const SizedBox(height: 20),
                 inputTextField('Priority (1-5)', _priorityController,
                     isNumeric: true),
@@ -344,32 +331,6 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         }).toList(),
         moreButton(),
       ],
-    );
-  }
-
-  Widget goalStatusDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedStatus,
-      items: _goalStatusOptions.map((status) {
-        return DropdownMenuItem(
-          value: status,
-          child: Text(status[0].toUpperCase() + status.substring(1)),
-        );
-      }).toList(),
-      onChanged: (newValue) {
-        setState(() {
-          _selectedStatus = newValue;
-        });
-      },
-      decoration: InputDecoration(
-        labelText: 'Goal Status',
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
     );
   }
 
