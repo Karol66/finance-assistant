@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/common/color_extansion.dart';
 import 'package:frontend/view/users/login_view.dart';
 
 void main() {
@@ -15,13 +14,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: "Inter",
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: TColor.primary,
-          background: TColor.gray80,
-          primary: TColor.primary,
-          primaryContainer: TColor.gray60,
-          secondary: TColor.secondary,
-        ),
         useMaterial3: false,
       ),
       home: const LoginView(),

@@ -10,7 +10,6 @@ class Account(models.Model):
     account_color = models.CharField(max_length=7, default='#FFFFFF')
     account_icon = models.CharField(max_length=255, default='default_icon')
     is_deleted = models.BooleanField(default=False)
-    include_in_total = models.BooleanField(default=True)  
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

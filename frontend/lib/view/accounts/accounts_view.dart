@@ -52,11 +52,7 @@ class _AccountViewState extends State<AccountView> {
   void _updateTotalBalance() {
     totalBalance = accounts.fold(
       0.0,
-      (sum, account) =>
-          sum +
-          ((account["include_in_total"] == true)
-              ? double.parse(account["balance"].toString())
-              : 0.0),
+      (sum, account) => sum + double.parse(account["balance"].toString()),
     );
   }
 

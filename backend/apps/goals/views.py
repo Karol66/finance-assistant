@@ -7,13 +7,35 @@ from django.shortcuts import get_object_or_404
 
 from .serializers import GoalSerializer
 
+from rest_framework.pagination import PageNumberPagination
+
+
+class GoalPagination(PageNumberPagination):
+    page_size = 5
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def goal_list(request):
-    goals = Goal.objects.filter(user=request.user, is_deleted=False)
-    serializer = GoalSerializer(goals, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    status = request.query_params.get('status', None)
+
+    if status not in ['active', 'completed']:
+        return Response({"error": "Invalid status parameter"}, status=400)
+
+    if status == "active":
+        goals = Goal.objects.filter(user=request.user, is_deleted=False, status="active").order_by('-priority', '-id')
+    else:
+        goals = Goal.objects.filter(user=request.user, is_deleted=False, status="completed").order_by('-priority', '-id')
+
+    paginator = GoalPagination()
+    paginated_goals = paginator.paginate_queryset(goals, request)
+
+    serializer = GoalSerializer(paginated_goals, many=True)
+    response = paginator.get_paginated_response(serializer.data)
+
+    response.data['total_pages'] = paginator.page.paginator.num_pages
+    return response
+
 
 
 @api_view(['GET'])
@@ -52,6 +74,7 @@ def goal_update(request, pk):
             goal.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

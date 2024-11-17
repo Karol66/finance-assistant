@@ -223,11 +223,9 @@ class _NotificationsViewState extends State<NotificationsView> {
   Widget _buildPaginationControls() {
     int totalPages = hasNextPage ? currentPage + 1 : currentPage;
 
-    // Określamy startową i końcową stronę do wyświetlenia
     int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
     int endPage = startPage + 4;
 
-    // Upewniamy się, że nie przekroczymy liczby dostępnych stron
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = endPage - 4 > 0 ? endPage - 4 : 1;
@@ -236,7 +234,6 @@ class _NotificationsViewState extends State<NotificationsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Przycisk "poprzednia strona"
         IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: currentPage > 1 ? goToPreviousPage : null,
@@ -276,7 +273,6 @@ class _NotificationsViewState extends State<NotificationsView> {
             );
           },
         ),
-        // Przycisk "następna strona"
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
           onPressed: hasNextPage ? goToNextPage : null,

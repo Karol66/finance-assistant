@@ -16,19 +16,26 @@ class _GoalsViewState extends State<GoalsView> {
   bool isActive = true;
   List<Map<String, dynamic>> goals = [];
   final GoalsService _goalsService = GoalsService();
+  int currentPage = 1;
+  bool hasNextPage = true;
 
   @override
   void initState() {
     super.initState();
-    loadGoals(isActive ? "active" : "completed");
+    _initializeGoals();
   }
 
-  Future<void> loadGoals(String status) async {
-    final fetchedGoals = await _goalsService.fetchGoals();
+  void _initializeGoals() {
+    final status = isActive ? "active" : "completed";
+    loadGoals(status: status, page: 1);
+  }
+
+  Future<void> loadGoals({required String status, int page = 1}) async {
+    final fetchedGoals =
+        await _goalsService.fetchGoals(page: page, status: status);
     if (fetchedGoals != null) {
       setState(() {
-        goals = fetchedGoals
-            .where((goal) => goal["status"] == status)
+        goals = (fetchedGoals['results'] as List)
             .map((goal) => {
                   "goal_id": goal['id'],
                   "icon": _getIconFromString(goal["goal_icon"]),
@@ -40,9 +47,25 @@ class _GoalsViewState extends State<GoalsView> {
                   "goal_color": _parseColor(goal["goal_color"]),
                 })
             .toList();
+        currentPage = page;
+        hasNextPage = page < fetchedGoals['total_pages'];
       });
     } else {
       print("Failed to load goals.");
+    }
+  }
+
+  void goToNextPage() {
+    if (hasNextPage) {
+      loadGoals(
+          status: isActive ? "active" : "completed", page: currentPage + 1);
+    }
+  }
+
+  void goToPreviousPage() {
+    if (currentPage > 1) {
+      loadGoals(
+          status: isActive ? "active" : "completed", page: currentPage - 1);
     }
   }
 
@@ -64,7 +87,7 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-        loadGoals(isActive ? "active" : "completed");
+        loadGoals(status: isActive ? "active" : "completed", page: 1);
       }
     });
   }
@@ -77,7 +100,7 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-        loadGoals(isActive ? "active" : "completed");
+        loadGoals(status: isActive ? "active" : "completed", page: 1);
       }
     });
   }
@@ -90,7 +113,7 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     ).then((value) {
       if (value == true) {
-       loadGoals(isActive ? "active" : "completed");
+        loadGoals(status: isActive ? "active" : "completed", page: 1);
       }
     });
   }
@@ -98,7 +121,7 @@ class _GoalsViewState extends State<GoalsView> {
   void onLinkClick(bool showActive) {
     setState(() {
       isActive = showActive;
-      loadGoals(isActive ? "active" : "completed");
+      loadGoals(status: isActive ? "active" : "completed", page: 1);
     });
   }
 
@@ -219,9 +242,72 @@ class _GoalsViewState extends State<GoalsView> {
                 },
               ),
             ),
+            const SizedBox(height: 10),
+            _buildPaginationControls(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    int totalPages = hasNextPage ? currentPage + 1 : currentPage;
+
+    int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
+    int endPage = startPage + 4;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = endPage - 4 > 0 ? endPage - 4 : 1;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: currentPage > 1 ? goToPreviousPage : null,
+        ),
+        ...List.generate(
+          (endPage - startPage + 1),
+          (index) {
+            int pageNumber = startPage + index;
+            return GestureDetector(
+              onTap: () {
+                if (pageNumber != currentPage) {
+                  loadGoals(status: isActive ? "active" : "completed", page: 1);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pageNumber == currentPage
+                      ? Colors.white
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  '$pageNumber',
+                  style: TextStyle(
+                    color:
+                        pageNumber == currentPage ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          onPressed: hasNextPage ? goToNextPage : null,
+        ),
+      ],
     );
   }
 
@@ -303,7 +389,7 @@ class _GoalsViewState extends State<GoalsView> {
           ),
         );
         if (result == true) {
-          loadGoals(isActive ? "active" : "completed");
+          loadGoals(status: isActive ? "active" : "completed", page: 1);
         }
       },
       child: Container(
