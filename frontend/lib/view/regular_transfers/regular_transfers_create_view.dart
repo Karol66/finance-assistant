@@ -64,7 +64,7 @@ class _RegularTransfersCreateViewState
   }
 
   Future<void> loadAccounts() async {
-    final fetchedAccounts = await _accountsService.fetchAccounts();
+    final fetchedAccounts = await _accountsService.fetchAllAccounts();
     if (fetchedAccounts != null) {
       setState(() {
         _accounts = fetchedAccounts

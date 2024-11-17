@@ -15,10 +15,10 @@ class AccountView extends StatefulWidget {
 
 class _AccountViewState extends State<AccountView> {
   List<Map<String, dynamic>> accounts = [];
-
   final AccountsService _accountsService = AccountsService();
-
   double totalBalance = 0.00;
+  int currentPage = 1;
+  bool hasNextPage = true;
 
   @override
   void initState() {
@@ -26,12 +26,12 @@ class _AccountViewState extends State<AccountView> {
     loadAccounts();
   }
 
-  Future<void> loadAccounts() async {
-    final fetchedAccounts = await _accountsService.fetchAccounts();
+  Future<void> loadAccounts({int page = 1}) async {
+    final fetchedAccounts = await _accountsService.fetchAccounts(page: page);
 
     if (fetchedAccounts != null) {
       setState(() {
-        accounts = fetchedAccounts
+        accounts = (fetchedAccounts['results'] as List)
             .map((account) => {
                   "account_id": account["id"],
                   "account_name": account["account_name"],
@@ -42,10 +42,24 @@ class _AccountViewState extends State<AccountView> {
                   "account_icon": _getIconFromString(account["account_icon"]),
                 })
             .toList();
+        currentPage = page;
+        hasNextPage = page < fetchedAccounts['total_pages'];
         _updateTotalBalance();
       });
     } else {
       print("Failed to load accounts.");
+    }
+  }
+
+  void goToNextPage() {
+    if (hasNextPage) {
+      loadAccounts(page: currentPage + 1);
+    }
+  }
+
+  void goToPreviousPage() {
+    if (currentPage > 1) {
+      loadAccounts(page: currentPage - 1);
     }
   }
 
@@ -195,12 +209,75 @@ class _AccountViewState extends State<AccountView> {
                       return accountItem(account);
                     },
                   ),
+                  const SizedBox(height: 10),
+                  _buildPaginationControls(),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    int totalPages = hasNextPage ? currentPage + 1 : currentPage;
+
+    int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
+    int endPage = startPage + 4;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = endPage - 4 > 0 ? endPage - 4 : 1;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: currentPage > 1 ? goToPreviousPage : null,
+        ),
+        ...List.generate(
+          (endPage - startPage + 1),
+          (index) {
+            int pageNumber = startPage + index;
+            return GestureDetector(
+              onTap: () {
+                if (pageNumber != currentPage) {
+                  loadAccounts(page: pageNumber);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pageNumber == currentPage
+                      ? Colors.white
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  '$pageNumber',
+                  style: TextStyle(
+                    color:
+                        pageNumber == currentPage ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          onPressed: hasNextPage ? goToNextPage : null,
+        ),
+      ],
     );
   }
 

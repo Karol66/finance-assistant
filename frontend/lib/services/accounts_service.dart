@@ -5,7 +5,56 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AccountsService {
   final String baseUrl = 'http://10.0.2.2:8000/api';
 
-  Future<List<dynamic>?> fetchAccounts() async {
+  Future<String?> _getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('jwtToken');
+  }
+
+  Future<Map<String, dynamic>?> fetchAccounts({int page = 1}) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    String url = '$baseUrl/accounts/?page=$page';
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+
+      List<dynamic> results = data['results'] ?? [];
+      int totalPages = data['total_pages'] ?? 1;
+
+      return {
+        'results': results
+            .map((account) => {
+                  "id": account["id"],
+                  "account_name": account["account_name"],
+                  "account_type": account["account_type"],
+                  "balance": account["balance"],
+                  "include_in_total": account["include_in_total"],
+                  "account_color": account["account_color"],
+                  "account_icon": account["account_icon"],
+                })
+            .toList(),
+        'total_pages': totalPages,
+      };
+    } else {
+      print('Failed to fetch accounts: ${response.body}');
+      return null;
+    }
+  }
+
+  Future<List<dynamic>?> fetchAllAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -15,7 +64,7 @@ class AccountsService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/accounts/'),
+      Uri.parse('$baseUrl/accounts/all/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -55,12 +104,8 @@ class AccountsService {
     }
   }
 
-  Future<void> createAccount(
-      String accountName,
-      String accountType,
-      String balance,
-      String accountColor,
-      String accountIcon) async {
+  Future<void> createAccount(String accountName, String accountType,
+      String balance, String accountColor, String accountIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 

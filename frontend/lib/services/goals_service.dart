@@ -18,7 +18,6 @@ class GoalsService {
       return null;
     }
 
-    // Dodaj filtr statusu do URL-a, jeśli podano
     String url = '$baseUrl/goals/?page=$page';
     if (status != null) {
       url += '&status=$status';
