@@ -23,7 +23,7 @@ class _AccountViewState extends State<AccountView> {
   @override
   void initState() {
     super.initState();
-    loadAccounts();
+    loadAccounts(page: 1);
   }
 
   Future<void> loadAccounts({int page = 1}) async {
@@ -100,7 +100,7 @@ class _AccountViewState extends State<AccountView> {
       ),
     );
     if (result == true) {
-      loadAccounts();
+      loadAccounts(page: 1);
     }
   }
 
@@ -112,7 +112,7 @@ class _AccountViewState extends State<AccountView> {
       ),
     );
     if (result == true) {
-      loadAccounts();
+      loadAccounts(page: 1);
     }
   }
 
@@ -124,7 +124,7 @@ class _AccountViewState extends State<AccountView> {
       ),
     );
     if (result == true) {
-      loadAccounts();
+      loadAccounts(page: 1);
     }
   }
 
@@ -338,7 +338,7 @@ class _AccountViewState extends State<AccountView> {
           ),
         );
         if (result == true) {
-          loadAccounts();
+          loadAccounts(page: 1);
         }
       },
       child: Container(
@@ -397,7 +397,7 @@ class _AccountViewState extends State<AccountView> {
           ),
         );
         if (result == true) {
-          loadAccounts();
+          loadAccounts(page: 1);
         }
       },
       child: Container(

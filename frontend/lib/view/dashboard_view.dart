@@ -17,9 +17,10 @@ class _DashboardViewState extends State<DashboardView> {
   bool isExpenses = false;
   String selectedPeriod = 'Year';
   DateTime selectedDate = DateTime.now();
-
   List<Map<String, dynamic>> transfers = [];
   final TransfersService _transfersService = TransfersService();
+  int currentPage = 1;
+  bool hasNextPage = true;
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _DashboardViewState extends State<DashboardView> {
     loadTransfers();
   }
 
-  Future<void> loadTransfers() async {
+  Future<void> loadTransfers({int page = 1}) async {
     String? type;
     if (isGeneral) {
       type = null;
@@ -38,6 +39,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     final fetchedTransfers = await _transfersService.fetchTransfers(
+      page: page,
       period: selectedPeriod.toLowerCase(),
       date: selectedDate,
       type: type,
@@ -45,7 +47,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (fetchedTransfers != null) {
       setState(() {
-        transfers = fetchedTransfers.map((transfer) {
+        transfers = (fetchedTransfers['results'] as List).map((transfer) {
           return {
             "id": transfer['id'],
             "transfer_name": transfer['transfer_name'],
@@ -61,9 +63,23 @@ class _DashboardViewState extends State<DashboardView> {
                 transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
           };
         }).toList();
+        currentPage = page;
+        hasNextPage = page < fetchedTransfers['total_pages'];
       });
     } else {
       print("Failed to load transfers.");
+    }
+  }
+
+  void goToPreviousPage() {
+    if (currentPage > 1) {
+      loadTransfers(page: currentPage - 1);
+    }
+  }
+
+  void goToNextPage() {
+    if (hasNextPage) {
+      loadTransfers(page: currentPage + 1);
     }
   }
 
@@ -503,10 +519,72 @@ class _DashboardViewState extends State<DashboardView> {
                 return transferItem(transfer);
               },
             ),
-            const SizedBox(height: 100),
+            const SizedBox(height: 10),
+            _buildPaginationControls(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    int totalPages = hasNextPage ? currentPage + 1 : currentPage;
+
+    int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
+    int endPage = startPage + 4;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = endPage - 4 > 0 ? endPage - 4 : 1;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: currentPage > 1 ? goToPreviousPage : null,
+        ),
+        ...List.generate(
+          (endPage - startPage + 1),
+          (index) {
+            int pageNumber = startPage + index;
+            return GestureDetector(
+              onTap: () {
+                if (pageNumber != currentPage) {
+                  loadTransfers(page: pageNumber);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pageNumber == currentPage
+                      ? Colors.white
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  '$pageNumber',
+                  style: TextStyle(
+                    color:
+                        pageNumber == currentPage ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          onPressed: hasNextPage ? goToNextPage : null,
+        ),
+      ],
     );
   }
 

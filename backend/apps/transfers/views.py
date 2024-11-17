@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +12,8 @@ from .models import Account
 from ..accounts.serializers import AccountSerializer
 from ..categories.serializers import CategorySerializer
 
+class TransferPagination(PageNumberPagination):
+    page_size = 10
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -27,26 +30,36 @@ def transfer_list(request):
         transfers = transfers.filter(category__category_type='expense')
 
     if date_param:
-        date = datetime.strptime(date_param, '%Y-%m-%d')
-        if period == 'year':
-            transfers = transfers.filter(date__year=date.year)
-        elif period == 'month':
-            transfers = transfers.filter(date__year=date.year, date__month=date.month)
-        elif period == 'week':
-            start_of_week = date - timedelta(days=date.weekday())
-            end_of_week = start_of_week + timedelta(days=6)
+        try:
+            date = datetime.strptime(date_param, "%Y-%m-%d")
+            if period == "year":
+                transfers = transfers.filter(date__year=date.year)
+            elif period == "month":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month)
+            elif period == "week":
+                start_of_week = date - timedelta(days=date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
 
-            start_of_week = timezone.make_aware(start_of_week)
-            end_of_week = timezone.make_aware(end_of_week)
+                start_of_week = timezone.make_aware(start_of_week)
+                end_of_week = timezone.make_aware(end_of_week)
 
-            transfers = transfers.filter(date__range=(start_of_week, end_of_week))
-        elif period == 'day':
-            transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+                transfers = transfers.filter(date__range=(start_of_week, end_of_week))
+            elif period == "day":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
     transfers = transfers.order_by('-date')
 
-    serializer = TransferSerializer(transfers, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    paginator = TransferPagination()
+    paginated_transfers = paginator.paginate_queryset(transfers, request)
+
+    serializer = TransferSerializer(paginated_transfers, many=True)
+    response = paginator.get_paginated_response(serializer.data)
+
+    response.data['total_pages'] = paginator.page.paginator.num_pages
+    return response
+
 
 
 @api_view(['GET'])

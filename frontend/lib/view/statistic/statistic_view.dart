@@ -45,26 +45,26 @@ class _StatisticViewState extends State<StatisticView> {
         type: type,
       );
 
-      if (fetchedTransfers != null) {
-        allTransfers.addAll(fetchedTransfers.map((transfer) {
-          return {
-            "id": transfer['id'],
-            "transfer_name": transfer['transfer_name'],
-            "amount": transfer['amount'],
-            "transfer_date": DateTime.parse(transfer['date']),
-            "description": transfer['description'],
-            "account_name": transfer['account_name'],
-            "account_type": transfer['account_type'],
-            "category_name": transfer['category_name'],
-            "category_icon": transfer['category_icon'],
-            "category_color": _parseColor(transfer['category_color']),
-            "type":
-                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
-          };
-        }).toList());
-      }
+      // if (fetchedTransfers != null) {
+      //   allTransfers.addAll(fetchedTransfers.map((transfer) {
+      //     return {
+      //       "id": transfer['id'],
+      //       "transfer_name": transfer['transfer_name'],
+      //       "amount": transfer['amount'],
+      //       "transfer_date": DateTime.parse(transfer['date']),
+      //       "description": transfer['description'],
+      //       "account_name": transfer['account_name'],
+      //       "account_type": transfer['account_type'],
+      //       "category_name": transfer['category_name'],
+      //       "category_icon": transfer['category_icon'],
+      //       "category_color": _parseColor(transfer['category_color']),
+      //       "type":
+      //           transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+      //     };
+      //   }).toList());
+      // }
 
-      date = _getPreviousPeriod(date);
+      // date = _getPreviousPeriod(date);
     }
 
     setState(() {
