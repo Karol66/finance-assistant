@@ -24,6 +24,18 @@ class _AccountViewState extends State<AccountView> {
   void initState() {
     super.initState();
     loadAccounts(page: 1);
+    loadTotalBalance();
+  }
+
+  Future<void> loadTotalBalance() async {
+    final fetchedBalance = await _accountsService.fetchTotalAccountBalance();
+    if (fetchedBalance != null) {
+      setState(() {
+        totalBalance = fetchedBalance;
+      });
+    } else {
+      print("Failed to fetch total balance.");
+    }
   }
 
   Future<void> loadAccounts({int page = 1}) async {
@@ -44,7 +56,6 @@ class _AccountViewState extends State<AccountView> {
             .toList();
         currentPage = page;
         hasNextPage = page < fetchedAccounts['total_pages'];
-        _updateTotalBalance();
       });
     } else {
       print("Failed to load accounts.");
@@ -61,13 +72,6 @@ class _AccountViewState extends State<AccountView> {
     if (currentPage > 1) {
       loadAccounts(page: currentPage - 1);
     }
-  }
-
-  void _updateTotalBalance() {
-    totalBalance = accounts.fold(
-      0.0,
-      (sum, account) => sum + double.parse(account["balance"].toString()),
-    );
   }
 
   Color _getBalanceColor() {
@@ -101,6 +105,7 @@ class _AccountViewState extends State<AccountView> {
     );
     if (result == true) {
       loadAccounts(page: 1);
+      loadTotalBalance();
     }
   }
 
@@ -113,6 +118,7 @@ class _AccountViewState extends State<AccountView> {
     );
     if (result == true) {
       loadAccounts(page: 1);
+      loadTotalBalance();
     }
   }
 
@@ -125,6 +131,7 @@ class _AccountViewState extends State<AccountView> {
     );
     if (result == true) {
       loadAccounts(page: 1);
+      loadTotalBalance();
     }
   }
 
@@ -339,6 +346,7 @@ class _AccountViewState extends State<AccountView> {
         );
         if (result == true) {
           loadAccounts(page: 1);
+          loadTotalBalance();
         }
       },
       child: Container(
@@ -398,6 +406,7 @@ class _AccountViewState extends State<AccountView> {
         );
         if (result == true) {
           loadAccounts(page: 1);
+          loadTotalBalance();
         }
       },
       child: Container(

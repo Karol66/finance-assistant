@@ -196,4 +196,30 @@ class AccountsService {
       print('Failed to delete account: ${response.body}');
     }
   }
+
+  Future<double?> fetchTotalAccountBalance() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('jwtToken');
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/accounts/total-balance/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      return data['total_balance']?.toDouble();
+    } else {
+      print('Failed to fetch total account balance: ${response.body}');
+      return null;
+    }
+  }
 }
