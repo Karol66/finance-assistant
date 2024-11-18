@@ -45,7 +45,8 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
     Icons.sports,
     Icons.work,
     Icons.forest,
-    Icons.travel_explore
+    Icons.travel_explore,
+    Icons.coffee,
   ];
 
   @override
@@ -159,7 +160,8 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                       },
                       fillColor: WidgetStateProperty.all(Colors.white),
                     ),
-                    const Text('Expenses', style: TextStyle(color: Colors.white)),
+                    const Text('Expenses',
+                        style: TextStyle(color: Colors.white)),
                     const SizedBox(width: 20),
                     Radio<String>(
                       value: 'income',
@@ -219,7 +221,6 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
                         ),
                       );
                     }),
-                    moreButton(),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -333,28 +334,5 @@ class _CategoriesManageViewState extends State<CategoriesManageView> {
     setState(() {
       _selectedIcon = icon;
     });
-  }
-
-  Widget moreButton() {
-    return GestureDetector(
-      onTap: () {
-        print("More button pressed");
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: const Color(0xFF494E59),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.more_horiz,
-            size: 30,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
   }
 }

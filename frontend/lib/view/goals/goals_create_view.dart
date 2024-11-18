@@ -16,11 +16,22 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
   final TextEditingController _currentAmountController =
       TextEditingController();
   final TextEditingController _priorityController = TextEditingController();
+  final GoalsService _goalsService = GoalsService();
 
   IconData? _selectedGoalIcon;
   Color? _selectedGoalColor;
 
-  final GoalsService _goalsService = GoalsService();
+  final List<Color> _goalColorOptions = [
+    Colors.green,
+    Colors.red,
+    Colors.blue,
+    Colors.orange,
+    Colors.purple,
+    Colors.yellow,
+    Colors.brown,
+    Colors.pink,
+    Colors.grey,
+  ];
 
   final List<IconData> _goalIconOptions = [
     Icons.directions_car,
@@ -38,18 +49,7 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
     Icons.work,
     Icons.forest,
     Icons.travel_explore,
-  ];
-
-  final List<Color> _goalColorOptions = [
-    Colors.green,
-    Colors.red,
-    Colors.blue,
-    Colors.orange,
-    Colors.purple,
-    Colors.yellow,
-    Colors.brown,
-    Colors.pink,
-    Colors.grey,
+    Icons.coffee,
   ];
 
   @override
@@ -279,31 +279,7 @@ class _GoalsCreateViewState extends State<GoalsCreateView> {
             ),
           );
         }),
-        moreButton(),
       ],
-    );
-  }
-
-  Widget moreButton() {
-    return GestureDetector(
-      onTap: () {
-        print("More button pressed");
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: const Color(0xFF494E59),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.more_horiz,
-            size: 30,
-            color: Colors.white,
-          ),
-        ),
-      ),
     );
   }
 }

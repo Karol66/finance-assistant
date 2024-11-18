@@ -55,6 +55,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
     Icons.work,
     Icons.forest,
     Icons.travel_explore,
+    Icons.coffee,
   ];
 
   @override
