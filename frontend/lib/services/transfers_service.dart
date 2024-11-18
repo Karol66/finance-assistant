@@ -15,7 +15,7 @@ class TransfersService {
     int page = 1,
     String? type,
     String? period,
-    DateTime? date, // Data jako obiekt DateTime
+    DateTime? date,
   }) async {
     String? token = await _getToken();
 
@@ -24,11 +24,9 @@ class TransfersService {
       return null;
     }
 
-    // Formatowanie daty do 'yyyy-MM-dd'
     final dateString =
         date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
 
-    // Budowanie URL-a
     String url = '$baseUrl/transfers/?page=$page';
     if (type != null) {
       url += '&type=$type';
@@ -221,6 +219,115 @@ class TransfersService {
       }
     } catch (error) {
       print('Error deleting transfer: $error');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> fetchTransfersGroupedByCategory({
+    String? type,
+    String? period,
+    DateTime? date,
+  }) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
+    String url = '$baseUrl/transfers/grouped/';
+    if (type != null) {
+      url += '?type=$type';
+    }
+    if (period != null) {
+      url += type != null ? '&period=$period' : '?period=$period';
+    }
+    if (dateString.isNotEmpty) {
+      url += (type != null || period != null)
+          ? '&date=$dateString'
+          : '?date=$dateString';
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) {
+          return {
+            'category': item['category'],
+            'total_amount': item['total_amount'],
+          };
+        }).toList();
+      } else {
+        print('Failed to fetch grouped transfers: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching grouped transfers: $error');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchProfitLoss({
+    String? type,
+    String? period,
+    DateTime? date,
+  }) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
+    String url = '$baseUrl/transfers/calculate-profit-loss/';
+    if (type != null) {
+      url += '?type=$type';
+    }
+    if (period != null) {
+      url += type != null ? '&period=$period' : '?period=$period';
+    }
+    if (dateString.isNotEmpty) {
+      url += (type != null || period != null)
+          ? '&date=$dateString'
+          : '?date=$dateString';
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = jsonDecode(response.body);
+        return {
+          'total_income': data['total_income'] ?? 0,
+          'total_expense': data['total_expense'] ?? 0,
+          'profit_loss': data['profit_loss'] ?? 0,
+        };
+      } else {
+        print('Failed to fetch profit/loss: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching profit/loss: $error');
+      return null;
     }
   }
 

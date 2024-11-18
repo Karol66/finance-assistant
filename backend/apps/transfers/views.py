@@ -1,5 +1,9 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
+from decimal import Decimal
+
 from django.utils import timezone
+from django.db.models import Sum
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -12,8 +16,10 @@ from .models import Account
 from ..accounts.serializers import AccountSerializer
 from ..categories.serializers import CategorySerializer
 
+
 class TransferPagination(PageNumberPagination):
     page_size = 10
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -60,6 +66,113 @@ def transfer_list(request):
     response.data['total_pages'] = paginator.page.paginator.num_pages
     return response
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def transfer_list_grouped_by_category(request):
+    date_param = request.query_params.get('date')
+    period = request.query_params.get('period', 'day')
+    transfer_type = request.query_params.get('type')
+
+    transfers = Transfer.objects.filter(account__user=request.user, is_deleted=False)
+
+    if transfer_type == 'income':
+        transfers = transfers.filter(category__category_type='income')
+    elif transfer_type == 'expense':
+        transfers = transfers.filter(category__category_type='expense')
+
+    if date_param:
+        try:
+            date = datetime.strptime(date_param, "%Y-%m-%d")
+            if period == "year":
+                transfers = transfers.filter(date__year=date.year)
+            elif period == "month":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month)
+            elif period == "week":
+                start_of_week = date - timedelta(days=date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+
+                start_of_week = timezone.make_aware(start_of_week)
+                end_of_week = timezone.make_aware(end_of_week)
+
+                transfers = transfers.filter(date__range=(start_of_week, end_of_week))
+            elif period == "day":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    grouped_transfers = defaultdict(lambda: {'total_amount': Decimal(0), 'category': None})
+
+    for transfer in transfers:
+        category = transfer.category
+        if category:
+            category_id = category.id
+            grouped_transfers[category_id]['total_amount'] += transfer.amount
+            grouped_transfers[category_id]['category'] = {
+                'id': category.id,
+                'name': category.category_name,
+                'color': category.category_color
+            }
+
+    result = [
+        {
+            'category': data['category'],
+            'total_amount': float(data['total_amount'])
+        }
+        for data in grouped_transfers.values()
+    ]
+
+    result.sort(key=lambda x: x['category']['name'])
+
+    return Response(result, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def calculate_profit_loss(request):
+    date_param = request.query_params.get('date')
+    period = request.query_params.get('period', 'day')
+    transfer_type = request.query_params.get('type')
+
+    # Filter transfers by user
+    transfers = Transfer.objects.filter(account__user=request.user, is_deleted=False)
+
+    if transfer_type == 'income':
+        transfers = transfers.filter(category__category_type='income')
+    elif transfer_type == 'expense':
+        transfers = transfers.filter(category__category_type='expense')
+
+    if date_param:
+        try:
+            date = datetime.strptime(date_param, "%Y-%m-%d")
+            if period == "year":
+                transfers = transfers.filter(date__year=date.year)
+            elif period == "month":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month)
+            elif period == "week":
+                start_of_week = date - timedelta(days=date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+
+                start_of_week = timezone.make_aware(start_of_week)
+                end_of_week = timezone.make_aware(end_of_week)
+
+                transfers = transfers.filter(date__range=(start_of_week, end_of_week))
+            elif period == "day":
+                transfers = transfers.filter(date__year=date.year, date__month=date.month, date__day=date.day)
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    income_sum = transfers.filter(category__category_type='income').aggregate(total=Sum('amount'))['total'] or 0
+    expense_sum = transfers.filter(category__category_type='expense').aggregate(total=Sum('amount'))['total'] or 0
+    profit_loss = income_sum - expense_sum
+
+    result = {
+        'total_income': float(income_sum),
+        'total_expense': float(expense_sum),
+        'profit_loss': float(profit_loss)
+    }
+
+    return Response(result, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

@@ -17,15 +17,77 @@ class _DashboardViewState extends State<DashboardView> {
   bool isExpenses = false;
   String selectedPeriod = 'Year';
   DateTime selectedDate = DateTime.now();
+
   List<Map<String, dynamic>> transfers = [];
+  List<Map<String, dynamic>> groupedTransfers = [];
+
   final TransfersService _transfersService = TransfersService();
+
   int currentPage = 1;
   bool hasNextPage = true;
+
+  double totalIncome = 0.0;
+  double totalExpenses = 0.0;
+  double totalAmount = 0.0;
 
   @override
   void initState() {
     super.initState();
     loadTransfers();
+    loadGroupedTransfers();
+    getTotalAmount();
+  }
+
+  Future<void> getTotalAmount() async {
+    final result = await _transfersService.fetchProfitLoss(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: isGeneral ? null : (isExpenses ? 'expense' : 'income'),
+    );
+
+    if (result != null) {
+      setState(() {
+        totalIncome = result['total_income'];
+        totalExpenses = result['total_expense'];
+
+        if (isGeneral) {
+          totalAmount = totalIncome - totalExpenses;
+        } else if (isExpenses) {
+          totalAmount = totalExpenses;
+        } else {
+          totalAmount = totalIncome;
+        }
+      });
+    } else {
+      print('Failed to fetch total amount from backend.');
+    }
+  }
+
+  Future<void> loadGroupedTransfers() async {
+    final fetchedGroupedTransfers =
+        await _transfersService.fetchTransfersGroupedByCategory(
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: isExpenses
+          ? 'expense'
+          : isGeneral
+              ? null
+              : 'income',
+    );
+
+    if (fetchedGroupedTransfers != null) {
+      setState(() {
+        groupedTransfers = fetchedGroupedTransfers.map((item) {
+          return {
+            "category_name": item['category']['name'],
+            "category_color": _parseColor(item['category']['color']),
+            "amount": item['total_amount'].toString(),
+          };
+        }).toList();
+      });
+    } else {
+      print("Failed to load grouped transfers.");
+    }
   }
 
   Future<void> loadTransfers({int page = 1}) async {
@@ -132,6 +194,8 @@ class _DashboardViewState extends State<DashboardView> {
       }
     });
     loadTransfers();
+    loadGroupedTransfers();
+    getTotalAmount();
   }
 
   void goToNextPeriod() {
@@ -149,6 +213,8 @@ class _DashboardViewState extends State<DashboardView> {
       }
     });
     loadTransfers();
+    loadGroupedTransfers();
+    getTotalAmount();
   }
 
   Widget transferItem(Map<String, dynamic> transfer) {
@@ -171,6 +237,8 @@ class _DashboardViewState extends State<DashboardView> {
         );
         if (result == true) {
           loadTransfers();
+          loadGroupedTransfers();
+          getTotalAmount();
         }
       },
       child: Card(
@@ -254,24 +322,7 @@ class _DashboardViewState extends State<DashboardView> {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
-  double _getTotalAmount() {
-    double totalIncome = transfers
-        .where((transfer) => transfer['type'] == 'Income')
-        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
-    double totalExpenses = transfers
-        .where((transfer) => transfer['type'] == 'Expenses')
-        .fold(0.0, (sum, item) => sum + double.parse(item['amount']));
-
-    if (isGeneral) {
-      return totalIncome - totalExpenses;
-    } else if (isExpenses) {
-      return totalExpenses;
-    } else {
-      return totalIncome;
-    }
-  }
-
-  Color _getTotalAmountColor(double totalAmount) {
+  Color getTotalAmountColor(double totalAmount) {
     if (isExpenses) {
       return Colors.red;
     } else {
@@ -279,7 +330,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  String _getTotalAmountText(double totalAmount) {
+  String getTotalAmountText(double totalAmount) {
     if (isExpenses) {
       return "- \$${totalAmount.toStringAsFixed(2)}";
     } else if (totalAmount < 0) {
@@ -290,12 +341,12 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   List<PieChartSectionData> getPieChartData() {
-    return _filteredTransfers().map((transfer) {
+    return groupedTransfers.map((transfer) {
       double value = double.parse(transfer["amount"]);
       return PieChartSectionData(
         color: transfer["category_color"],
         value: value,
-        title: '',
+        title: transfer["category_name"],
         radius: 30,
         titlePositionPercentageOffset: 0.55,
       );
@@ -373,16 +424,29 @@ class _DashboardViewState extends State<DashboardView> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                _getTotalAmountText(_getTotalAmount()),
+                                isGeneral
+                                    ? getTotalAmountText(totalAmount)
+                                    : (isExpenses
+                                        ? getTotalAmountText(totalExpenses)
+                                        : getTotalAmountText(totalIncome)),
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color:
-                                      _getTotalAmountColor(_getTotalAmount()),
+                                  color: getTotalAmountColor(
+                                    isGeneral
+                                        ? totalAmount
+                                        : (isExpenses
+                                            ? totalExpenses
+                                            : totalIncome),
+                                  ),
                                 ),
                               ),
                               Text(
-                                isExpenses ? "Total Expenses" : "Total Income",
+                                isGeneral
+                                    ? "Net Balance"
+                                    : (isExpenses
+                                        ? "Total Expenses"
+                                        : "Total Income"),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.white54,
@@ -408,6 +472,8 @@ class _DashboardViewState extends State<DashboardView> {
                         isExpenses = false;
                       });
                       loadTransfers();
+                      loadGroupedTransfers();
+                      getTotalAmount();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -440,6 +506,8 @@ class _DashboardViewState extends State<DashboardView> {
                         isExpenses = true;
                       });
                       loadTransfers();
+                      loadGroupedTransfers();
+                      getTotalAmount();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -475,6 +543,8 @@ class _DashboardViewState extends State<DashboardView> {
                         isExpenses = false;
                       });
                       loadTransfers();
+                      loadGroupedTransfers();
+                      getTotalAmount();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -595,6 +665,9 @@ class _DashboardViewState extends State<DashboardView> {
           setState(() {
             selectedPeriod = period;
           });
+          loadTransfers();
+          loadGroupedTransfers();
+          getTotalAmount();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -633,6 +706,8 @@ class _DashboardViewState extends State<DashboardView> {
         );
         if (result == true) {
           loadTransfers();
+          loadGroupedTransfers();
+          getTotalAmount();
         }
       },
       child: Container(
