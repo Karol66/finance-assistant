@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/services/transfers_service.dart';
-import 'package:intl/intl.dart';
 import 'package:frontend/services/categories_service.dart';
 import 'package:frontend/services/accounts_service.dart';
 
@@ -19,10 +18,8 @@ class _RegularTransfersCreateViewState
   final TextEditingController _transferNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
   final TransfersService _transfersService = TransfersService();
 
-  DateTime? _selectedDate;
   Map<String, dynamic>? _selectedCategory;
   Map<String, dynamic>? _selectedAccount;
   String? _selectedInterval;
@@ -94,12 +91,6 @@ class _RegularTransfersCreateViewState
         );
         return;
       }
-      if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a date.")),
-        );
-        return;
-      }
       if (_selectedInterval == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please select an interval.")),
@@ -110,7 +101,6 @@ class _RegularTransfersCreateViewState
       String transferName = _transferNameController.text;
       String amount = _amountController.text;
       String description = _descriptionController.text;
-      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
       int accountId = _selectedAccount!['account_id'];
       int categoryId = _selectedCategory!['category_id'];
 
@@ -118,7 +108,6 @@ class _RegularTransfersCreateViewState
         transferName,
         amount,
         description,
-        date,
         accountId,
         categoryId,
         _selectedInterval!,
@@ -142,52 +131,13 @@ class _RegularTransfersCreateViewState
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
-  }
-
-Widget inputTextField(String hintText, TextEditingController controller,
-    {bool isNumeric = false}) {
-  return TextFormField(
-    controller: controller,
-    keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-    inputFormatters: isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
-    decoration: InputDecoration(
-      hintText: hintText,
-      filled: true,
-      fillColor: Colors.grey.shade200,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
-    ),
-    validator: (value) {
-      if (value == null || value.isEmpty) {
-        return 'Please enter some text';
-      }
-      if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
-        return 'Please enter a valid number';
-      }
-      return null;
-    },
-  );
-}
-
-  Widget datePickerField(String hintText, TextEditingController controller) {
+  Widget inputTextField(String hintText, TextEditingController controller,
+      {bool isNumeric = false}) {
     return TextFormField(
       controller: controller,
-      readOnly: true,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      inputFormatters:
+          isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -196,20 +146,19 @@ Widget inputTextField(String hintText, TextEditingController controller,
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: const Icon(
-          Icons.calendar_today,
-          color: Color(0xFF494E59),
-        ),
       ),
-      onTap: () => _selectDate(context),
       validator: (value) {
-        if (_selectedDate == null) {
-          return 'Please select a date';
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
+          return 'Please enter a valid number';
         }
         return null;
       },
     );
   }
+
 
   Widget accountDropdown() {
     return DropdownButtonFormField<Map<String, dynamic>>(
@@ -459,8 +408,6 @@ Widget inputTextField(String hintText, TextEditingController controller,
                 inputTextField('Name', _transferNameController),
                 const SizedBox(height: 20),
                 inputTextField('Amount', _amountController, isNumeric: true),
-                const SizedBox(height: 20),
-                datePickerField('Select Date', _dateController),
                 const SizedBox(height: 20),
                 inputTextField('Description', _descriptionController),
                 const SizedBox(height: 20),

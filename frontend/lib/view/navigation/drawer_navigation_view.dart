@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/services/users_service.dart';
 import 'package:frontend/services/notifications_service.dart';
 import 'package:frontend/view/accounts/accounts_view.dart';
@@ -87,7 +88,7 @@ class _DrawerNavigationControllerState
     );
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
     setState(() {
       _selectedIndex = index;
 
@@ -97,6 +98,11 @@ class _DrawerNavigationControllerState
 
       Navigator.pop(context);
     });
+
+    if (index == 1) {
+      final transfersService = TransfersService();
+      await transfersService.generateRegularTransfers();
+    }
   }
 
   @override

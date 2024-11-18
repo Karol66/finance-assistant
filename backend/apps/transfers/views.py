@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
-
 from django.utils import timezone
 from django.db.models import Sum
 from rest_framework.decorators import api_view, permission_classes
@@ -15,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from .models import Account
 from ..accounts.serializers import AccountSerializer
 from ..categories.serializers import CategorySerializer
+from django.db import transaction
 
 
 class TransferPagination(PageNumberPagination):
@@ -134,7 +134,6 @@ def calculate_profit_loss(request):
     period = request.query_params.get('period', 'day')
     transfer_type = request.query_params.get('type')
 
-    # Filter transfers by user
     transfers = Transfer.objects.filter(account__user=request.user, is_deleted=False)
 
     if transfer_type == 'income':
@@ -178,7 +177,6 @@ def calculate_profit_loss(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def transfer_detail(request, pk):
-    print(f"Użytkownik: {request.user}, Transfer ID: {pk}")
     transfer = get_object_or_404(Transfer, pk=pk, account__user=request.user, is_deleted=False)
     serializer = TransferSerializer(transfer)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -187,9 +185,6 @@ def transfer_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def transfer_create(request):
-    print("Dane POST:", request.data)
-    print(f"Zalogowany użytkownik: {request.user}")
-
     account = get_object_or_404(Account, id=request.data.get('account'), user=request.user)
 
     account.refresh_from_db()
@@ -367,3 +362,57 @@ def regular_transfer_delete(request, pk):
     transfer.is_deleted = True
     transfer.save()
     return Response({'message': 'Regular transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_regular_transfers(request):
+    regular_transfers = Transfer.objects.filter(
+        account__user=request.user,
+        is_regular=True,
+        is_deleted=False
+    )
+
+    created_transfers = []
+
+    for regular_transfer in regular_transfers:
+        last_transfer_date = regular_transfer.date
+
+        while last_transfer_date <= timezone.now():
+            if regular_transfer.interval == 'daily':
+                next_transfer_date = last_transfer_date + timedelta(days=1)
+            elif regular_transfer.interval == 'weekly':
+                next_transfer_date = last_transfer_date + timedelta(weeks=1)
+            elif regular_transfer.interval == 'monthly':
+                next_transfer_date = last_transfer_date + timedelta(days=30)
+            elif regular_transfer.interval == 'yearly':
+                next_transfer_date = last_transfer_date + timedelta(days=365)
+            else:
+                break
+
+            with transaction.atomic():
+                new_transfer = Transfer.objects.create(
+                    transfer_name=regular_transfer.transfer_name,
+                    amount=regular_transfer.amount,
+                    description=regular_transfer.description,
+                    date=next_transfer_date,
+                    account=regular_transfer.account,
+                    category=regular_transfer.category,
+                    is_regular=False,
+                )
+
+                if new_transfer.category and new_transfer.category.category_type == 'income':
+                    new_transfer.account.balance += new_transfer.amount
+                else:
+                    new_transfer.account.balance -= new_transfer.amount
+
+                new_transfer.account.save()
+
+                created_transfers.append(new_transfer)
+
+            last_transfer_date = next_transfer_date
+            regular_transfer.date = next_transfer_date
+
+        regular_transfer.save()
+
+    serializer = TransferSerializer(created_transfers, many=True)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

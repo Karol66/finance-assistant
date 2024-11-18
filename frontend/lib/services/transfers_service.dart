@@ -460,7 +460,6 @@ class TransfersService {
       String transferName,
       String amount,
       String description,
-      String date,
       int accountId,
       int categoryId,
       String interval) async {
@@ -482,7 +481,6 @@ class TransfersService {
           'transfer_name': transferName,
           'amount': amount,
           'description': description,
-          'date': date,
           'account': accountId,
           'category': categoryId,
           'is_regular': true,
@@ -505,7 +503,6 @@ class TransfersService {
       String transferName,
       String amount,
       String description,
-      String date,
       int accountId,
       int categoryId,
       String interval) async {
@@ -527,7 +524,6 @@ class TransfersService {
           'transfer_name': transferName,
           'amount': amount,
           'description': description,
-          'date': date,
           'account': accountId,
           'category': categoryId,
           'is_regular': true,
@@ -569,6 +565,33 @@ class TransfersService {
       }
     } catch (error) {
       print('Error deleting regular transfer: $error');
+    }
+  }
+
+  Future<void> generateRegularTransfers() async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/transfers/regular/generate/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 201) {
+        print('Regular transfers generated successfully');
+      } else {
+        print('Failed to generate regular transfers: ${response.body}');
+      }
+    } catch (error) {
+      print('Error generating regular transfers: $error');
     }
   }
 }

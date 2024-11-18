@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/services/categories_service.dart';
 import 'package:frontend/services/accounts_service.dart';
-import 'package:intl/intl.dart';
 
 class RegularTransfersManageView extends StatefulWidget {
   final int transferId;
@@ -21,7 +20,6 @@ class _RegularTransfersManageViewState
   final TextEditingController _transferNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
   final TransfersService _transfersService = TransfersService();
 
   DateTime? _selectedDate;
@@ -68,7 +66,6 @@ class _RegularTransfersManageViewState
         _amountController.text = fetchedTransfer['amount'].toString();
         _descriptionController.text = fetchedTransfer['description'];
         _selectedDate = DateTime.parse(fetchedTransfer['date']);
-        _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
         _selectedInterval = fetchedTransfer['interval'];
 
         if (fetchedCategory != null) {
@@ -169,7 +166,6 @@ class _RegularTransfersManageViewState
       String transferName = _transferNameController.text;
       String amount = _amountController.text;
       String description = _descriptionController.text;
-      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
       int accountId = _selectedAccount!['account_id'];
       int categoryId = _selectedCategory!['category_id'];
 
@@ -178,7 +174,6 @@ class _RegularTransfersManageViewState
         transferName,
         amount,
         description,
-        date,
         accountId,
         categoryId,
         _selectedInterval!,
@@ -195,21 +190,6 @@ class _RegularTransfersManageViewState
   Future<void> _deleteTransfer() async {
     await _transfersService.deleteTransfer(widget.transferId);
     Navigator.pop(context, true);
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
   }
 
   Widget intervalDropdown() {
@@ -260,33 +240,6 @@ class _RegularTransfersManageViewState
         }
         if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
           return 'Please enter a valid number';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget datePickerField(String hintText, TextEditingController controller) {
-    return TextFormField(
-      controller: controller,
-      readOnly: true,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        suffixIcon: const Icon(
-          Icons.calendar_today,
-          color: Color(0xFF494E59),
-        ),
-      ),
-      onTap: () => _selectDate(context),
-      validator: (value) {
-        if (_selectedDate == null) {
-          return 'Please select a date';
         }
         return null;
       },
@@ -484,8 +437,6 @@ class _RegularTransfersManageViewState
                 inputTextField('Transfer Name', _transferNameController),
                 const SizedBox(height: 20),
                 inputTextField('Amount', _amountController, isNumeric: true),
-                const SizedBox(height: 20),
-                datePickerField('Select Date', _dateController),
                 const SizedBox(height: 20),
                 inputTextField('Description', _descriptionController),
                 const SizedBox(height: 20),
