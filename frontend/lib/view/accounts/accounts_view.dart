@@ -141,88 +141,80 @@ class _AccountViewState extends State<AccountView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: media.width,
-              decoration: const BoxDecoration(
-                color: Color(0xFF191E29),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+      body: Column(
+        children: [
+          Container(
+            width: media.width,
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF191E29),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              children: [
+                Column(
+                  children: [
+                    const Text(
+                      "Total Balance:",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                    Text(
+                      _getBalanceText(),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: _getBalanceColor(),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                children: [
-                  Column(
-                    children: [
-                      const Text(
-                        "Total Balance:",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                      Text(
-                        _getBalanceText(),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: _getBalanceColor(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    children: [
-                      _buildButton(
-                        icon: Icons.history,
-                        label: "Transfer history",
-                        onTap: transferHistoryClick,
-                      ),
-                      _buildButton(
-                        icon: Icons.sync,
-                        label: "New transfer",
-                        onTap: newTransferClick,
-                      ),
-                      _buildButton(
-                        icon: Icons.repeat,
-                        label: "Regular Transfers",
-                        onTap: regularTransferClick,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                const SizedBox(height: 20),
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  children: [
+                    _buildButton(
+                      icon: Icons.history,
+                      label: "Transfer History",
+                      onTap: transferHistoryClick,
+                    ),
+                    _buildButton(
+                      icon: Icons.sync,
+                      label: "New Transfer",
+                      onTap: newTransferClick,
+                    ),
+                    _buildButton(
+                      icon: Icons.repeat,
+                      label: "Regular Transfers",
+                      onTap: regularTransferClick,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: accounts.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == accounts.length) {
-                        return createAddButton();
-                      }
-                      final account = accounts[index];
-                      return accountItem(account);
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _buildPaginationControls(),
-                ],
-              ),
+          ),
+          const SizedBox(height: 15),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(10),
+              itemCount: accounts.length + 1,
+              itemBuilder: (context, index) {
+                if (index == accounts.length) {
+                  return createAddButton();
+                }
+                final account = accounts[index];
+                return accountItem(account);
+              },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          _buildPaginationControls(),
+        ],
       ),
     );
   }

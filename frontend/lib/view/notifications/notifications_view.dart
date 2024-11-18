@@ -142,80 +142,72 @@ class _NotificationsViewState extends State<NotificationsView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: media.width,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              decoration: const BoxDecoration(
-                color: Color(0xFF191E29),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+      body: Column(
+        children: [
+          Container(
+            width: media.width,
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF191E29),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildPeriodSelector("Year"),
+                    _buildPeriodSelector("Month"),
+                    _buildPeriodSelector("Week"),
+                    _buildPeriodSelector("Day"),
+                  ],
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _buildPeriodSelector("Year"),
-                      _buildPeriodSelector("Month"),
-                      _buildPeriodSelector("Week"),
-                      _buildPeriodSelector("Day"),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios,
-                            color: Colors.white),
-                        onPressed: goToPreviousPeriod,
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon:
+                          const Icon(Icons.arrow_back_ios, color: Colors.white),
+                      onPressed: goToPreviousPeriod,
+                    ),
+                    Text(
+                      getFormattedPeriod(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
                       ),
-                      Text(
-                        getFormattedPeriod(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios,
-                            color: Colors.white),
-                        onPressed: goToNextPeriod,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white),
+                      onPressed: goToNextPeriod,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Padding(
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: notifications.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == notifications.length) {
-                        return _buildCreateNewNotificationButton();
-                      }
-                      final notification = notifications[index];
-                      return notificationItem(notification);
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _buildPaginationControls(),
-                ],
-              ),
+              itemCount: notifications.length + 1,
+              itemBuilder: (context, index) {
+                if (index == notifications.length) {
+                  return _buildCreateNewNotificationButton();
+                }
+                final notification = notifications[index];
+                return notificationItem(notification);
+              },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          _buildPaginationControls(),
+        ],
       ),
     );
   }

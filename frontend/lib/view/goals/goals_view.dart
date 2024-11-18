@@ -128,124 +128,120 @@ class _GoalsViewState extends State<GoalsView> {
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: const Color(0xFF132D46),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: media.width,
-              decoration: const BoxDecoration(
-                color: Color(0xFF191E29),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                children: [
-                  GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    children: [
-                      _buildButton(
-                        icon: Icons.show_chart,
-                        label: "Predicted Savings",
-                        onTap: showPredictedSavings,
-                      ),
-                      _buildButton(
-                        icon: Icons.lightbulb,
-                        label: "Saving Strategies",
-                        onTap: showSavingStrategies,
-                      ),
-                    ],
-                  ),
-                ],
+      body: Column(
+        children: [
+          Container(
+            width: media.width,
+            decoration: const BoxDecoration(
+              color: Color(0xFF191E29),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      onLinkClick(true);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isActive ? Colors.white : Colors.transparent,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Active",
-                        style: TextStyle(
-                          color: isActive ? Colors.white : Colors.grey[600],
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  children: [
+                    _buildButton(
+                      icon: Icons.show_chart,
+                      label: "Predicted Savings",
+                      onTap: showPredictedSavings,
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      onLinkClick(false);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color:
-                                !isActive ? Colors.white : Colors.transparent,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Completed",
-                        style: TextStyle(
-                          color: !isActive ? Colors.white : Colors.grey[600],
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    _buildButton(
+                      icon: Icons.lightbulb,
+                      label: "Saving Strategies",
+                      onTap: showSavingStrategies,
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 15),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: goals.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == goals.length) {
-                    return _buildCreateNewGoalButton();
-                  }
-                  final goal = goals[index];
-                  return goalItem(goal);
-                },
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    onLinkClick(true);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isActive ? Colors.white : Colors.transparent,
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Active",
+                      style: TextStyle(
+                        color: isActive ? Colors.white : Colors.grey[600],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    onLinkClick(false);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: !isActive ? Colors.white : Colors.transparent,
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Completed",
+                      style: TextStyle(
+                        color: !isActive ? Colors.white : Colors.grey[600],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              itemCount: goals.length + 1,
+              itemBuilder: (context, index) {
+                if (index == goals.length) {
+                  return _buildCreateNewGoalButton();
+                }
+                final goal = goals[index];
+                return goalItem(goal);
+              },
             ),
-            const SizedBox(height: 10),
-            _buildPaginationControls(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          _buildPaginationControls(),
+        ],
       ),
     );
   }

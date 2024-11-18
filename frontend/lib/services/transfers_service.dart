@@ -390,10 +390,11 @@ class TransfersService {
     }
   }
 
-  Future<List<dynamic>?> fetchRegularTransfers({
-    String period = 'day',
-    DateTime? date,
+  Future<Map<String, dynamic>?> fetchRegularTransfers({
+    int page = 1,
     String? type,
+    String? period,
+    DateTime? date,
   }) async {
     String? token = await _getToken();
 
@@ -402,13 +403,23 @@ class TransfersService {
       return null;
     }
 
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
+    String url = '$baseUrl/transfers/regular/?page=$page';
+    if (type != null) {
+      url += '&type=$type';
+    }
+    if (period != null) {
+      url += '&period=$period';
+    }
+    if (dateString.isNotEmpty) {
+      url += '&date=$dateString';
+    }
+
     try {
-      final dateString =
-          date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
-      final typeQuery = type != null ? '&type=$type' : '';
       final response = await http.get(
-        Uri.parse(
-            '$baseUrl/transfers/regular/?period=$period&date=$dateString$typeQuery'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -416,7 +427,29 @@ class TransfersService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        Map<String, dynamic> data = jsonDecode(response.body);
+
+        List<dynamic> results = data['results'] ?? [];
+        int totalPages = data['total_pages'] ?? 1;
+
+        return {
+          'results': results
+              .map((transfer) => {
+                    "id": transfer["id"],
+                    "transfer_name": transfer["transfer_name"],
+                    "amount": transfer["amount"],
+                    "description": transfer["description"],
+                    "date": transfer["date"],
+                    "category": transfer["category"],
+                    "category_color": transfer['category_color'],
+                    "category_icon": transfer['category_icon'],
+                    "category_type": transfer['category_type'],
+                    "account": transfer["account"],
+                    "is_regular": transfer["is_regular"],
+                  })
+              .toList(),
+          'total_pages': totalPages,
+        };
       } else {
         print('Failed to fetch regular transfers: ${response.body}');
         return null;

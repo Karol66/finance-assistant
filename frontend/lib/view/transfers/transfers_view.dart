@@ -14,11 +14,16 @@ class TransfersView extends StatefulWidget {
 class _TransfersViewState extends State<TransfersView> {
   bool isGeneral = true;
   bool isExpenses = false;
+
   List<Map<String, dynamic>> transfers = [];
+
   final TransfersService _transfersService = TransfersService();
+
   String selectedPeriod = 'Year';
   DateTime selectedDate = DateTime.now();
+
   bool isUpdated = false;
+  
   int currentPage = 1;
   bool hasNextPage = true;
 
