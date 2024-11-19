@@ -111,7 +111,9 @@ def transfer_list_grouped_by_category(request):
             grouped_transfers[category_id]['category'] = {
                 'id': category.id,
                 'name': category.category_name,
-                'color': category.category_color
+                'color': category.category_color,
+                'icon': category.category_icon,
+                'type': category.category_type,
             }
 
     result = [

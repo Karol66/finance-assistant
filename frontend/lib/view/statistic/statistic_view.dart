@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/services/transfers_service.dart';
 import 'package:intl/intl.dart';
 
@@ -17,7 +16,11 @@ class _StatisticViewState extends State<StatisticView> {
   DateTime selectedDate = DateTime.now();
 
   List<Map<String, dynamic>> transfers = [];
+
   final TransfersService _transfersService = TransfersService();
+
+  int currentPage = 1;
+  bool hasNextPage = true;
 
   @override
   void initState() {
@@ -25,7 +28,7 @@ class _StatisticViewState extends State<StatisticView> {
     loadTransfers();
   }
 
-  Future<void> loadTransfers() async {
+  Future<void> loadTransfers({int page = 1}) async {
     String? type;
     if (isGeneral) {
       type = null;
@@ -35,52 +38,48 @@ class _StatisticViewState extends State<StatisticView> {
       type = 'income';
     }
 
-    List<Map<String, dynamic>> allTransfers = [];
-    DateTime date = selectedDate;
+    final fetchedTransfers = await _transfersService.fetchTransfers(
+      page: page,
+      period: selectedPeriod.toLowerCase(),
+      date: selectedDate,
+      type: type,
+    );
 
-    for (int i = 0; i < 5; i++) {
-      final fetchedTransfers = await _transfersService.fetchTransfers(
-        period: selectedPeriod.toLowerCase(),
-        date: date,
-        type: type,
-      );
-
-      // if (fetchedTransfers != null) {
-      //   allTransfers.addAll(fetchedTransfers.map((transfer) {
-      //     return {
-      //       "id": transfer['id'],
-      //       "transfer_name": transfer['transfer_name'],
-      //       "amount": transfer['amount'],
-      //       "transfer_date": DateTime.parse(transfer['date']),
-      //       "description": transfer['description'],
-      //       "account_name": transfer['account_name'],
-      //       "account_type": transfer['account_type'],
-      //       "category_name": transfer['category_name'],
-      //       "category_icon": transfer['category_icon'],
-      //       "category_color": _parseColor(transfer['category_color']),
-      //       "type":
-      //           transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
-      //     };
-      //   }).toList());
-      // }
-
-      // date = _getPreviousPeriod(date);
+    if (fetchedTransfers != null) {
+      setState(() {
+        transfers = (fetchedTransfers['results'] as List).map((transfer) {
+          return {
+            "id": transfer['id'],
+            "transfer_name": transfer['transfer_name'],
+            "amount": transfer['amount'],
+            "transfer_date": DateTime.parse(transfer['date']),
+            "description": transfer['description'],
+            "account_name": transfer['account_name'],
+            "account_type": transfer['account_type'],
+            "category_name": transfer['category_name'],
+            "category_icon": transfer['category_icon'],
+            "category_color": _parseColor(transfer['category_color']),
+            "type":
+                transfer['category_type'] == 'expense' ? 'Expenses' : 'Income',
+          };
+        }).toList();
+        currentPage = page;
+        hasNextPage = page < fetchedTransfers['total_pages'];
+      });
+    } else {
+      print("Failed to load transfers.");
     }
-
-    setState(() {
-      transfers = allTransfers;
-    });
   }
 
-  DateTime _getPreviousPeriod(DateTime date) {
-    if (selectedPeriod == 'Day') {
-      return date.subtract(const Duration(days: 1));
-    } else if (selectedPeriod == 'Week') {
-      return date.subtract(const Duration(days: 7));
-    } else if (selectedPeriod == 'Month') {
-      return DateTime(date.year, date.month - 1, date.day);
-    } else {
-      return DateTime(date.year - 1, date.month, date.day);
+  void goToPreviousPage() {
+    if (currentPage > 1) {
+      loadTransfers(page: currentPage - 1);
+    }
+  }
+
+  void goToNextPage() {
+    if (hasNextPage) {
+      loadTransfers(page: currentPage + 1);
     }
   }
 
@@ -89,144 +88,57 @@ class _StatisticViewState extends State<StatisticView> {
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
-  Map<String, List<Map<String, dynamic>>> groupTransfersByDate() {
-    Map<String, List<Map<String, dynamic>>> groupedTransfers = {};
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
 
-    for (var transfer in _filteredTransfers()) {
-      DateTime transferDate = transfer['transfer_date'];
-      String dateKey;
+  String getFormattedPeriod() {
+    if (selectedPeriod == 'Day') {
+      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
+    } else if (selectedPeriod == 'Week') {
+      DateTime firstDayOfWeek =
+          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
+      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
+    } else if (selectedPeriod == 'Month') {
+      return DateFormat('MMMM yyyy').format(selectedDate);
+    } else {
+      return DateFormat('yyyy').format(selectedDate);
+    }
+  }
 
+  void goToPreviousPeriod() {
+    setState(() {
       if (selectedPeriod == 'Day') {
-        dateKey = DateFormat('yyyy-MM-dd').format(transferDate);
+        selectedDate = selectedDate.subtract(const Duration(days: 1));
       } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek =
-            transferDate.subtract(Duration(days: transferDate.weekday - 1));
-        dateKey = DateFormat('yyyy-MM-dd').format(startOfWeek);
+        selectedDate = selectedDate.subtract(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        dateKey = DateFormat('yyyy-MM').format(transferDate);
-      } else {
-        dateKey = DateFormat('yyyy').format(transferDate);
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month - 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year - 1, selectedDate.month, selectedDate.day);
       }
-
-      groupedTransfers[dateKey] ??= [];
-      groupedTransfers[dateKey]!.add(transfer);
-    }
-
-    return groupedTransfers;
+    });
+    loadTransfers();
   }
 
-  List<BarChartGroupData> createBarGroups() {
-    List<String> periods = [];
-    DateTime date = selectedDate;
-
-    for (int i = 0; i < 5; i++) {
-      if (selectedPeriod == 'Year') {
-        periods.add(DateFormat('yyyy').format(date));
-        date = DateTime(date.year - 1, date.month, date.day);
-      } else if (selectedPeriod == 'Month') {
-        periods.add(DateFormat('yyyy-MM').format(date));
-        date = DateTime(date.year, date.month - 1, date.day);
+  void goToNextPeriod() {
+    setState(() {
+      if (selectedPeriod == 'Day') {
+        selectedDate = selectedDate.add(const Duration(days: 1));
       } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-        periods.add(DateFormat('MMM d').format(startOfWeek));
-        date = date.subtract(const Duration(days: 7));
-      } else {
-        periods.add(DateFormat('MMM d').format(date));
-        date = date.subtract(const Duration(days: 1));
-      }
-    }
-
-    periods = periods.reversed.toList();
-
-    Map<String, List<Map<String, dynamic>>> groupedTransfers =
-        groupTransfersByDate();
-    List<BarChartGroupData> barGroups = [];
-
-    for (int i = 0; i < periods.length; i++) {
-      String period = periods[i];
-      List<Map<String, dynamic>> transfersForDate =
-          groupedTransfers[period] ?? [];
-
-      double incomeTotal = transfersForDate
-          .where((t) => t['type'] == 'Income')
-          .fold(0.0, (sum, t) => sum + double.parse(t['amount']));
-      double expenseTotal = transfersForDate
-          .where((t) => t['type'] == 'Expenses')
-          .fold(0.0, (sum, t) => sum + double.parse(t['amount']));
-      double netTotal = incomeTotal - expenseTotal;
-
-      List<BarChartRodData> barRods = [];
-
-      if (isGeneral) {
-        barRods.add(
-            BarChartRodData(toY: incomeTotal, color: Colors.green, width: 11));
-        barRods.add(
-            BarChartRodData(toY: expenseTotal, color: Colors.red, width: 11));
-        barRods.add(BarChartRodData(
-          toY: netTotal,
-          color: netTotal >= 0 ? Colors.blue : Colors.orange,
-          width: 11,
-        ));
-      } else if (isExpenses) {
-        barRods.add(
-            BarChartRodData(toY: expenseTotal, color: Colors.red, width: 11));
-      } else {
-        barRods.add(
-            BarChartRodData(toY: incomeTotal, color: Colors.green, width: 11));
-      }
-
-      barGroups.add(BarChartGroupData(
-        x: i,
-        barRods: barRods,
-        barsSpace: 6,
-      ));
-    }
-
-    return barGroups;
-  }
-
-double calculateMaxY() {
-  List<double> allValues = _filteredTransfers()
-      .map((transfer) => double.parse(transfer['amount']))
-      .toList();
-
-  double maxY =
-      allValues.isNotEmpty ? allValues.reduce((a, b) => a > b ? a : b) : 0;
-
-  double buffer = maxY * 0.5;
-  return maxY > 0 ? maxY + buffer : 10;
-}
-
-
-  String getXAxisLabel(double value) {
-    int index = value.toInt();
-
-    List<String> periods = [];
-    DateTime date = selectedDate;
-    for (int i = 0; i < 5; i++) {
-      if (selectedPeriod == 'Year') {
-        periods.add(DateFormat('yyyy').format(date));
-        date = DateTime(date.year - 1, date.month, date.day);
+        selectedDate = selectedDate.add(const Duration(days: 7));
       } else if (selectedPeriod == 'Month') {
-        periods.add(DateFormat('MMM yyyy').format(date));
-        date = DateTime(date.year, date.month - 1, date.day);
-      } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-        DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
-        periods.add(
-            "${DateFormat('d').format(startOfWeek)} - ${DateFormat('d').format(endOfWeek)}");
-        date = date.subtract(const Duration(days: 7));
-      } else {
-        periods.add(DateFormat('MMM d').format(date));
-        date = date.subtract(const Duration(days: 1));
+        selectedDate = DateTime(
+            selectedDate.year, selectedDate.month + 1, selectedDate.day);
+      } else if (selectedPeriod == 'Year') {
+        selectedDate = DateTime(
+            selectedDate.year + 1, selectedDate.month, selectedDate.day);
       }
-    }
-    periods = periods.reversed.toList();
-
-    if (index >= 0 && index < periods.length) {
-      return periods[index];
-    }
-    return '';
+    });
+    loadTransfers();
   }
 
   List<Map<String, dynamic>> _filteredTransfers() {
@@ -254,8 +166,7 @@ double calculateMaxY() {
           children: [
             Container(
               width: media.width,
-              height: 400,
-              padding: const EdgeInsets.all(20.0),
+              height: 415,
               decoration: const BoxDecoration(
                 color: Color(0xFF191E29),
                 borderRadius: BorderRadius.only(
@@ -263,88 +174,154 @@ double calculateMaxY() {
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _buildPeriodSelector("Year"),
-                      _buildPeriodSelector("Month"),
-                      _buildPeriodSelector("Week"),
-                      _buildPeriodSelector("Day"),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios,
-                            color: Colors.white),
-                        onPressed: goToPreviousPeriod,
-                      ),
-                      Text(
-                        getFormattedPeriod(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios,
-                            color: Colors.white),
-                        onPressed: goToNextPeriod,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: calculateMaxY(),
-                        barTouchData: BarTouchData(enabled: true),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (double value, TitleMeta meta) {
-                                return Text(
-                                  getXAxisLabel(value),
-                                  style: const TextStyle(
-                                      color: Colors.white54, fontSize: 12),
-                                );
-                              },
-                            ),
-                          ),
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: createBarGroups(),
-                      ),
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _buildPeriodSelector("Year"),
+                        _buildPeriodSelector("Month"),
+                        _buildPeriodSelector("Week"),
+                        _buildPeriodSelector("Day"),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.white),
+                          onPressed: goToPreviousPeriod,
+                        ),
+                        Text(
+                          getFormattedPeriod(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios,
+                              color: Colors.white),
+                          onPressed: goToNextPeriod,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildTypeSelector("General", isGeneral),
-                _buildTypeSelector("Expenses", isExpenses),
-                _buildTypeSelector("Income", !isGeneral && !isExpenses),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = true;
+                        isExpenses = false;
+                      });
+                      loadTransfers();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                isGeneral ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "General",
+                        style: TextStyle(
+                          color: isGeneral ? Colors.white : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = true;
+                      });
+                      loadTransfers();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Expenses",
+                        style: TextStyle(
+                          color: !isGeneral && isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isGeneral = false;
+                        isExpenses = false;
+                      });
+                      loadTransfers();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !isGeneral && !isExpenses
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Income",
+                        style: TextStyle(
+                          color: !isGeneral && !isExpenses
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             ListView.builder(
               padding: const EdgeInsets.all(10),
               physics: const NeverScrollableScrollPhysics(),
@@ -355,9 +332,72 @@ double calculateMaxY() {
                 return transferItem(transfer);
               },
             ),
+            const SizedBox(height: 10),
+            _buildPaginationControls(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    int totalPages = hasNextPage ? currentPage + 1 : currentPage;
+
+    int startPage = currentPage - 2 > 0 ? currentPage - 2 : 1;
+    int endPage = startPage + 4;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = endPage - 4 > 0 ? endPage - 4 : 1;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: currentPage > 1 ? goToPreviousPage : null,
+        ),
+        ...List.generate(
+          (endPage - startPage + 1),
+          (index) {
+            int pageNumber = startPage + index;
+            return GestureDetector(
+              onTap: () {
+                if (pageNumber != currentPage) {
+                  loadTransfers(page: pageNumber);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pageNumber == currentPage
+                      ? Colors.white
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  '$pageNumber',
+                  style: TextStyle(
+                    color:
+                        pageNumber == currentPage ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          onPressed: hasNextPage ? goToNextPage : null,
+        ),
+      ],
     );
   }
 
@@ -387,48 +427,6 @@ double calculateMaxY() {
             period,
             style: TextStyle(
               color: selectedPeriod == period ? Colors.white : Colors.grey,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTypeSelector(String type, bool isSelected) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            if (type == "General") {
-              isGeneral = true;
-              isExpenses = false;
-            } else if (type == "Expenses") {
-              isGeneral = false;
-              isExpenses = true;
-            } else {
-              isGeneral = false;
-              isExpenses = false;
-            }
-          });
-          loadTransfers();
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? Colors.white : Colors.transparent,
-                width: 2.0,
-              ),
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            type,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -519,58 +517,5 @@ double calculateMaxY() {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date);
-  }
-
-  String getFormattedPeriod() {
-    if (selectedPeriod == 'Day') {
-      return DateFormat('EEEE, MMMM d, yyyy').format(selectedDate);
-    } else if (selectedPeriod == 'Week') {
-      DateTime firstDayOfWeek =
-          selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-      DateTime lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-      return "${DateFormat('MMM d').format(firstDayOfWeek)} - ${DateFormat('MMM d').format(lastDayOfWeek)}";
-    } else if (selectedPeriod == 'Month') {
-      return DateFormat('MMMM yyyy').format(selectedDate);
-    } else {
-      return DateFormat('yyyy').format(selectedDate);
-    }
-  }
-
-  void goToPreviousPeriod() {
-    setState(() {
-      if (selectedPeriod == 'Day') {
-        selectedDate = selectedDate.subtract(const Duration(days: 1));
-      } else if (selectedPeriod == 'Week') {
-        selectedDate = selectedDate.subtract(const Duration(days: 7));
-      } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(
-            selectedDate.year, selectedDate.month - 1, selectedDate.day);
-      } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(
-            selectedDate.year - 1, selectedDate.month, selectedDate.day);
-      }
-    });
-    loadTransfers();
-  }
-
-  void goToNextPeriod() {
-    setState(() {
-      if (selectedPeriod == 'Day') {
-        selectedDate = selectedDate.add(const Duration(days: 1));
-      } else if (selectedPeriod == 'Week') {
-        selectedDate = selectedDate.add(const Duration(days: 7));
-      } else if (selectedPeriod == 'Month') {
-        selectedDate = DateTime(
-            selectedDate.year, selectedDate.month + 1, selectedDate.day);
-      } else if (selectedPeriod == 'Year') {
-        selectedDate = DateTime(
-            selectedDate.year + 1, selectedDate.month, selectedDate.day);
-      }
-    });
-    loadTransfers();
   }
 }

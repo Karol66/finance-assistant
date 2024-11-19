@@ -23,7 +23,7 @@ class _TransfersViewState extends State<TransfersView> {
   DateTime selectedDate = DateTime.now();
 
   bool isUpdated = false;
-  
+
   int currentPage = 1;
   bool hasNextPage = true;
 
@@ -94,7 +94,7 @@ class _TransfersViewState extends State<TransfersView> {
   }
 
   String _formatDate(DateTime date) {
-    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 
   String getFormattedPeriod() {

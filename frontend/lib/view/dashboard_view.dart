@@ -150,6 +150,10 @@ class _DashboardViewState extends State<DashboardView> {
         int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
   List<Map<String, dynamic>> _filteredTransfers() {
     if (isGeneral) {
       return transfers;
@@ -316,10 +320,6 @@ class _DashboardViewState extends State<DashboardView> {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
   Color getTotalAmountColor(double totalAmount) {
