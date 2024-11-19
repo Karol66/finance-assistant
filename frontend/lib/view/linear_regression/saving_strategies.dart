@@ -12,6 +12,7 @@ class SavingStrategies extends StatefulWidget {
 class _SavingStrategiesState extends State<SavingStrategies> {
   final LinearRegressionService _service = LinearRegressionService();
   List<dynamic> strategy = [];
+  String? errorMessage;
 
   @override
   void initState() {
@@ -20,10 +21,19 @@ class _SavingStrategiesState extends State<SavingStrategies> {
   }
 
   Future<void> fetchStrategy() async {
-    final fetchedStrategy = await _service.fetchPredictedAndAllocatedSavings();
-    setState(() {
-      strategy = fetchedStrategy ?? [];
-    });
+    try {
+      final fetchedStrategy =
+          await _service.fetchPredictedAndAllocatedSavings();
+      setState(() {
+        errorMessage = null;
+        strategy = fetchedStrategy ?? [];
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+        strategy = [];
+      });
+    }
   }
 
   IconData _getIconFromString(String iconString) {
@@ -45,12 +55,55 @@ class _SavingStrategiesState extends State<SavingStrategies> {
           },
         ),
       ),
-      body: ListView.builder(
-        itemCount: strategy.length,
-        itemBuilder: (context, index) {
-          final goal = strategy[index];
-          return _buildStrategyItem(goal);
-        },
+      body: Column(
+        children: [
+          if (errorMessage != null)
+            Expanded(
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    border: Border.all(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "Insufficient data to generate a saving strategy. "
+                    "Please ensure you have enough income and expense transactions to create a prediction.",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )
+          else if (strategy.isEmpty)
+            const Expanded(
+              child: Center(
+                child: const Text(
+                  "No strategies available.",
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: strategy.length,
+                itemBuilder: (context, index) {
+                  final goal = strategy[index];
+                  return _buildStrategyItem(goal);
+                },
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -122,9 +175,13 @@ class _SavingStrategiesState extends State<SavingStrategies> {
               ...allocations.asMap().entries.map((entry) {
                 int index = entry.key;
                 Map<String, dynamic> allocation = entry.value;
-                double allocationFraction = (allocation['amount'] / goalAmount * 1000).toInt().toDouble();
-                Color allocationColor = _getAllocationColor(allocation['month']);
-                
+                double allocationFraction =
+                    (allocation['amount'] / goalAmount * 1000)
+                        .toInt()
+                        .toDouble();
+                Color allocationColor =
+                    _getAllocationColor(allocation['month']);
+
                 BorderRadius borderRadius = BorderRadius.zero;
                 if (index == 0) {
                   borderRadius = const BorderRadius.only(

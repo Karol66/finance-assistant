@@ -9,7 +9,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  bool _notificationsEnabled = true;
 
   void profileManageClick() {
     Navigator.push(
@@ -42,26 +41,6 @@ class _SettingsViewState extends State<SettingsView> {
                 icon: const Icon(Icons.arrow_forward_ios),
                 color: const Color(0xFFFFFFFF),
                 iconSize: 24,
-              ),
-            ),
-            const Divider(color: Color(0xFFFFFFFF)),
-            ListTile(
-              leading:
-                  const Icon(Icons.notifications, color: Color(0xFFFFFFFF)),
-              title: const Text(
-                'Enable Notifications',
-                style: TextStyle(color: Color(0xFFFFFFFF)),
-              ),
-              trailing: Switch(
-                value: _notificationsEnabled,
-                onChanged: (bool value) {
-                  setState(() {
-                    _notificationsEnabled = value;
-                  });
-                },
-                activeColor: const Color(0xFF01C38D),
-                inactiveThumbColor: const Color(0xFFBBBBBB),
-                inactiveTrackColor: const Color(0xFF494E59),
               ),
             ),
             const Divider(color: Color(0xFFFFFFFF)),

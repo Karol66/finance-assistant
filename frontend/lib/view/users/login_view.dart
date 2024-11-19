@@ -29,7 +29,6 @@ class UserWidget extends StatefulWidget {
 class _UserWidgetState extends State<UserWidget> {
   final TextEditingController identifierController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isRemembered = false;
 
   final AuthService _authService = AuthService();
 
@@ -144,27 +143,6 @@ class _UserWidgetState extends State<UserWidget> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: isRemembered,
-                            activeColor: Colors.orange,
-                            checkColor: Colors.white,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                isRemembered = newValue ?? false;
-                              });
-                            },
-                          ),
-                          const Text(
-                            "Remember me",
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.push(

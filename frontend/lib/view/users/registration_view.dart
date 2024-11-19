@@ -106,7 +106,7 @@ class _RegistrationWidgetState extends State<RegistrationWidget> {
           borderSide: BorderSide.none,
         ),
         errorStyle: const TextStyle(
-          color: Colors.redAccent, // Ustaw kolor komunikatu błędu na jasnoczerwony
+          color: Colors.redAccent, 
           fontWeight: FontWeight.bold,
         ),
       ),

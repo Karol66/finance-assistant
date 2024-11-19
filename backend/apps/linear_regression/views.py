@@ -104,6 +104,11 @@ def predict_net_savings(request):
     expense_transfers = user_transfers.filter(category_id__in=expense_categories)
     income_transfers = user_transfers.filter(category_id__in=income_categories)
 
+    if expense_transfers.count() < 10 or income_transfers.count() < 10:
+        return Response({
+            "error": "Insufficient data for prediction. At least 10 income and 10 expense transfers are required."
+        }, status=400)
+
     expense_data = pd.DataFrame(list(expense_transfers.values('date', 'amount')))
     income_data = pd.DataFrame(list(income_transfers.values('date', 'amount')))
     expense_data['date'] = pd.to_datetime(expense_data['date'])
@@ -149,6 +154,11 @@ def predict_and_allocate_savings(request):
 
     expense_transfers = user_transfers.filter(category_id__in=expense_categories)
     income_transfers = user_transfers.filter(category_id__in=income_categories)
+
+    if expense_transfers.count() < 10 or income_transfers.count() < 10:
+        return Response({
+            "error": "Insufficient data for prediction. At least 10 income and 10 expense transfers are required."
+        }, status=400)
 
     expense_data = pd.DataFrame(list(expense_transfers.values('date', 'amount')))
     income_data = pd.DataFrame(list(income_transfers.values('date', 'amount')))
@@ -204,6 +214,15 @@ def predict_and_allocate_savings(request):
             break
 
         monthly_allocation = Decimal(net_saving)
+
+        if monthly_allocation <= 0:
+            for goal in remaining_goals:
+                goal_allocation_data[goal.id]['monthly_allocations'].append({
+                    'month': month.strftime('%Y-%m'),
+                    'amount': 0.0
+                })
+            continue
+
         total_priority = sum(goal.priority for goal in remaining_goals)
 
         for goal in remaining_goals[:]:

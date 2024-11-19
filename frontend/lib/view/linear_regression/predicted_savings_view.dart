@@ -13,6 +13,7 @@ class PredictedSavingsView extends StatefulWidget {
 class _PredictedSavingsViewState extends State<PredictedSavingsView> {
   List<Map<String, dynamic>> predictedData = [];
   String selectedPredictionType = 'net_savings';
+  String? errorMessage;
 
   @override
   void initState() {
@@ -24,24 +25,34 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
     final service = LinearRegressionService();
     List<Map<String, dynamic>>? data;
 
-    if (selectedPredictionType == 'expenses') {
-      data = await service.fetchPredictedExpenses();
-    } else if (selectedPredictionType == 'income') {
-      data = await service.fetchPredictedIncome();
-    } else if (selectedPredictionType == 'net_savings') {
-      data = await service.fetchPredictedNetSavings();
-    }
+    try {
+      if (selectedPredictionType == 'expenses') {
+        data = await service.fetchPredictedExpenses();
+      } else if (selectedPredictionType == 'income') {
+        data = await service.fetchPredictedIncome();
+      } else if (selectedPredictionType == 'net_savings') {
+        data = await service.fetchPredictedNetSavings();
+      }
 
-    setState(() {
-      predictedData = data ?? [];
-    });
+      setState(() {
+        errorMessage = null;
+        predictedData = data ?? [];
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+        predictedData = [];
+      });
+    }
   }
 
   List<BarChartGroupData> createBarGroups() {
     return List.generate(predictedData.length, (index) {
       double value = 0;
       if (selectedPredictionType == 'net_savings') {
-        value = predictedData[index]['Prognozowany bilans (przychody - wydatki)'] ?? 0;
+        value = predictedData[index]
+                ['Prognozowany bilans (przychody - wydatki)'] ??
+            0;
       } else {
         value = predictedData[index]['Predicted Amount'] ?? 0;
       }
@@ -62,15 +73,14 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
   double calculateMaxY() {
     if (predictedData.isEmpty) return 10;
 
-    double maxY = predictedData
-        .map((item) {
-          if (selectedPredictionType == 'net_savings') {
-            return (item['Prognozowany bilans (przychody - wydatki)'] ?? 0).toDouble();
-          } else {
-            return (item['Predicted Amount'] ?? 0).toDouble();
-          }
-        })
-        .reduce((a, b) => a > b ? a : b);
+    double maxY = predictedData.map((item) {
+      if (selectedPredictionType == 'net_savings') {
+        return (item['Prognozowany bilans (przychody - wydatki)'] ?? 0)
+            .toDouble();
+      } else {
+        return (item['Predicted Amount'] ?? 0).toDouble();
+      }
+    }).reduce((a, b) => a > b ? a : b);
 
     return maxY > 0 ? maxY + 10 : 10;
   }
@@ -92,110 +102,140 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    width: media.width,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF191E29),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Forecast for Next 6 Months",
-                          style: TextStyle(
-                              color: Colors.white, fontSize: 18),
-                        ),
-                        const SizedBox(height: 20),
-                        if (predictedData.isNotEmpty)
-                          SizedBox(
-                            height: 250,
-                            child: BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.spaceAround,
-                                maxY: calculateMaxY(),
-                                barTouchData: BarTouchData(enabled: true),
-                                titlesData: FlTitlesData(
-                                  leftTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget: (value, _) {
-                                        final date = DateTime.parse(predictedData[value.toInt()]['Data operacji']);
-                                        final formattedDate = DateFormat('MMM yyyy').format(date);
-                                        return Text(
-                                          formattedDate,
-                                          style: const TextStyle(
-                                            color: Colors.white54,
-                                            fontSize: 11, 
-                                          ),
-                                        );
-                                      },
-                                      reservedSize: 25,
-                                    ),
-                                  ),
-                                  topTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  rightTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                barGroups: createBarGroups(),
-                              ),
-                            ),
-                          )
-                        else
-                          const Text(
-                            "No data available.",
-                            style:
-                                TextStyle(color: Colors.white54, fontSize: 16),
-                          ),
-                      ],
-                    ),
+          if (errorMessage != null)
+            Expanded(
+              child: Center(
+                child: Container(
+                  width: media.width * 0.8, 
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    border: Border.all(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      _buildTypeSelector("Net Savings", 'net_savings'),
-                      _buildTypeSelector("Expenses", 'expenses'),
-                      _buildTypeSelector("Income", 'income'),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      children: [
-                        if (predictedData.isNotEmpty)
-                          ...List.generate(predictedData.length, (index) {
-                            return predictionItem(
-                                index, predictedData[index]);
-                          })
-                        else
-                          const Text(
-                            "No data available.",
-                            style:
-                                TextStyle(color: Colors.white54, fontSize: 16),
-                          ),
-                      ],
+                  child: const Text(
+                    "Unable to generate predictions due to insufficient data. "
+                    "Please ensure you have enough income and expense transactions "
+                    "to allow the prediction to be calculated.",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          if (errorMessage == null) 
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      width: media.width,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF191E29),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 16),
+                      child: Column(
+                        children: [
+                          const Text(
+                            "Forecast for Next 6 Months",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          const SizedBox(height: 20),
+                          if (predictedData.isNotEmpty)
+                            SizedBox(
+                              height: 250,
+                              child: BarChart(
+                                BarChartData(
+                                  alignment: BarChartAlignment.spaceAround,
+                                  maxY: calculateMaxY(),
+                                  barTouchData: BarTouchData(enabled: true),
+                                  titlesData: FlTitlesData(
+                                    leftTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitlesWidget: (value, _) {
+                                          final date = DateTime.parse(
+                                              predictedData[value.toInt()]
+                                                  ['Data operacji']);
+                                          final formattedDate =
+                                              DateFormat('MMM yyyy')
+                                                  .format(date);
+                                          return Text(
+                                            formattedDate,
+                                            style: const TextStyle(
+                                              color: Colors.white54,
+                                              fontSize: 11,
+                                            ),
+                                          );
+                                        },
+                                        reservedSize: 25,
+                                      ),
+                                    ),
+                                    topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  barGroups: createBarGroups(),
+                                ),
+                              ),
+                            )
+                          else
+                            const Text(
+                              "No data available.",
+                              style: TextStyle(
+                                  color: Colors.white54, fontSize: 16),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        _buildTypeSelector("Net Savings", 'net_savings'),
+                        _buildTypeSelector("Expenses", 'expenses'),
+                        _buildTypeSelector("Income", 'income'),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          if (predictedData.isNotEmpty)
+                            ...List.generate(predictedData.length, (index) {
+                              return predictionItem(
+                                  index, predictedData[index]);
+                            })
+                          else
+                            const Text(
+                              "No data available.",
+                              style: TextStyle(
+                                  color: Colors.white54, fontSize: 16),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -248,8 +288,8 @@ class _PredictedSavingsViewState extends State<PredictedSavingsView> {
         ? "- \$${amount.abs().toStringAsFixed(2)}"
         : "+ \$${amount.toStringAsFixed(2)}";
 
-    final date = DateTime.parse(data['Data operacji']); 
-    final formattedDate = DateFormat('MMMM yyyy').format(date); 
+    final date = DateTime.parse(data['Data operacji']);
+    final formattedDate = DateFormat('MMMM yyyy').format(date);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),

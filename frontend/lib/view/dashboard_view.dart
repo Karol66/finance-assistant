@@ -351,13 +351,13 @@ class _DashboardViewState extends State<DashboardView> {
       return PieChartSectionData(
         color: transfer["category_color"],
         value: value,
-        title: "${percentage.toStringAsFixed(1)}%", // Wyświetlanie procentów
+        title: "${percentage.toStringAsFixed(1)}%",
         radius: 30,
         titlePositionPercentageOffset: 0.55,
         titleStyle: const TextStyle(
-          color: Colors.white, // Ustawienie koloru na biały
-          fontWeight: FontWeight.bold, // Pogrubienie czcionki
-          fontSize: 14, // Opcjonalnie: rozmiar czcionki
+          color: Colors.white, 
+          fontWeight: FontWeight.bold,
+          fontSize: 14, 
         ),  
       );
     }).toList();
