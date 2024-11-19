@@ -58,6 +58,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):

@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
 
-class Account(models.Model):
 
+class Account(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     account_name = models.CharField(max_length=255)
     account_type = models.CharField(max_length=255)

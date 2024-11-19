@@ -1,7 +1,7 @@
 from django.db import models
 from apps.users.models import User
 
-# Create your models here.
+
 class Category(models.Model):
     CATEGORY_TYPES = [
         ('expense', 'Expense'),

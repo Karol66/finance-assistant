@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 
 User = get_user_model()
 
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -24,6 +25,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             validated_data.pop('password', None)
 
         return super(UserRegisterSerializer, self).update(instance, validated_data)
+
 
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()

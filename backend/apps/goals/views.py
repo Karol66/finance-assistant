@@ -25,7 +25,8 @@ def goal_list(request):
     if status == "active":
         goals = Goal.objects.filter(user=request.user, is_deleted=False, status="active").order_by('-priority', '-id')
     else:
-        goals = Goal.objects.filter(user=request.user, is_deleted=False, status="completed").order_by('-priority', '-id')
+        goals = Goal.objects.filter(user=request.user, is_deleted=False, status="completed").order_by('-priority',
+                                                                                                      '-id')
 
     paginator = GoalPagination()
     paginated_goals = paginator.paginate_queryset(goals, request)
@@ -35,7 +36,6 @@ def goal_list(request):
 
     response.data['total_pages'] = paginator.page.paginator.num_pages
     return response
-
 
 
 @api_view(['GET'])

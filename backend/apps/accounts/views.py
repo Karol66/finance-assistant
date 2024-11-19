@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 
 
-
 class AccountPagination(PageNumberPagination):
     page_size = 5
 
@@ -28,6 +27,7 @@ def account_pagination_list(request):
     response.data['total_pages'] = paginator.page.paginator.num_pages
     return response
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def account_list(request):
@@ -35,10 +35,10 @@ def account_list(request):
     serializer = AccountSerializer(accounts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def total_account_balance(request):
-
     accounts = Account.objects.filter(user=request.user, is_deleted=False)
 
     total_balance = accounts.aggregate(total_balance=Sum('balance'))['total_balance'] or 0
