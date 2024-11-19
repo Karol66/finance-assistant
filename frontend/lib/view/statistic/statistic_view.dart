@@ -17,8 +17,7 @@ class _StatisticViewState extends State<StatisticView> {
   DateTime selectedDate = DateTime.now();
 
   List<Map<String, dynamic>> transfers = [];
-  List<Map<String, dynamic>> chartTransfers =
-      []; // Separate list for chart data
+  List<Map<String, dynamic>> chartTransfers = [];
 
   final TransfersService _transfersService = TransfersService();
 
@@ -29,10 +28,10 @@ class _StatisticViewState extends State<StatisticView> {
   void initState() {
     super.initState();
     loadTransfers();
-    loadAllTransfersForCharts();
+    loadAllTransfers();
   }
 
-  Future<void> loadAllTransfersForCharts() async {
+  Future<void> loadAllTransfers() async {
     String? type;
     if (isGeneral) {
       type = null;
@@ -42,7 +41,6 @@ class _StatisticViewState extends State<StatisticView> {
       type = 'income';
     }
 
-    // Fetch all transfers without pagination
     final fetchedTransfers = await _transfersService.fetchAllTransfers(
       period: selectedPeriod.toLowerCase(),
       date: selectedDate,
@@ -167,7 +165,7 @@ class _StatisticViewState extends State<StatisticView> {
       }
     });
     loadTransfers();
-    loadAllTransfersForCharts();
+    loadAllTransfers();
   }
 
   void goToNextPeriod() {
@@ -185,7 +183,7 @@ class _StatisticViewState extends State<StatisticView> {
       }
     });
     loadTransfers();
-    loadAllTransfersForCharts();
+    loadAllTransfers();
   }
 
   List<Map<String, dynamic>> _filteredTransfers() {
@@ -576,157 +574,153 @@ class _StatisticViewState extends State<StatisticView> {
     );
   }
 
-Widget buildBarChart() {
-  // Lista okresów (rok/miesiąc/tydzień/dzień)
-  List<String> periods = [];
-  DateTime date = selectedDate;
+  Widget buildBarChart() {
+    List<String> periods = [];
+    DateTime date = selectedDate;
 
-  // Generowanie etykiet dla wykresu w zależności od wybranego okresu
-  for (int i = 0; i < 5; i++) {
-    if (selectedPeriod == 'Year') {
-      periods.add(DateFormat('yyyy').format(date));
-      date = DateTime(date.year - 1, date.month, date.day);
-    } else if (selectedPeriod == 'Month') {
-      periods.add(DateFormat('MMM yyyy').format(date));
-      date = DateTime(date.year, date.month - 1, date.day);
-    } else if (selectedPeriod == 'Week') {
-      DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-      periods.add("${DateFormat('d MMM').format(startOfWeek)}");
-      date = date.subtract(const Duration(days: 7));
-    } else if (selectedPeriod == 'Day') {
-      periods.add(DateFormat('d MMM').format(date));
-      date = date.subtract(const Duration(days: 1));
-    }
-  }
-
-  periods = periods.reversed.toList(); // Odwrócenie kolejności dla poprawnego wyświetlenia
-
-  // Procesowanie danych dla każdego okresu
-  List<BarChartGroupData> barGroups = [];
-  for (int i = 0; i < periods.length; i++) {
-    double income = 0, expenses = 0, difference = 0;
-
-    // Filtrowanie danych dla danego okresu
-    final periodTransfers = chartTransfers.where((transfer) {
-      final transferDate = transfer['transfer_date'];
-      String periodLabel;
-
+    for (int i = 0; i < 5; i++) {
       if (selectedPeriod == 'Year') {
-        periodLabel = DateFormat('yyyy').format(transferDate);
+        periods.add(DateFormat('yyyy').format(date));
+        date = DateTime(date.year - 1, date.month, date.day);
       } else if (selectedPeriod == 'Month') {
-        periodLabel = DateFormat('MMM yyyy').format(transferDate);
+        periods.add(DateFormat('MMM yyyy').format(date));
+        date = DateTime(date.year, date.month - 1, date.day);
       } else if (selectedPeriod == 'Week') {
-        DateTime startOfWeek =
-            transferDate.subtract(Duration(days: transferDate.weekday - 1));
-        periodLabel = DateFormat('d MMM').format(startOfWeek);
+        DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
+        periods.add("${DateFormat('d MMM').format(startOfWeek)}");
+        date = date.subtract(const Duration(days: 7));
+      } else if (selectedPeriod == 'Day') {
+        periods.add(DateFormat('d MMM').format(date));
+        date = date.subtract(const Duration(days: 1));
+      }
+    }
+
+    periods = periods.reversed.toList();
+
+    List<BarChartGroupData> barGroups = [];
+    for (int i = 0; i < periods.length; i++) {
+      double income = 0, expenses = 0, difference = 0;
+
+      final periodTransfers = chartTransfers.where((transfer) {
+        final transferDate = transfer['transfer_date'];
+        String periodLabel;
+
+        if (selectedPeriod == 'Year') {
+          periodLabel = DateFormat('yyyy').format(transferDate);
+        } else if (selectedPeriod == 'Month') {
+          periodLabel = DateFormat('MMM yyyy').format(transferDate);
+        } else if (selectedPeriod == 'Week') {
+          DateTime startOfWeek =
+              transferDate.subtract(Duration(days: transferDate.weekday - 1));
+          periodLabel = DateFormat('d MMM').format(startOfWeek);
+        } else {
+          periodLabel = DateFormat('d MMM').format(transferDate);
+        }
+        return periodLabel == periods[i];
+      }).toList();
+
+      for (var transfer in periodTransfers) {
+        final amount = double.parse(transfer['amount'].toString());
+        if (transfer['type'] == 'Income') {
+          income += amount;
+        } else if (transfer['type'] == 'Expenses') {
+          expenses += amount;
+        }
+      }
+
+      difference = income - expenses;
+
+      List<BarChartRodData> rods = [];
+      double barWidth = 12;
+
+      if (isGeneral) {
+        rods.add(
+            BarChartRodData(toY: income, color: Colors.green, width: barWidth));
+        rods.add(
+            BarChartRodData(toY: expenses, color: Colors.red, width: barWidth));
+        rods.add(BarChartRodData(
+            toY: difference,
+            color: difference >= 0 ? Colors.blue : Colors.orange,
+            width: barWidth));
+      } else if (isExpenses) {
+        rods.add(
+            BarChartRodData(toY: expenses, color: Colors.red, width: barWidth));
       } else {
-        periodLabel = DateFormat('d MMM').format(transferDate);
+        rods.add(
+            BarChartRodData(toY: income, color: Colors.green, width: barWidth));
       }
-      return periodLabel == periods[i];
-    }).toList();
 
-    // Sumowanie przychodów i wydatków dla danego okresu
-    for (var transfer in periodTransfers) {
-      final amount = double.parse(transfer['amount'].toString());
-      if (transfer['type'] == 'Income') {
-        income += amount;
-      } else if (transfer['type'] == 'Expenses') {
-        expenses += amount;
-      }
+      barGroups.add(BarChartGroupData(x: i, barRods: rods, barsSpace: 6));
     }
 
-    // Oblicz różnicę
-    difference = income - expenses;
+    double maxY = barGroups.isNotEmpty
+        ? barGroups
+            .expand((group) => group.barRods.map((rod) => rod.toY))
+            .reduce((a, b) => a > b ? a : b)
+        : 1;
 
-    // Dodawanie danych słupków
-    List<BarChartRodData> rods = [];
-    double barWidth = 12;
+    maxY = maxY > 0 ? maxY + (maxY * 0.2) : 1;
 
-    if (isGeneral) {
-      rods.add(BarChartRodData(toY: income, color: Colors.green, width: barWidth));
-      rods.add(BarChartRodData(toY: expenses, color: Colors.red, width: barWidth));
-      rods.add(BarChartRodData(
-          toY: difference,
-          color: difference >= 0 ? Colors.blue : Colors.orange,
-          width: barWidth));
-    } else if (isExpenses) {
-      rods.add(BarChartRodData(toY: expenses, color: Colors.red, width: barWidth));
-    } else {
-      rods.add(BarChartRodData(toY: income, color: Colors.green, width: barWidth));
-    }
-
-    barGroups.add(BarChartGroupData(x: i, barRods: rods, barsSpace: 6));
-  }
-
-  // Wyznaczanie maksymalnej wartości Y dla skalowania wykresu
-  double maxY = barGroups.isNotEmpty
-      ? barGroups
-          .expand((group) => group.barRods.map((rod) => rod.toY))
-          .reduce((a, b) => a > b ? a : b)
-      : 1;
-
-  maxY = maxY > 0 ? maxY + (maxY * 0.2) : 1; // Dodanie buforu
-
-  return BarChart(
-    BarChartData(
-      alignment: BarChartAlignment.spaceAround,
-      maxY: maxY,
-      barGroups: barGroups,
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        horizontalInterval: maxY / 4,
-        getDrawingHorizontalLine: (value) => FlLine(
-          color: Colors.grey.withOpacity(0.3),
-          strokeWidth: 1,
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxY,
+        barGroups: barGroups,
+        gridData: FlGridData(
+          show: true,
+          drawHorizontalLine: true,
+          horizontalInterval: maxY / 4,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Colors.grey.withOpacity(0.3),
+            strokeWidth: 1,
+          ),
         ),
-      ),
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value.toInt() >= 0 && value.toInt() < periods.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      periods[value.toInt()],
+                      style:
+                          const TextStyle(color: Colors.white54, fontSize: 13),
+                    ),
+                  );
+                }
+                return const Text('');
+              },
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: (value, meta) {
-              if (value.toInt() >= 0 && value.toInt() < periods.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    periods[value.toInt()],
-                    style: const TextStyle(color: Colors.white54, fontSize: 10),
-                  ),
-                );
-              }
-              return const Text('');
+        borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final label = rodIndex == 0
+                  ? 'Income'
+                  : rodIndex == 1
+                      ? 'Expenses'
+                      : 'Net';
+              return BarTooltipItem(
+                '$label: ${rod.toY.toStringAsFixed(2)}',
+                const TextStyle(color: Colors.white),
+              );
             },
           ),
         ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
       ),
-      borderData: FlBorderData(show: false),
-      barTouchData: BarTouchData(
-        touchTooltipData: BarTouchTooltipData(
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            final label = rodIndex == 0
-                ? 'Income'
-                : rodIndex == 1
-                    ? 'Expenses'
-                    : 'Net';
-            return BarTooltipItem(
-              '$label: ${rod.toY.toStringAsFixed(2)}',
-              const TextStyle(color: Colors.white),
-            );
-          },
-        ),
-      ),
-    ),
-  );
-}
-
+    );
+  }
 }

@@ -341,14 +341,24 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   List<PieChartSectionData> getPieChartData() {
+    double total = groupedTransfers.fold(
+        0.0, (sum, transfer) => sum + double.parse(transfer["amount"]));
+
     return groupedTransfers.map((transfer) {
       double value = double.parse(transfer["amount"]);
+      double percentage = (value / total) * 100;
+
       return PieChartSectionData(
         color: transfer["category_color"],
         value: value,
-        title: transfer["category_name"],
+        title: "${percentage.toStringAsFixed(1)}%", // Wyświetlanie procentów
         radius: 30,
         titlePositionPercentageOffset: 0.55,
+        titleStyle: const TextStyle(
+          color: Colors.white, // Ustawienie koloru na biały
+          fontWeight: FontWeight.bold, // Pogrubienie czcionki
+          fontSize: 14, // Opcjonalnie: rozmiar czcionki
+        ),  
       );
     }).toList();
   }
