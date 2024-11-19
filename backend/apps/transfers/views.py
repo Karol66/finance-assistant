@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from django.db.models import Sum
 from rest_framework.decorators import api_view, permission_classes
@@ -65,6 +66,48 @@ def transfer_list(request):
 
     response.data['total_pages'] = paginator.page.paginator.num_pages
     return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_transfers(request):
+    date_param = request.query_params.get('date')
+    period = request.query_params.get('period', 'day')
+    transfer_type = request.query_params.get('type')
+
+    transfers = Transfer.objects.filter(account__user=request.user, is_deleted=False)
+
+    if transfer_type == 'income':
+        transfers = transfers.filter(category__category_type='income')
+    elif transfer_type == 'expense':
+        transfers = transfers.filter(category__category_type='expense')
+
+    if date_param:
+        try:
+            date = datetime.strptime(date_param, "%Y-%m-%d")
+
+            if period == "year":
+                start_year = date.year - 4
+                end_year = date.year
+                transfers = transfers.filter(date__year__range=(start_year, end_year))
+
+            elif period == "month":
+                start_date = date - relativedelta(months=11)
+                transfers = transfers.filter(date__gte=start_date, date__lte=date)
+
+            elif period == "week":
+                start_date = date - timedelta(weeks=4)
+                transfers = transfers.filter(date__gte=start_date, date__lte=date)
+
+            elif period == "day":
+                start_date = date - timedelta(days=4)
+                transfers = transfers.filter(date__gte=start_date, date__lte=date)
+
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    serializer = TransferSerializer(transfers, many=True)
+    return Response(serializer.data, status=200)
 
 
 @api_view(['GET'])
@@ -380,6 +423,7 @@ def regular_transfer_delete(request, pk):
     transfer.is_deleted = True
     transfer.save()
     return Response({'message': 'Regular transfer soft-deleted'}, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

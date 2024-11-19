@@ -81,6 +81,70 @@ class TransfersService {
     }
   }
 
+  Future<List<Map<String, dynamic>>?> fetchAllTransfers({
+    String? type,
+    String? period,
+    DateTime? date,
+  }) async {
+    String? token = await _getToken();
+
+    if (token == null) {
+      print("User not authenticated");
+      return null;
+    }
+
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
+    String url = '$baseUrl/transfers/all/';
+    if (type != null) {
+      url += '?type=$type';
+    }
+    if (period != null) {
+      url += type != null ? '&period=$period' : '?period=$period';
+    }
+    if (dateString.isNotEmpty) {
+      url += (type != null || period != null)
+          ? '&date=$dateString'
+          : '?date=$dateString';
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((transfer) {
+          return {
+            "id": transfer["id"],
+            "transfer_name": transfer["transfer_name"],
+            "amount": transfer["amount"],
+            "description": transfer["description"],
+            "date": transfer["date"],
+            "category": transfer["category"],
+            "category_color": transfer['category_color'],
+            "category_icon": transfer['category_icon'],
+            "category_type": transfer['category_type'],
+            "account": transfer["account"],
+            "is_regular": transfer["is_regular"],
+          };
+        }).toList();
+      } else {
+        print('Failed to fetch transfers: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching all transfers: $error');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> fetchTransferById(int transferId) async {
     String? token = await _getToken();
 
@@ -222,60 +286,60 @@ class TransfersService {
     }
   }
 
-    Future<List<Map<String, dynamic>>?> fetchTransfersGroupedByCategory({
-      String? type,
-      String? period,
-      DateTime? date,
-    }) async {
-      String? token = await _getToken();
+  Future<List<Map<String, dynamic>>?> fetchTransfersGroupedByCategory({
+    String? type,
+    String? period,
+    DateTime? date,
+  }) async {
+    String? token = await _getToken();
 
-      if (token == null) {
-        print("User not authenticated");
-        return null;
-      }
-
-      final dateString =
-          date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
-
-      String url = '$baseUrl/transfers/grouped/';
-      if (type != null) {
-        url += '?type=$type';
-      }
-      if (period != null) {
-        url += type != null ? '&period=$period' : '?period=$period';
-      }
-      if (dateString.isNotEmpty) {
-        url += (type != null || period != null)
-            ? '&date=$dateString'
-            : '?date=$dateString';
-      }
-
-      try {
-        final response = await http.get(
-          Uri.parse(url),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          List<dynamic> data = jsonDecode(response.body);
-          return data.map((item) {
-            return {
-              'category': item['category'],
-              'total_amount': item['total_amount'],
-            };
-          }).toList();
-        } else {
-          print('Failed to fetch grouped transfers: ${response.body}');
-          return null;
-        }
-      } catch (error) {
-        print('Error fetching grouped transfers: $error');
-        return null;
-      }
+    if (token == null) {
+      print("User not authenticated");
+      return null;
     }
+
+    final dateString =
+        date != null ? DateFormat('yyyy-MM-dd').format(date) : '';
+
+    String url = '$baseUrl/transfers/grouped/';
+    if (type != null) {
+      url += '?type=$type';
+    }
+    if (period != null) {
+      url += type != null ? '&period=$period' : '?period=$period';
+    }
+    if (dateString.isNotEmpty) {
+      url += (type != null || period != null)
+          ? '&date=$dateString'
+          : '?date=$dateString';
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) {
+          return {
+            'category': item['category'],
+            'total_amount': item['total_amount'],
+          };
+        }).toList();
+      } else {
+        print('Failed to fetch grouped transfers: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching grouped transfers: $error');
+      return null;
+    }
+  }
 
   Future<Map<String, dynamic>?> fetchProfitLoss({
     String? type,
