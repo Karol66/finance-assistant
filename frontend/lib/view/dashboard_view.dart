@@ -117,7 +117,6 @@ class _DashboardViewState extends State<DashboardView> {
             "transfer_date": DateTime.parse(transfer['date']),
             "description": transfer['description'],
             "account_name": transfer['account_name'],
-            "account_type": transfer['account_type'],
             "category_name": transfer['category_name'],
             "category_icon": transfer['category_icon'],
             "category_color": _parseColor(transfer['category_color']),
@@ -291,7 +290,7 @@ class _DashboardViewState extends State<DashboardView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Account: ${transfer['account_name']} (${transfer['account_type']})",
+                          "Account: ${transfer['account_name']}",
                           style: const TextStyle(
                               color: Colors.white38, fontSize: 12),
                         ),

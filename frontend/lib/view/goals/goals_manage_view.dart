@@ -134,9 +134,14 @@ class _GoalsManageViewState extends State<GoalsManageView> {
       {bool isNumeric = false}) {
     return TextFormField(
       controller: controller,
-      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-      inputFormatters:
-          isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
+      keyboardType: isNumeric
+          ? TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      inputFormatters: isNumeric
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ]
+          : [],
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -150,8 +155,11 @@ class _GoalsManageViewState extends State<GoalsManageView> {
         if (value == null || value.isEmpty) {
           return 'Please enter some text';
         }
-        if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
-          return 'Please enter a valid number';
+        if (isNumeric) {
+          String normalizedValue = value.replaceAll(',', '.');
+          if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(normalizedValue)) {
+            return 'Please enter a valid number';
+          }
         }
         return null;
       },

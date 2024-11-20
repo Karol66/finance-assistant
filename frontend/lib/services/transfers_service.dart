@@ -61,11 +61,11 @@ class TransfersService {
                     "amount": transfer["amount"],
                     "description": transfer["description"],
                     "date": transfer["date"],
-                    "category": transfer["category"],
+                    "category_name": transfer["category_name"],
                     "category_color": transfer['category_color'],
                     "category_icon": transfer['category_icon'],
                     "category_type": transfer['category_type'],
-                    "account": transfer["account"],
+                    "account_name": transfer["account_name"],
                     "is_regular": transfer["is_regular"],
                   })
               .toList(),

@@ -92,6 +92,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
                   "category_name": category["category_name"],
                   "category_icon": category["category_icon"],
                   "category_color": category["category_color"],
+                  "category_type": category["category_type"],
                 })
             .toList();
 
@@ -171,9 +172,14 @@ class _TransfersManageViewState extends State<TransfersManageView> {
       {bool isNumeric = false}) {
     return TextFormField(
       controller: controller,
-      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-      inputFormatters:
-          isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
+      keyboardType: isNumeric
+          ? TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      inputFormatters: isNumeric
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ]
+          : [],
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -187,8 +193,11 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         if (value == null || value.isEmpty) {
           return 'Please enter some text';
         }
-        if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
-          return 'Please enter a valid number';
+        if (isNumeric) {
+          String normalizedValue = value.replaceAll(',', '.');
+          if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(normalizedValue)) {
+            return 'Please enter a valid number';
+          }
         }
         return null;
       },
@@ -337,6 +346,11 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         size: 30,
       ),
       items: _categories.map((category) {
+        String categoryType =
+            category['category_type'] == 'expense' ? 'Expense' : 'Income';
+        Color categoryTypeColor =
+            category['category_type'] == 'expense' ? Colors.red : Colors.green;
+
         return DropdownMenuItem(
           value: category,
           child: SizedBox(
@@ -362,12 +376,25 @@ class _TransfersManageViewState extends State<TransfersManageView> {
                   ),
                 ),
                 const SizedBox(width: 20),
-                Text(
-                  category['category_name'] ?? 'Unknown Category',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white54,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      category['category_name'] ?? 'Unknown Category',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white54,
+                      ),
+                    ),
+                    Text(
+                      categoryType,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: categoryTypeColor, 
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

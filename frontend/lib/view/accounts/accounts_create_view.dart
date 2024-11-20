@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/services/accounts_service.dart';
 
 class AccountsCreateView extends StatefulWidget {
@@ -14,16 +15,8 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
   final TextEditingController _balanceController = TextEditingController();
   final AccountsService _accountsService = AccountsService();
 
-  String _accountType = 'Savings';
   Color? _selectedColor;
   IconData? _selectedIcon;
-
-  final List<String> _accountTypes = [
-    'Savings',
-    'Checking',
-    'Credit Card',
-    'Investment',
-  ];
 
   final List<Color> _colorOptions = [
     Colors.red,
@@ -72,26 +65,111 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
       }
 
       String accountName = _accountNameController.text;
-      String balance = double.parse(_balanceController.text).toStringAsFixed(2);
-      String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
-      String accountIcon = _selectedIcon != null
-          ? _selectedIcon!.codePoint.toString()
-          : 'default_icon';
+      String balance = _balanceController.text.replaceAll(',', '.');
+      String accountColor =
+          '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String accountIcon = _selectedIcon!.codePoint.toString();
 
       await _accountsService.createAccount(
         accountName,
-        _accountType,
         balance,
-        categoryColor,
+        accountColor,
         accountIcon,
       );
 
       Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields correctly.")),
-      );
     }
+  }
+
+  Widget inputTextField(String hintText, TextEditingController controller,
+      {bool isNumeric = false}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: isNumeric
+          ? TextInputType.numberWithOptions(decimal: true, signed: true)
+          : TextInputType.text,
+      inputFormatters: isNumeric
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'^-?[0-9.,]*')),
+            ]
+          : [],
+      decoration: InputDecoration(
+        hintText: hintText,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        if (isNumeric) {
+          String normalizedValue = value.replaceAll(',', '.');
+          if (!RegExp(r'^-?\d+(\.\d+)?$').hasMatch(normalizedValue)) {
+            return 'Please enter a valid number';
+          }
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget colorPicker() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _colorOptions.map((color) {
+          return GestureDetector(
+            onTap: () => _onColorSelected(color),
+            child: Container(
+              width: 30,
+              height: 30,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: (_selectedColor?.value == color.value)
+                      ? Colors.white
+                      : Colors.transparent,
+                  width: 3,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget iconPicker() {
+    return GridView.count(
+      shrinkWrap: true,
+      crossAxisCount: 4,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      physics: const NeverScrollableScrollPhysics(),
+      children: _iconOptions.map((iconData) {
+        return GestureDetector(
+          onTap: () => _onIconSelected(iconData),
+          child: Container(
+            decoration: BoxDecoration(
+              color: _selectedIcon == iconData
+                  ? (_selectedColor ?? const Color(0xFF191E29))
+                  : const Color(0xFF191E29),
+              borderRadius: BorderRadius.circular(15),
+              border: _selectedIcon == iconData
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
+            ),
+            child: Icon(iconData, size: 40, color: Colors.white),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   void _onColorSelected(Color color) {
@@ -103,7 +181,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
   void _onIconSelected(IconData icon) {
     setState(() {
       _selectedIcon = icon;
-      _selectedColor ??= const Color(0xFF191E29);
     });
   }
 
@@ -129,33 +206,9 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                inputTextField('Account Name', false, _accountNameController),
+                inputTextField('Account Name', _accountNameController),
                 const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  value: _accountType,
-                  items: _accountTypes.map((type) {
-                    return DropdownMenuItem<String>(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _accountType = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    hintText: 'Account Type',
-                  ),
-                ),
-                const SizedBox(height: 20),
-                inputTextField('Balance', false, _balanceController),
+                inputTextField('Balance', _balanceController, isNumeric: true),
                 const SizedBox(height: 20),
                 const Text(
                   'Select Account Color:',
@@ -177,36 +230,7 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    ..._iconOptions.map((iconData) {
-                      return GestureDetector(
-                        onTap: () => _onIconSelected(iconData),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: _selectedIcon == iconData
-                                ? (_selectedColor ?? const Color(0xFF191E29))
-                                : const Color(0xFF191E29),
-                            borderRadius: BorderRadius.circular(15),
-                            border: _selectedIcon == iconData
-                                ? Border.all(color: Colors.white, width: 3)
-                                : null,
-                          ),
-                          child: Icon(
-                            iconData,
-                            size: 40,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+                iconPicker(),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -233,54 +257,6 @@ class _AccountsCreateViewState extends State<AccountsCreateView> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget inputTextField(
-      String hintText, bool obscureText, TextEditingController controller) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter some text';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget colorPicker() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _colorOptions.map((color) {
-          return GestureDetector(
-            onTap: () => _onColorSelected(color),
-            child: Container(
-              width: 30,
-              height: 30,
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(15),
-                border: _selectedColor == color
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

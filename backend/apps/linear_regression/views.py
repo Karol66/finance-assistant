@@ -36,12 +36,16 @@ def forecast_next_6_months(model, scaler, start_date, min_date, is_expense=False
 
     if is_expense:
         future_predictions = -abs(future_predictions)
+        future_predictions = [min(0, pred) for pred in future_predictions]
+    else:
+        future_predictions = [max(0, pred) for pred in future_predictions]
 
     forecast_df = pd.DataFrame({
         'Data operacji': future_dates,
         'Predicted Amount': future_predictions
     })
     return forecast_df
+
 
 
 @api_view(['GET'])

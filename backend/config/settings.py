@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -60,9 +60,6 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 AUTH_CATEGORY_MODEL = 'categories.Category'
 
-from datetime import timedelta
-
-# sprawdzic czy potrzebne
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -109,7 +106,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'myapp',
+        'NAME': 'money-manager',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',

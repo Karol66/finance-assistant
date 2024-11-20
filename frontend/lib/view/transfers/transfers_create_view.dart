@@ -82,12 +82,14 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
       setState(() {
         _categories = fetchedCategories
             .where((category) =>
-                category["category_type"] == (isExpenses ? "expense" : "income"))
+                category["category_type"] ==
+                (isExpenses ? "expense" : "income"))
             .map((category) => {
                   "category_id": category["id"],
                   "category_name": category["category_name"],
                   "category_color": _parseColor(category["category_color"]),
-                  "category_icon": _getIconFromString(category["category_icon"]),
+                  "category_icon":
+                      _getIconFromString(category["category_icon"]),
                 })
             .toList();
       });
@@ -117,7 +119,8 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
   }
 
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -135,32 +138,41 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
     }
   }
 
-Widget inputTextField(String hintText, TextEditingController controller,
-    {bool isNumeric = false}) {
-  return TextFormField(
-    controller: controller,
-    keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-    inputFormatters: isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],
-    decoration: InputDecoration(
-      hintText: hintText,
-      filled: true,
-      fillColor: Colors.grey.shade200,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
+  Widget inputTextField(String hintText, TextEditingController controller,
+      {bool isNumeric = false}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: isNumeric
+          ? TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      inputFormatters: isNumeric
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ]
+          : [],
+      decoration: InputDecoration(
+        hintText: hintText,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
       ),
-    ),
-    validator: (value) {
-      if (value == null || value.isEmpty) {
-        return 'Please enter some text';
-      }
-      if (isNumeric && !RegExp(r'^\d+$').hasMatch(value)) {
-        return 'Please enter a valid number';
-      }
-      return null;
-    },
-  );
-}
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter some text';
+        }
+        if (isNumeric) {
+          String normalizedValue = value.replaceAll(',', '.');
+          if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(normalizedValue)) {
+            return 'Please enter a valid number';
+          }
+        }
+        return null;
+      },
+    );
+  }
 
   Widget datePickerField(String hintText, TextEditingController controller) {
     return TextFormField(

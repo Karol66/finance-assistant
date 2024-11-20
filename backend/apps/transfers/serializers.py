@@ -4,7 +4,6 @@ from .models import Transfer
 
 class TransferSerializer(serializers.ModelSerializer):
     account_name = serializers.SerializerMethodField()
-    account_type = serializers.SerializerMethodField()
 
     category_type = serializers.SerializerMethodField()
     category_name = serializers.SerializerMethodField()
@@ -44,7 +43,3 @@ class TransferSerializer(serializers.ModelSerializer):
             return obj.account.account_name
         return None
 
-    def get_account_type(self, obj):
-        if obj.account:
-            return obj.account.account_type
-        return None

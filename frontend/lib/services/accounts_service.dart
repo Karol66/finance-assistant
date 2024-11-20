@@ -39,7 +39,6 @@ class AccountsService {
             .map((account) => {
                   "id": account["id"],
                   "account_name": account["account_name"],
-                  "account_type": account["account_type"],
                   "balance": account["balance"],
                   "include_in_total": account["include_in_total"],
                   "account_color": account["account_color"],
@@ -104,8 +103,8 @@ class AccountsService {
     }
   }
 
-  Future<void> createAccount(String accountName, String accountType,
-      String balance, String accountColor, String accountIcon) async {
+  Future<void> createAccount(String accountName, String balance,
+      String accountColor, String accountIcon) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -122,7 +121,6 @@ class AccountsService {
       },
       body: jsonEncode({
         'account_name': accountName,
-        'account_type': accountType,
         'balance': balance,
         'account_color': accountColor,
         'account_icon': accountIcon,
@@ -139,7 +137,6 @@ class AccountsService {
   Future<void> updateAccount(
       int accountId,
       String accountName,
-      String accountType,
       String balance,
       String accountColor,
       String accountIcon) async {
@@ -159,7 +156,6 @@ class AccountsService {
       },
       body: jsonEncode({
         'account_name': accountName,
-        'account_type': accountType,
         'balance': balance,
         'account_color': accountColor,
         'account_icon': accountIcon,
