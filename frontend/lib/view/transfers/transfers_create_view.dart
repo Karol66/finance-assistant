@@ -204,7 +204,7 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
   Widget accountDropdown() {
     return DropdownButtonFormField<Map<String, dynamic>>(
       value: _selectedAccount,
-      itemHeight: 50,
+      itemHeight: null,
       isDense: false,
       decoration: InputDecoration(
         filled: true,
@@ -229,12 +229,14 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
         String balanceText = isNegative
             ? "- \$${balance.abs().toStringAsFixed(2)}"
             : "+ \$${balance.toStringAsFixed(2)}";
+
         return DropdownMenuItem(
           value: account,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: 40,
@@ -250,24 +252,35 @@ class _TransfersCreateViewState extends State<TransfersCreateView> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Text(
-                    account['account_name'] ?? 'Unknown Account',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white54,
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          account['account_name'] ?? 'Unknown Account',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white54,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          balanceText,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isNegative ? Colors.red : Colors.green,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              Text(
-                balanceText,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isNegative ? Colors.red : Colors.green,
-                ),
-              ),
-            ],
+              );
+            },
           ),
         );
       }).toList(),

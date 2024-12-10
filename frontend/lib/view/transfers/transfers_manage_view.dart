@@ -234,7 +234,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
   Widget accountDropdown() {
     return DropdownButtonFormField<Map<String, dynamic>>(
       value: _selectedAccount,
-      itemHeight: 50,
+      itemHeight: null,
       isDense: false,
       decoration: InputDecoration(
         filled: true,
@@ -259,49 +259,57 @@ class _TransfersManageViewState extends State<TransfersManageView> {
         String balanceText = isNegative
             ? "- \$${balance.abs().toStringAsFixed(2)}"
             : "+ \$${balance.toStringAsFixed(2)}";
+
         return DropdownMenuItem(
           value: account,
           child: SizedBox(
-            height: 60,
+            height: 70,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: _parseColor(account['account_color'] as String?),
-                        borderRadius: BorderRadius.circular(25),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _parseColor(account['account_color'] as String?),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      IconData(
+                        int.parse(account['account_icon']),
+                        fontFamily: 'MaterialIcons',
                       ),
-                      child: Center(
-                        child: Icon(
-                          IconData(
-                            int.parse(account['account_icon']),
-                            fontFamily: 'MaterialIcons',
-                          ),
-                          color: Colors.white,
-                          size: 24,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        account['account_name'] ?? 'Unknown Account',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white54,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        balanceText,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isNegative ? Colors.red : Colors.green,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Text(
-                      account['account_name'] ?? 'Unknown Account',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  balanceText,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isNegative ? Colors.red : Colors.green,
+                    ],
                   ),
                 ),
               ],
@@ -390,7 +398,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
                       categoryType,
                       style: TextStyle(
                         fontSize: 14,
-                        color: categoryTypeColor, 
+                        color: categoryTypeColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

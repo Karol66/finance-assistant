@@ -40,8 +40,8 @@ class _NotificationsViewState extends State<NotificationsView> {
                   "notification_id": notification["id"],
                   "message": notification["message"],
                   "send_at": notification["send_at"],
-                  "icon": _getIconFromString(notification["category_icon"]),
-                  "color": _parseColor(notification["category_color"]),
+                  "icon": _getIconFromString(notification["notification_icon"]),
+                  "color": _parseColor(notification["notification_color"]),
                 })
             .toList();
         currentPage = page;

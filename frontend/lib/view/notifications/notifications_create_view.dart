@@ -47,6 +47,7 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
     Icons.work,
     Icons.forest,
     Icons.travel_explore,
+    Icons.coffee,
   ];
 
   Future<void> _addNotification() async {
@@ -66,16 +67,16 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
 
       String message = _messageController.text;
       String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!); 
-      String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
-      String categoryIcon = _selectedIcon != null
+      String notificationColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String notificationIcon = _selectedIcon != null
           ? _selectedIcon!.codePoint.toString()
           : 'default_icon';
 
       await _notificationsService.createNotification(
         message,
         sendAt,
-        categoryColor,
-        categoryIcon,
+        notificationColor,
+        notificationIcon,
       );
 
       Navigator.pop(context, true);

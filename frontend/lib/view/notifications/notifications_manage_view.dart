@@ -49,6 +49,7 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
     Icons.work,
     Icons.forest,
     Icons.travel_explore,
+    Icons.coffee,
   ];
 
   @override
@@ -64,8 +65,8 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
         _messageController.text = fetchedNotification['message'];
         _selectedSendAtDate = DateTime.parse(fetchedNotification['send_at']);
         _sendAtController.text = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
-        _selectedColor = _parseColor(fetchedNotification['category_color']);
-        _selectedIcon = _getIconFromString(fetchedNotification['category_icon']);
+        _selectedColor = _parseColor(fetchedNotification['notification_color']);
+        _selectedIcon = _getIconFromString(fetchedNotification['notification_icon']);
       });
     }
   }
@@ -87,15 +88,15 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
 
       String message = _messageController.text;
       String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
-      String categoryColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
-      String categoryIcon = _selectedIcon!.codePoint.toString();
+      String notificationColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String notificationIcon = _selectedIcon!.codePoint.toString();
 
       await _notificationsService.updateNotification(
         widget.notificationId,
         message,
         sendAt,
-        categoryColor,
-        categoryIcon,
+        notificationColor,
+        notificationIcon,
         false,
       );
 

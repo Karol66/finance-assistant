@@ -7,8 +7,8 @@ class Notification(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     send_at = models.DateTimeField()
-    category_color = models.CharField(max_length=7)
-    category_icon = models.CharField(max_length=50)
+    notification_color = models.CharField(max_length=7)
+    notification_icon = models.CharField(max_length=50)
     is_deleted = models.BooleanField(default=False)
 
     def __str__(self):

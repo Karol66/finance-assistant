@@ -47,8 +47,8 @@ class NotificationsService {
                   "message": notification["message"],
                   "created_at": DateTime.parse(notification["created_at"]),
                   "send_at": DateTime.parse(notification["send_at"]),
-                  "category_color": notification["category_color"],
-                  "category_icon": notification["category_icon"],
+                  "notification_color": notification["notification_color"],
+                  "notification_icon": notification["notification_icon"],
                   "is_deleted": notification["is_deleted"]
                 })
             .toList(),
@@ -86,7 +86,7 @@ class NotificationsService {
   }
 
   Future<void> createNotification(String message, String sendAt,
-      String categoryColor, String categoryIcon) async {
+      String notificationColor, String notificationIcon) async {
     String? token = await _getToken();
 
     if (token == null) {
@@ -103,8 +103,8 @@ class NotificationsService {
       body: jsonEncode({
         'message': message,
         'send_at': sendAt,
-        'category_color': categoryColor,
-        'category_icon': categoryIcon,
+        'notification_color': notificationColor,
+        'notification_icon': notificationIcon,
         'is_deleted': false,
       }),
     );
@@ -120,8 +120,8 @@ class NotificationsService {
       int notificationId,
       String message,
       String sendAt,
-      String categoryColor,
-      String categoryIcon,
+      String notificationColor,
+      String notificationIcon,
       bool isDeleted) async {
     String? token = await _getToken();
 
@@ -139,8 +139,8 @@ class NotificationsService {
       body: jsonEncode({
         'message': message,
         'send_at': sendAt,
-        'category_color': categoryColor,
-        'category_icon': categoryIcon,
+        'notification_color': notificationColor,
+        'notification_icon': notificationIcon,
         'is_deleted': isDeleted,
       }),
     );
