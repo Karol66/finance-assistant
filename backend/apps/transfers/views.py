@@ -231,10 +231,8 @@ def transfer_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def transfer_create(request):
     account = get_object_or_404(Account, id=request.data.get('account'), user=request.user)
-
-    account.refresh_from_db()
-
     serializer = TransferSerializer(data=request.data)
+
     if serializer.is_valid():
         transfer = serializer.save(account=account)
 
@@ -246,14 +244,11 @@ def transfer_create(request):
 
         try:
             account.save()
-            print("Saldo konta po aktualizacji:", account.balance)
         except Exception as e:
-            print("Błąd przy zapisie konta:", e)
-            return Response({'error': 'Problem z zapisem konta'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Problem with saving the account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    print("Błąd walidacji danych:", serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -268,6 +263,7 @@ def transfer_update(request, pk):
     initial_category_type = transfer.category.category_type if transfer.category else None
 
     serializer = TransferSerializer(transfer, data=request.data)
+
     if serializer.is_valid():
         updated_transfer = serializer.save()
         new_amount = updated_transfer.amount
@@ -285,14 +281,13 @@ def transfer_update(request, pk):
 
         try:
             account.save()
-            print("Saldo konta po aktualizacji:", account.balance)
         except Exception as e:
-            print("Błąd przy zapisie konta:", e)
-            return Response({'error': 'Problem z zapisem konta'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Problem with saving the account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['DELETE'])

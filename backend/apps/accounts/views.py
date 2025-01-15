@@ -59,7 +59,7 @@ def account_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def account_create(request):
     serializer = AccountSerializer(data=request.data)
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -69,8 +69,8 @@ def account_create(request):
 @permission_classes([IsAuthenticated])
 def account_update(request, pk):
     account = get_object_or_404(Account, pk=pk, user=request.user)
-    serializer = AccountSerializer(account, data=request.data)
-    if serializer.is_valid():
+    serializer = AccountSerializer(account, data=request.data, partial=True)
+    if serializer.is_valid(raise_exception=True):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

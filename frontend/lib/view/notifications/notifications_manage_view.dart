@@ -8,7 +8,8 @@ class NotificationsManageView extends StatefulWidget {
   const NotificationsManageView({super.key, required this.notificationId});
 
   @override
-  _NotificationsManageViewState createState() => _NotificationsManageViewState();
+  _NotificationsManageViewState createState() =>
+      _NotificationsManageViewState();
 }
 
 class _NotificationsManageViewState extends State<NotificationsManageView> {
@@ -59,14 +60,17 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
   }
 
   Future<void> _loadNotification() async {
-    final fetchedNotification = await _notificationsService.fetchNotificationById(widget.notificationId);
+    final fetchedNotification = await _notificationsService
+        .fetchNotificationById(widget.notificationId);
     if (fetchedNotification != null) {
       setState(() {
         _messageController.text = fetchedNotification['message'];
         _selectedSendAtDate = DateTime.parse(fetchedNotification['send_at']);
-        _sendAtController.text = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
+        _sendAtController.text =
+            DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
         _selectedColor = _parseColor(fetchedNotification['notification_color']);
-        _selectedIcon = _getIconFromString(fetchedNotification['notification_icon']);
+        _selectedIcon =
+            _getIconFromString(fetchedNotification['notification_icon']);
       });
     }
   }
@@ -88,7 +92,8 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
 
       String message = _messageController.text;
       String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
-      String notificationColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String notificationColor =
+          '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
       String notificationIcon = _selectedIcon!.codePoint.toString();
 
       await _notificationsService.updateNotification(
@@ -117,8 +122,11 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedSendAtDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
+      selectableDayPredicate: (DateTime day) {
+        return !day.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+      },
     );
     if (picked != null) {
       setState(() {
@@ -134,7 +142,8 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
   }
 
   Color _parseColor(String colorString) {
-    return Color(int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
+    return Color(
+        int.parse(colorString.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
   Widget inputTextField(String hintText, TextEditingController controller) {
@@ -178,7 +187,10 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
       onTap: () => _selectSendAtDate(context),
       validator: (value) {
         if (_selectedSendAtDate == null) {
-          return 'Please select a date';
+          return 'Please select a date.';
+        } else if (_selectedSendAtDate!
+            .isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+          return 'Send At date cannot be in the past.';
         }
         return null;
       },
@@ -233,9 +245,13 @@ class _NotificationsManageViewState extends State<NotificationsManageView> {
           }),
           child: Container(
             decoration: BoxDecoration(
-              color: _selectedIcon == iconData ? (_selectedColor ?? const Color(0xFF191E29)) : const Color(0xFF191E29),
+              color: _selectedIcon == iconData
+                  ? (_selectedColor ?? const Color(0xFF191E29))
+                  : const Color(0xFF191E29),
               borderRadius: BorderRadius.circular(15),
-              border: _selectedIcon == iconData ? Border.all(color: Colors.white, width: 3) : null,
+              border: _selectedIcon == iconData
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
             ),
             child: Icon(iconData, size: 40, color: Colors.white),
           ),

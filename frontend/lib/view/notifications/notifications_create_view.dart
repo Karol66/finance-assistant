@@ -6,7 +6,8 @@ class NotificationsCreateView extends StatefulWidget {
   const NotificationsCreateView({super.key});
 
   @override
-  _NotificationsCreateViewState createState() => _NotificationsCreateViewState();
+  _NotificationsCreateViewState createState() =>
+      _NotificationsCreateViewState();
 }
 
 class _NotificationsCreateViewState extends State<NotificationsCreateView> {
@@ -66,8 +67,9 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
       }
 
       String message = _messageController.text;
-      String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!); 
-      String notificationColor = '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
+      String sendAt = DateFormat('yyyy-MM-dd').format(_selectedSendAtDate!);
+      String notificationColor =
+          '#${_selectedColor?.value.toRadixString(16).substring(2, 8)}';
       String notificationIcon = _selectedIcon != null
           ? _selectedIcon!.codePoint.toString()
           : 'default_icon';
@@ -90,9 +92,12 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
   Future<void> _selectSendAtDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      initialDate: _selectedSendAtDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
+      selectableDayPredicate: (DateTime day) {
+        return !day.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+      },
     );
     if (picked != null) {
       setState(() {
@@ -143,7 +148,10 @@ class _NotificationsCreateViewState extends State<NotificationsCreateView> {
       onTap: () => _selectSendAtDate(context),
       validator: (value) {
         if (_selectedSendAtDate == null) {
-          return 'Please select a date';
+          return 'Please select a date.';
+        } else if (_selectedSendAtDate!
+            .isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+          return 'Send At date cannot be in the past.';
         }
         return null;
       },

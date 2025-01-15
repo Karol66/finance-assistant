@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserRegisterSerializer, UserLoginSerializer, User, ChangePasswordSerializer
+import logging
 
 
 @api_view(['POST'])
@@ -53,8 +54,6 @@ def user_detail(request):
     serializer = UserRegisterSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-import logging
 
 logger = logging.getLogger(__name__)
 

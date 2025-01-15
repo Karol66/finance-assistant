@@ -28,7 +28,7 @@ def category_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def category_create(request):
     serializer = CategorySerializer(data=request.data)
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -38,8 +38,8 @@ def category_create(request):
 @permission_classes([IsAuthenticated])
 def category_update(request, pk):
     category = get_object_or_404(Category, pk=pk, user=request.user)
-    serializer = CategorySerializer(category, data=request.data)
-    if serializer.is_valid():
+    serializer = CategorySerializer(category, data=request.data, partial=True)
+    if serializer.is_valid(raise_exception=True):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

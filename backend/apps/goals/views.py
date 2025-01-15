@@ -50,21 +50,21 @@ def goal_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def goal_create(request):
     serializer = GoalSerializer(data=request.data)
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         goal = serializer.save(user=request.user)
         if goal.current_amount == goal.target_amount:
             goal.status = "completed"
             goal.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def goal_update(request, pk):
     goal = get_object_or_404(Goal, pk=pk, user=request.user)
-    serializer = GoalSerializer(goal, data=request.data)
-    if serializer.is_valid():
+    serializer = GoalSerializer(goal, data=request.data, partial=True)
+    if serializer.is_valid(raise_exception=True):
         goal = serializer.save()
         if goal.current_amount == goal.target_amount:
             goal.status = "completed"
@@ -73,7 +73,7 @@ def goal_update(request, pk):
             goal.status = "active"
             goal.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['DELETE'])
