@@ -171,6 +171,7 @@ class _TransfersViewState extends State<TransfersView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
+            isUpdated = true;
             Navigator.pop(context, isUpdated);
           },
         ),

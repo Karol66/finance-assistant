@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/users_service.dart';
+import 'package:frontend/view/users/login_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileManageView extends StatefulWidget {
@@ -17,6 +18,9 @@ class _ProfileManageViewState extends State<ProfileManageView> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
 
+  String? _initialUsername;
+  String? _initialEmail;
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +35,11 @@ class _ProfileManageViewState extends State<ProfileManageView> {
       await _authService.getUserDetail(token);
 
       setState(() {
-        _usernameController.text = prefs.getString('username') ?? '';
-        _emailController.text = prefs.getString('email') ?? '';
+        _initialUsername = prefs.getString('username');
+        _initialEmail = prefs.getString('email');
+
+        _usernameController.text = _initialUsername ?? '';
+        _emailController.text = _initialEmail ?? '';
       });
     } else {
       print('Token not found, user not authenticated');
@@ -42,17 +49,51 @@ class _ProfileManageViewState extends State<ProfileManageView> {
   Future<void> _updateProfile() async {
     String username = _usernameController.text;
     String email = _emailController.text;
-    String password = _passwordController.text;
+    String? password;
 
-    await _authService.updateProfile(username, email, password);
+    if (_passwordController.text.isNotEmpty) {
+      password = _passwordController.text;
+    } else {
+      password = null;
+    }
 
-    Navigator.pop(context);
+    if (_initialUsername != username || _initialEmail != email || password != null) {
+      await _authService.updateProfile(username, email, password);
+
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Profile Updated'),
+            content: const Text(
+              'Your profile has been updated. You will be logged out.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await _authService.logout();
+                  Navigator.of(context).pop(); 
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginView()),
+                    (Route<dynamic> route) => false,
+                  ); 
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   String? emailValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter an email';
-    } else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+    } else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+        .hasMatch(value)) {
       return 'Please enter a valid email address';
     }
     return null;
@@ -68,16 +109,16 @@ class _ProfileManageViewState extends State<ProfileManageView> {
   }
 
   String? passwordValidator(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a password';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
-    } else if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Password must contain at least one uppercase letter';
-    } else if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Password must contain at least one number';
-    } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Password must contain at least one special character';
+    if (value != null && value.isNotEmpty) {
+      if (value.length < 8) {
+        return 'Password must be at least 8 characters long';
+      } else if (!RegExp(r'[A-Z]').hasMatch(value)) {
+        return 'Password must contain at least one uppercase letter';
+      } else if (!RegExp(r'[0-9]').hasMatch(value)) {
+        return 'Password must contain at least one number';
+      } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+        return 'Password must contain at least one special character';
+      }
     }
     return null;
   }
@@ -89,7 +130,8 @@ class _ProfileManageViewState extends State<ProfileManageView> {
     return null;
   }
 
-  Widget inputTextField(String hintText, bool obscureText, TextEditingController controller, String? Function(String?) validator) {
+  Widget inputTextField(String hintText, bool obscureText,
+      TextEditingController controller, String? Function(String?) validator) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -137,13 +179,17 @@ class _ProfileManageViewState extends State<ProfileManageView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                inputTextField('Email', false, _emailController, emailValidator),
+                inputTextField(
+                    'Email', false, _emailController, emailValidator),
                 const SizedBox(height: 20),
-                inputTextField('Username', false, _usernameController, usernameValidator),
+                inputTextField(
+                    'Username', false, _usernameController, usernameValidator),
                 const SizedBox(height: 20),
-                inputTextField('Password', true, _passwordController, passwordValidator),
+                inputTextField(
+                    'Password', true, _passwordController, passwordValidator),
                 const SizedBox(height: 20),
-                inputTextField('Confirm Password', true, _confirmPasswordController, confirmPasswordValidator),
+                inputTextField('Confirm Password', true,
+                    _confirmPasswordController, confirmPasswordValidator),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

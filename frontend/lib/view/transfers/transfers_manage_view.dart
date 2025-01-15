@@ -158,7 +158,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime.now(),
     );
     if (picked != null) {
       setState(() {
@@ -225,6 +225,8 @@ class _TransfersManageViewState extends State<TransfersManageView> {
       validator: (value) {
         if (_selectedDate == null) {
           return 'Please select a date';
+        } else if (_selectedDate!.isAfter(DateTime.now())) {
+          return 'Date cannot be in the future';
         }
         return null;
       },

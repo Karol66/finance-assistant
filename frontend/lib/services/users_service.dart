@@ -86,7 +86,7 @@ class AuthService {
   }
 
   Future<void> updateProfile(
-      String username, String email, String password) async {
+      String username, String email, String? password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('jwtToken');
 
@@ -95,17 +95,22 @@ class AuthService {
       return;
     }
 
+    final Map<String, dynamic> body = {
+      'username': username,
+      'email': email,
+    };
+
+    if (password != null && password.isNotEmpty) {
+      body['password'] = password;
+    }
+
     final response = await http.put(
       Uri.parse('$baseUrl/update_profile/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
-      }),
+      body: jsonEncode(body),
     );
 
     if (response.statusCode == 200) {
