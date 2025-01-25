@@ -585,7 +585,7 @@ class _StatisticViewState extends State<StatisticView> {
         date = DateTime(date.year, date.month - 1, date.day);
       } else if (selectedPeriod == 'Week') {
         DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-        periods.add("${DateFormat('d MMM').format(startOfWeek)}");
+        periods.add(DateFormat('d MMM').format(startOfWeek));
         date = date.subtract(const Duration(days: 7));
       } else if (selectedPeriod == 'Day') {
         periods.add(DateFormat('d MMM').format(date));
@@ -674,7 +674,7 @@ class _StatisticViewState extends State<StatisticView> {
           ),
         ),
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
+          leftTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           bottomTitles: AxisTitles(

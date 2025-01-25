@@ -25,6 +25,8 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
   int currentPage = 1;
   bool hasNextPage = true;
 
+  bool isUpdated = false;
+
   @override
   void initState() {
     super.initState();
@@ -170,7 +172,8 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            isUpdated = true;
+            Navigator.pop(context, isUpdated);
           },
         ),
       ),
@@ -454,17 +457,18 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
     String formattedAmount = isExpense
         ? "-\$${amount.abs().toStringAsFixed(2)}"
         : "+\$${amount.toStringAsFixed(2)}";
+
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RegularTransfersManageView(
-              transferId: transfer["id"],
-            ),
+            builder: (context) => 
+                RegularTransfersManageView(transferId: transfer["id"]),
           ),
         );
         if (result == true) {
+          isUpdated = true;
           loadRegularTransfers();
         }
       },
@@ -528,7 +532,7 @@ class _RegularTransfersViewState extends State<RegularTransfersView> {
     );
   }
 
-Widget createAddButton() {
+  Widget createAddButton() {
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(

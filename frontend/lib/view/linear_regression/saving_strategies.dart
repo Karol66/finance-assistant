@@ -84,7 +84,7 @@ class _SavingStrategiesState extends State<SavingStrategies> {
           else if (strategy.isEmpty)
             const Expanded(
               child: Center(
-                child: const Text(
+                child: Text(
                   "No strategies available.",
                   style: TextStyle(
                     color: Colors.white54,

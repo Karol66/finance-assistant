@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/accounts_service.dart';
+import 'package:frontend/services/transfers_service.dart';
 import 'package:frontend/view/accounts/accounts_create_view.dart';
 import 'package:frontend/view/accounts/accounts_manage_view.dart';
 import 'package:frontend/view/regular_transfers/regular_transfers_view.dart';
@@ -130,6 +131,8 @@ class _AccountViewState extends State<AccountView> {
       ),
     );
     if (result == true) {
+      final transfersService = TransfersService();
+      await transfersService.generateRegularTransfers();
       loadAccounts(page: 1);
       loadTotalBalance();
     }

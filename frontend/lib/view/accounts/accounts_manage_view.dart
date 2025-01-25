@@ -123,7 +123,7 @@ class _AccountsManageViewState extends State<AccountsManageView> {
     return TextFormField(
       controller: controller,
       keyboardType: isNumeric
-          ? TextInputType.numberWithOptions(decimal: true, signed: true)
+          ? const TextInputType.numberWithOptions(decimal: true, signed: true)
           : TextInputType.text,
       inputFormatters: isNumeric
           ? [

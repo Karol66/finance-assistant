@@ -173,7 +173,7 @@ class _TransfersManageViewState extends State<TransfersManageView> {
     return TextFormField(
       controller: controller,
       keyboardType: isNumeric
-          ? TextInputType.numberWithOptions(decimal: true)
+          ? const TextInputType.numberWithOptions(decimal: true)
           : TextInputType.text,
       inputFormatters: isNumeric
           ? [
